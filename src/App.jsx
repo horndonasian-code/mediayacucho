@@ -790,7 +790,241 @@ function DoctorDashboard({ doctor, onExit }) {
   );
 }
 
-// ─── Main App ──────────────────────────────────────────────────────────────
+// ─── Admin config ──────────────────────────────────────────────────────────
+const ADMIN_EMAIL = "horndonasian@gmail.com";
+
+// ─── Admin Panel ───────────────────────────────────────────────────────────
+function AdminPanel({ onExit }) {
+  const [tab, setTab] = useState("pending");
+  const [pendingDoctors, setPendingDoctors] = useState([]);
+  const [activeDoctors, setActiveDoctors] = useState([]);
+  const [appointments, setAppointments] = useState([]);
+  const [payments, setPayments] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [actionMsg, setActionMsg] = useState("");
+
+  useEffect(() => { loadAll(); }, []);
+
+  async function loadAll() {
+    setLoading(true);
+    try {
+      const [pending, active, appts, pays] = await Promise.all([
+        sb("doctors?active=eq.false&order=created_at.desc"),
+        sb("doctors?active=eq.true&order=name"),
+        sb("appointments?order=created_at.desc&limit=50"),
+        sb("payments?order=created_at.desc&limit=50"),
+      ]);
+      setPendingDoctors(pending || []);
+      setActiveDoctors(active || []);
+      setAppointments(appts || []);
+      setPayments(pays || []);
+    } catch (e) { console.error(e); }
+    setLoading(false);
+  }
+
+  async function activateDoctor(id, name) {
+    await sb(`doctors?id=eq.${id}`, { method: "PATCH", body: JSON.stringify({ active: true }) });
+    setActionMsg(`✅ ${name} activado`);
+    loadAll();
+    setTimeout(() => setActionMsg(""), 3000);
+  }
+
+  async function deactivateDoctor(id, name) {
+    await sb(`doctors?id=eq.${id}`, { method: "PATCH", body: JSON.stringify({ active: false }) });
+    setActionMsg(`🔴 ${name} desactivado`);
+    loadAll();
+    setTimeout(() => setActionMsg(""), 3000);
+  }
+
+  async function deleteDoctor(id, name) {
+    if (!window.confirm(`¿Eliminar a ${name}? Esta acción no se puede deshacer.`)) return;
+    await sb(`doctors?id=eq.${id}`, { method: "DELETE" });
+    setActionMsg(`🗑️ ${name} eliminado`);
+    loadAll();
+    setTimeout(() => setActionMsg(""), 3000);
+  }
+
+  async function verifyPayment(id) {
+    await sb(`payments?id=eq.${id}`, { method: "PATCH", body: JSON.stringify({ status: "verificado" }) });
+    setActionMsg("✅ Pago verificado");
+    loadAll();
+    setTimeout(() => setActionMsg(""), 3000);
+  }
+
+  const totalIngresos = payments.filter(p => p.status === "verificado").reduce((sum, p) => sum + (p.amount || 0), 0);
+
+  const s = {
+    wrap: { minHeight: "100vh", background: "linear-gradient(135deg, #0a0f1e 0%, #0d1529 100%)", fontFamily: "'Crimson Pro', Georgia, serif", color: "#e8f0f8" },
+    topbar: { background: "rgba(10,15,30,0.98)", borderBottom: "1px solid rgba(255,100,100,0.2)", padding: "0 24px", display: "flex", alignItems: "center", justifyContent: "space-between", height: 64, position: "sticky", top: 0, zIndex: 50 },
+    main: { maxWidth: 1100, margin: "0 auto", padding: "32px 24px" },
+    kpiGrid: { display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(180px, 1fr))", gap: 16, marginBottom: 32 },
+    kpiCard: (c) => ({ background: "rgba(255,255,255,0.04)", border: `1px solid ${c}33`, borderRadius: 16, padding: "20px 24px" }),
+    kpiNum: (c) => ({ fontSize: 36, fontWeight: 700, color: c, display: "block", margin: "4px 0" }),
+    kpiLabel: { fontSize: 11, color: "#60a5d8", letterSpacing: 0.5, textTransform: "uppercase" },
+    tabs: { display: "flex", gap: 8, marginBottom: 24, flexWrap: "wrap" },
+    tab: (a) => ({ padding: "10px 20px", borderRadius: 10, border: `1px solid ${a ? "#ff6b6b" : "rgba(255,100,100,0.2)"}`, background: a ? "rgba(255,107,107,0.15)" : "transparent", color: a ? "#ff6b6b" : "#60a5d8", cursor: "pointer", fontFamily: "inherit", fontSize: 14, fontWeight: a ? 700 : 400 }),
+    card: { background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,100,100,0.1)", borderRadius: 14, padding: 20, marginBottom: 12 },
+    badge: (c) => ({ padding: "3px 10px", borderRadius: 20, background: `${c}22`, color: c, fontSize: 11, fontWeight: 700, textTransform: "uppercase" }),
+    btn: (c) => ({ padding: "7px 14px", background: `${c}22`, border: `1px solid ${c}44`, color: c, borderRadius: 8, cursor: "pointer", fontSize: 12, fontWeight: 700, fontFamily: "inherit" }),
+    actionMsg: { position: "fixed", bottom: 24, right: 24, background: "#1a4f8a", border: "1px solid #3b82c4", borderRadius: 12, padding: "12px 20px", color: "#e8f0f8", fontSize: 14, fontWeight: 700, zIndex: 200 },
+  };
+
+  const navTabs = [
+    { id: "pending", label: `⏳ En espera (${pendingDoctors.length})` },
+    { id: "active", label: `✅ Activos (${activeDoctors.length})` },
+    { id: "appointments", label: `📅 Citas (${appointments.length})` },
+    { id: "payments", label: `💰 Pagos (${payments.length})` },
+  ];
+
+  return (
+    <div style={s.wrap}>
+      <link href="https://fonts.googleapis.com/css2?family=Crimson+Pro:wght@400;600;700&display=swap" rel="stylesheet" />
+      {actionMsg && <div style={s.actionMsg}>{actionMsg}</div>}
+
+      <div style={s.topbar}>
+        <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+          <div style={{ width: 36, height: 36, borderRadius: 8, background: "rgba(255,100,100,0.2)", border: "1px solid rgba(255,100,100,0.4)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 18 }}>🛡️</div>
+          <div>
+            <div style={{ fontWeight: 700, color: "#e8f0f8", fontSize: 15 }}>Panel Admin — MediAyacucho</div>
+            <div style={{ fontSize: 11, color: "#ff6b6b" }}>Acceso restringido · Solo administrador</div>
+          </div>
+        </div>
+        <div style={{ display: "flex", gap: 10 }}>
+          <button onClick={loadAll} style={{ padding: "8px 16px", background: "transparent", border: "1px solid rgba(59,130,196,0.3)", color: "#3b82c4", borderRadius: 8, cursor: "pointer", fontFamily: "inherit", fontSize: 13 }}>🔄 Actualizar</button>
+          <button onClick={onExit} style={{ padding: "8px 16px", background: "transparent", border: "1px solid rgba(255,100,100,0.3)", color: "#ff6b6b", borderRadius: 8, cursor: "pointer", fontFamily: "inherit", fontSize: 13 }}>← Salir</button>
+        </div>
+      </div>
+
+      <div style={s.main}>
+        {/* KPIs */}
+        <div style={s.kpiGrid}>
+          <div style={s.kpiCard("#ff6b6b")}><span style={s.kpiLabel}>En espera</span><span style={s.kpiNum("#ff6b6b")}>{pendingDoctors.length}</span><span style={{ fontSize: 12, color: "#60a5d8" }}>Médicos por verificar</span></div>
+          <div style={s.kpiCard("#52B788")}><span style={s.kpiLabel}>Médicos activos</span><span style={s.kpiNum("#52B788")}>{activeDoctors.length}</span><span style={{ fontSize: 12, color: "#60a5d8" }}>En la plataforma</span></div>
+          <div style={s.kpiCard("#3b82c4")}><span style={s.kpiLabel}>Total citas</span><span style={s.kpiNum("#3b82c4")}>{appointments.length}</span><span style={{ fontSize: 12, color: "#60a5d8" }}>Registradas</span></div>
+          <div style={s.kpiCard("#F4A261")}><span style={s.kpiLabel}>Ingresos verificados</span><span style={s.kpiNum("#F4A261")}>S/. {totalIngresos}</span><span style={{ fontSize: 12, color: "#60a5d8" }}>Membresías cobradas</span></div>
+          <div style={s.kpiCard("#a78bfa")}><span style={s.kpiLabel}>Pagos pendientes</span><span style={s.kpiNum("#a78bfa")}>{payments.filter(p => p.status === "pendiente").length}</span><span style={{ fontSize: 12, color: "#60a5d8" }}>Por verificar</span></div>
+        </div>
+
+        {/* Tabs */}
+        <div style={s.tabs}>
+          {navTabs.map(t => <button key={t.id} style={s.tab(tab === t.id)} onClick={() => setTab(t.id)}>{t.label}</button>)}
+        </div>
+
+        {loading && <div style={{ textAlign: "center", padding: 40, color: "#60a5d8" }}>⏳ Cargando datos...</div>}
+
+        {/* MÉDICOS EN ESPERA */}
+        {!loading && tab === "pending" && (
+          <>
+            <h3 style={{ margin: "0 0 16px", color: "#ff6b6b" }}>⏳ Médicos pendientes de verificación</h3>
+            {pendingDoctors.length === 0
+              ? <div style={{ ...s.card, textAlign: "center", color: "#60a5d8" }}>✅ No hay médicos en espera</div>
+              : pendingDoctors.map(doc => (
+                <div key={doc.id} style={s.card}>
+                  <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", flexWrap: "wrap", gap: 12 }}>
+                    <div style={{ flex: 1 }}>
+                      <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 8 }}>
+                        <div style={{ width: 40, height: 40, borderRadius: 10, background: doc.color || "#1a4f8a", display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 700, color: "#fff" }}>{doc.img || "?"}</div>
+                        <div>
+                          <div style={{ fontWeight: 700, color: "#e8f0f8", fontSize: 16 }}>{doc.name}</div>
+                          <div style={{ fontSize: 13, color: "#60a5d8" }}>{doc.specialty} · 📞 {doc.phone}</div>
+                        </div>
+                      </div>
+                      {doc.address && <div style={{ fontSize: 12, color: "#60a5d8", marginBottom: 4 }}>📍 {doc.address}</div>}
+                      <div style={{ fontSize: 11, color: "#60a5d8" }}>Registrado: {new Date(doc.created_at).toLocaleDateString("es-PE")}</div>
+                    </div>
+                    <div style={{ display: "flex", gap: 8, flexWrap: "wrap", alignItems: "center" }}>
+                      <a href="https://www.cmp.org.pe" target="_blank" rel="noreferrer" style={{ ...s.btn("#a78bfa"), textDecoration: "none", display: "inline-block" }}>🔍 Verificar CMP</a>
+                      <button style={s.btn("#25D366")} onClick={() => window.open(`https://wa.me/${doc.phone}?text=${encodeURIComponent(`Hola ${doc.name}, somos MediAyacucho. Hemos verificado tus credenciales y tu cuenta ha sido activada. ¡Bienvenido! 🎉`)}`, "_blank")}>💬 WhatsApp</button>
+                      <button style={s.btn("#52B788")} onClick={() => activateDoctor(doc.id, doc.name)}>✅ Activar</button>
+                      <button style={s.btn("#ff6b6b")} onClick={() => deleteDoctor(doc.id, doc.name)}>❌ Rechazar</button>
+                    </div>
+                  </div>
+                </div>
+              ))
+            }
+          </>
+        )}
+
+        {/* MÉDICOS ACTIVOS */}
+        {!loading && tab === "active" && (
+          <>
+            <h3 style={{ margin: "0 0 16px", color: "#52B788" }}>✅ Médicos activos en la plataforma</h3>
+            {activeDoctors.map(doc => (
+              <div key={doc.id} style={s.card}>
+                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: 12 }}>
+                  <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+                    <div style={{ width: 40, height: 40, borderRadius: 10, background: doc.color || "#1a4f8a", display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 700, color: "#fff" }}>{doc.img || "?"}</div>
+                    <div>
+                      <div style={{ fontWeight: 700, color: "#e8f0f8" }}>{doc.name}</div>
+                      <div style={{ fontSize: 13, color: "#60a5d8" }}>{doc.specialty} · {doc.price} · ⭐ {doc.rating}</div>
+                      {doc.address && <div style={{ fontSize: 12, color: "#60a5d8" }}>📍 {doc.address}</div>}
+                    </div>
+                  </div>
+                  <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
+                    <span style={s.badge(doc.available ? "#52B788" : "#ff6b6b")}>{doc.available ? "Disponible" : "No disponible"}</span>
+                    <button style={s.btn("#25D366")} onClick={() => window.open(`https://wa.me/${doc.phone}`, "_blank")}>💬 WA</button>
+                    <button style={s.btn("#ff6b6b")} onClick={() => deactivateDoctor(doc.id, doc.name)}>🔴 Suspender</button>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </>
+        )}
+
+        {/* CITAS */}
+        {!loading && tab === "appointments" && (
+          <>
+            <h3 style={{ margin: "0 0 16px", color: "#3b82c4" }}>📅 Últimas citas registradas</h3>
+            {appointments.length === 0
+              ? <div style={{ ...s.card, textAlign: "center", color: "#60a5d8" }}>No hay citas registradas</div>
+              : appointments.map(a => (
+                <div key={a.id} style={s.card}>
+                  <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: 8 }}>
+                    <div>
+                      <div style={{ fontWeight: 700, color: "#e8f0f8" }}>{a.patient_name}</div>
+                      <div style={{ fontSize: 13, color: "#60a5d8" }}>📅 {a.date} · 🕐 {a.time} · 📞 {a.patient_phone}</div>
+                      <div style={{ fontSize: 12, color: "#60a5d8" }}>Pago: {a.payment_method || "No especificado"} · {a.payment_status}</div>
+                    </div>
+                    <div style={{ display: "flex", gap: 8 }}>
+                      <span style={s.badge(a.status === "confirmada" ? "#52B788" : a.status === "cancelada" ? "#ff6b6b" : a.status === "completada" ? "#3b82c4" : "#F4A261")}>{a.status}</span>
+                      <button style={s.btn("#25D366")} onClick={() => window.open(`https://wa.me/${a.patient_phone}`, "_blank")}>💬 WA</button>
+                    </div>
+                  </div>
+                </div>
+              ))
+            }
+          </>
+        )}
+
+        {/* PAGOS */}
+        {!loading && tab === "payments" && (
+          <>
+            <h3 style={{ margin: "0 0 16px", color: "#F4A261" }}>💰 Pagos de membresías</h3>
+            {payments.length === 0
+              ? <div style={{ ...s.card, textAlign: "center", color: "#60a5d8" }}>No hay pagos registrados</div>
+              : payments.map(p => (
+                <div key={p.id} style={s.card}>
+                  <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: 8 }}>
+                    <div>
+                      <div style={{ fontWeight: 700, color: "#e8f0f8" }}>S/. {p.amount} · {p.method?.toUpperCase()}</div>
+                      <div style={{ fontSize: 12, color: "#60a5d8" }}>{new Date(p.created_at).toLocaleDateString("es-PE")} · {new Date(p.created_at).toLocaleTimeString("es-PE")}</div>
+                    </div>
+                    <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
+                      <span style={s.badge(p.status === "verificado" ? "#52B788" : p.status === "rechazado" ? "#ff6b6b" : "#F4A261")}>{p.status}</span>
+                      {p.status === "pendiente" && <button style={s.btn("#52B788")} onClick={() => verifyPayment(p.id)}>✅ Verificar pago</button>}
+                    </div>
+                  </div>
+                </div>
+              ))
+            }
+          </>
+        )}
+      </div>
+    </div>
+  );
+}
+
+
 export default function App() {
   const [view, setView] = useState("home");
   const [doctors, setDoctors] = useState([]);
@@ -810,6 +1044,7 @@ export default function App() {
   const [dashboardDoctor, setDashboardDoctor] = useState(null);
   const [showLogin, setShowLogin] = useState(false);
   const [session, setSession] = useState(() => auth.getSession());
+  const [showAdmin, setShowAdmin] = useState(false);
   const [regData, setRegData] = useState({ name: "", specialty: "", email: "", phone: "", address: "", reference: "", cmp: "", universidad: "" });
   const [cmpVerification, setCmpVerification] = useState(null); // null | loading | result
   const [diplomaFile, setDiplomaFile] = useState(null);
@@ -952,6 +1187,7 @@ export default function App() {
     setRegLoading(false);
   }
 
+  if (showAdmin) return <AdminPanel onExit={() => setShowAdmin(false)} />;
   if (dashboardDoctor) return <DoctorDashboard doctor={dashboardDoctor} onExit={() => setDashboardDoctor(null)} />;
 
   const T = {
@@ -997,6 +1233,9 @@ export default function App() {
           <button style={T.navBtn(view==="chat")} onClick={() => setView("chat")}>🤖 Asistente IA</button>
           {session ? (
             <div style={{ display: "flex", gap: 8 }}>
+              {session.email === ADMIN_EMAIL && (
+                <button style={{ ...T.navBtn(false), background: "rgba(255,100,100,0.15)", border: "1px solid rgba(255,100,100,0.4)", color: "#ff6b6b" }} onClick={() => setShowAdmin(true)}>🛡️ Admin</button>
+              )}
               <button style={{ ...T.navBtn(true), background: "rgba(59,130,196,0.15)" }} onClick={() => { if(doctors[0]) setDashboardDoctor(doctors[0]); }}>📊 Mi Panel</button>
               <button style={{ ...T.navBtn(false), color: "#ff6b6b" }} onClick={handleLogout}>Salir</button>
             </div>
