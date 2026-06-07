@@ -128,8 +128,14 @@ function LoginModal({ onLogin, onClose }) {
     setLoading(true); setError("");
     const data = await auth.signUp(email, password);
     if (data.id || data.user?.id) {
-      setSuccess("¡Cuenta creada! Revisa tu email para confirmar tu cuenta, luego inicia sesión.");
-      setMode("login");
+      // Connecter directement et rediriger vers inscription CMP
+      const signInData = await auth.signIn(email, password);
+      if (signInData.access_token) {
+        onLogin({ token: signInData.access_token, email, user_id: signInData.user?.id, isNew: true });
+      } else {
+        setSuccess("¡Cuenta creada! Ahora inicia sesión para completar tu registro.");
+        setMode("login");
+      }
     } else {
       setError(data.error_description || data.msg || "Error al crear la cuenta");
     }
@@ -864,11 +870,20 @@ export default function App() {
     auth.saveSession(newSession);
     setSession(newSession);
     setShowLogin(false);
+    // Si c'est un nouveau compte (signup), aller au formulaire d'inscription
+    if (newSession.isNew) {
+      setView("doctor-register");
+      return;
+    }
+    // Si c'est un login existant, chercher le médecin par email
     try {
-      const docs = await sb("doctors?order=name");
-      const doc = docs[0];
-      if (doc) setDashboardDoctor(doc);
-      else setView("doctor-register");
+      const docs = await sb(`doctors?email=eq.${encodeURIComponent(newSession.email)}&active=eq.true`);
+      if (docs && docs.length > 0) {
+        setDashboardDoctor(docs[0]);
+      } else {
+        // Médecin non encore activé ou non trouvé
+        setView("doctor-register");
+      }
     } catch { setView("doctor-register"); }
   }
 
