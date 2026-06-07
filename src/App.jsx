@@ -33,6 +33,42 @@ const db = {
   createPayment: (data) => sb("payments", { method: "POST", body: JSON.stringify(data) }),
 };
 
+// ─── Supabase Auth ─────────────────────────────────────────────────────────
+const auth = {
+  async signUp(email, password) {
+    const res = await fetch(`${SUPABASE_URL}/auth/v1/signup`, {
+      method: "POST",
+      headers: { "apikey": SUPABASE_KEY, "Content-Type": "application/json" },
+      body: JSON.stringify({ email, password }),
+    });
+    return res.json();
+  },
+  async signIn(email, password) {
+    const res = await fetch(`${SUPABASE_URL}/auth/v1/token?grant_type=password`, {
+      method: "POST",
+      headers: { "apikey": SUPABASE_KEY, "Content-Type": "application/json" },
+      body: JSON.stringify({ email, password }),
+    });
+    return res.json();
+  },
+  async signOut(token) {
+    await fetch(`${SUPABASE_URL}/auth/v1/logout`, {
+      method: "POST",
+      headers: { "apikey": SUPABASE_KEY, "Authorization": `Bearer ${token}` },
+    });
+  },
+  getSession() {
+    const s = localStorage.getItem("medi_session");
+    return s ? JSON.parse(s) : null;
+  },
+  saveSession(session) {
+    localStorage.setItem("medi_session", JSON.stringify(session));
+  },
+  clearSession() {
+    localStorage.removeItem("medi_session");
+  },
+};
+
 // ─── Constants ─────────────────────────────────────────────────────────────
 const SPECIALTIES = ["Todos", "Medicina General", "Pediatría", "Cardiología", "Ginecología", "Traumatología", "Dermatología"];
 const MONTHLY_DATA = [
@@ -55,6 +91,102 @@ function buildReminderMessage(data, doctor) {
   return `⏰ *RECORDATORIO - MediPerú*\n\nHola ${data.patient_name}, te recordamos tu cita MAÑANA:\n\n👨‍⚕️ ${doctor.name} (${doctor.specialty})\n🕐 ${data.time}\n📍 ${doctor.address || ""}\n\n¡Te esperamos! 💚`;
 }
 function initials(name) { return name.split(" ").filter(w => w[0] === w[0]?.toUpperCase()).slice(0, 2).map(w => w[0]).join(""); }
+
+// ─── Login Modal ───────────────────────────────────────────────────────────
+function LoginModal({ onLogin, onClose }) {
+  const [mode, setMode] = useState("login"); // login | signup | forgot
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
+  const [success, setSuccess] = useState("");
+
+  async function handleLogin() {
+    if (!email || !password) return setError("Completa todos los campos");
+    setLoading(true); setError("");
+    const data = await auth.signIn(email, password);
+    if (data.access_token) {
+      auth.saveSession({ token: data.access_token, email, user_id: data.user?.id });
+      onLogin({ token: data.access_token, email, user_id: data.user?.id });
+    } else {
+      setError(data.error_description || data.msg || "Email o contraseña incorrectos");
+    }
+    setLoading(false);
+  }
+
+  async function handleSignUp() {
+    if (!email || !password) return setError("Completa todos los campos");
+    if (password.length < 6) return setError("La contraseña debe tener al menos 6 caracteres");
+    setLoading(true); setError("");
+    const data = await auth.signUp(email, password);
+    if (data.id || data.user?.id) {
+      setSuccess("¡Cuenta creada! Revisa tu email para confirmar tu cuenta, luego inicia sesión.");
+      setMode("login");
+    } else {
+      setError(data.error_description || data.msg || "Error al crear la cuenta");
+    }
+    setLoading(false);
+  }
+
+  const s = {
+    overlay: { position: "fixed", inset: 0, background: "rgba(0,0,0,0.85)", zIndex: 500, display: "flex", alignItems: "center", justifyContent: "center", padding: 16, backdropFilter: "blur(12px)" },
+    box: { background: "#051628", border: "1px solid rgba(59,130,196,0.35)", borderRadius: 24, padding: 36, maxWidth: 420, width: "100%", position: "relative" },
+    title: { fontSize: 24, fontWeight: 700, color: "#e8f0f8", margin: "0 0 6px" },
+    sub: { fontSize: 14, color: "#60a5d8", margin: "0 0 28px" },
+    label: { display: "block", fontSize: 11, color: "#60a5d8", marginBottom: 5, letterSpacing: 0.8, textTransform: "uppercase" },
+    inp: { width: "100%", background: "rgba(255,255,255,0.06)", border: "1px solid rgba(59,130,196,0.25)", borderRadius: 10, padding: "12px 14px", color: "#e8f0f8", fontSize: 15, fontFamily: "inherit", outline: "none", boxSizing: "border-box", marginBottom: 16 },
+    btn: { width: "100%", padding: "13px 0", background: "linear-gradient(135deg, #1a4f8a, #3b82c4)", color: "#fff", border: "none", borderRadius: 12, cursor: "pointer", fontSize: 16, fontWeight: 700, fontFamily: "inherit", marginTop: 4, boxShadow: "0 6px 24px rgba(59,130,196,0.3)" },
+    link: { background: "none", border: "none", color: "#3b82c4", cursor: "pointer", fontSize: 13, fontFamily: "inherit", textDecoration: "underline", padding: 0 },
+    error: { background: "rgba(255,100,100,0.1)", border: "1px solid rgba(255,100,100,0.3)", borderRadius: 8, padding: "10px 14px", color: "#ff6b6b", fontSize: 13, marginBottom: 16 },
+    success: { background: "rgba(59,130,196,0.1)", border: "1px solid rgba(59,130,196,0.3)", borderRadius: 8, padding: "10px 14px", color: "#93c5e8", fontSize: 13, marginBottom: 16 },
+    close: { position: "absolute", top: 16, right: 16, background: "none", border: "none", color: "#60a5d8", fontSize: 22, cursor: "pointer" },
+    tabs: { display: "flex", gap: 8, marginBottom: 24 },
+    tab: (a) => ({ flex: 1, padding: "10px 0", borderRadius: 10, border: `1px solid ${a ? "#3b82c4" : "rgba(59,130,196,0.2)"}`, background: a ? "rgba(59,130,196,0.15)" : "transparent", color: a ? "#3b82c4" : "#60a5d8", cursor: "pointer", fontFamily: "inherit", fontSize: 14, fontWeight: a ? 700 : 400 }),
+  };
+
+  return (
+    <div style={s.overlay}>
+      <div style={s.box}>
+        <button style={s.close} onClick={onClose}>✕</button>
+        <div style={{ fontSize: 40, marginBottom: 12 }}>🏥</div>
+        <h3 style={s.title}>{mode === "signup" ? "Crear cuenta médico" : "Acceso médicos"}</h3>
+        <p style={s.sub}>{mode === "signup" ? "Regístrate para acceder a tu panel" : "Inicia sesión en tu panel de control"}</p>
+
+        <div style={s.tabs}>
+          <button style={s.tab(mode === "login")} onClick={() => { setMode("login"); setError(""); setSuccess(""); }}>Iniciar sesión</button>
+          <button style={s.tab(mode === "signup")} onClick={() => { setMode("signup"); setError(""); setSuccess(""); }}>Crear cuenta</button>
+        </div>
+
+        {error && <div style={s.error}>⚠️ {error}</div>}
+        {success && <div style={s.success}>✅ {success}</div>}
+
+        <label style={s.label}>CORREO ELECTRÓNICO</label>
+        <input style={s.inp} type="email" placeholder="correo@ejemplo.com" value={email} onChange={e => setEmail(e.target.value)} onKeyDown={e => e.key === "Enter" && (mode === "login" ? handleLogin() : handleSignUp())} />
+
+        <label style={s.label}>CONTRASEÑA</label>
+        <input style={s.inp} type="password" placeholder={mode === "signup" ? "Mínimo 6 caracteres" : "Tu contraseña"} value={password} onChange={e => setPassword(e.target.value)} onKeyDown={e => e.key === "Enter" && (mode === "login" ? handleLogin() : handleSignUp())} />
+
+        <button style={{ ...s.btn, opacity: loading ? 0.7 : 1 }} onClick={mode === "login" ? handleLogin : handleSignUp} disabled={loading}>
+          {loading ? "⏳ Cargando..." : mode === "login" ? "Iniciar sesión →" : "Crear cuenta →"}
+        </button>
+
+        <div style={{ textAlign: "center", marginTop: 16, fontSize: 13, color: "#60a5d8" }}>
+          {mode === "login" ? (
+            <>¿Olvidaste tu contraseña? <button style={s.link} onClick={() => setMode("forgot")}>Recuperar</button></>
+          ) : (
+            <>¿Ya tienes cuenta? <button style={s.link} onClick={() => setMode("login")}>Inicia sesión</button></>
+          )}
+        </div>
+
+        {mode === "forgot" && (
+          <div style={{ marginTop: 16, padding: 14, background: "rgba(59,130,196,0.08)", borderRadius: 10, fontSize: 13, color: "#60a5d8" }}>
+            Escribe tu email arriba y contacta a <strong style={{ color: "#3b82c4" }}>913 330 712</strong> por WhatsApp para recuperar tu contraseña.
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
 
 // ─── Payment Modal ─────────────────────────────────────────────────────────
 function PaymentModal({ doctor, bookingData, onSuccess, onClose, isMembership }) {
@@ -658,6 +790,8 @@ export default function App() {
   const [showPayment, setShowPayment] = useState(false);
   const [isMembershipPayment, setIsMembershipPayment] = useState(false);
   const [dashboardDoctor, setDashboardDoctor] = useState(null);
+  const [showLogin, setShowLogin] = useState(false);
+  const [session, setSession] = useState(() => auth.getSession());
   const [regData, setRegData] = useState({ name: "", specialty: "", email: "", phone: "", address: "", reference: "" });
   const [regLoading, setRegLoading] = useState(false);
   const [regDone, setRegDone] = useState(false);
@@ -700,7 +834,28 @@ export default function App() {
 
   function onPaymentSuccess() {
     setShowPayment(false);
-    setConfirmed(true);
+    setIsMembershipPayment(false);
+    if (!isMembershipPayment) setConfirmed(true);
+  }
+
+  async function handleLogout() {
+    if (session?.token) await auth.signOut(session.token);
+    auth.clearSession();
+    setSession(null);
+    setDashboardDoctor(null);
+    setView("home");
+  }
+
+  async function handleLogin(newSession) {
+    auth.saveSession(newSession);
+    setSession(newSession);
+    setShowLogin(false);
+    try {
+      const docs = await sb("doctors?order=name");
+      const doc = docs[0];
+      if (doc) setDashboardDoctor(doc);
+      else setView("doctor-register");
+    } catch { setView("doctor-register"); }
   }
 
   function resetBooking() {
@@ -754,6 +909,7 @@ export default function App() {
     <div style={T.app}>
       <link href="https://fonts.googleapis.com/css2?family=Crimson+Pro:wght@400;600;700&display=swap" rel="stylesheet" />
 
+      {showLogin && <LoginModal onLogin={handleLogin} onClose={() => setShowLogin(false)} />}
       {showNotifPanel && lastBooking && <NotificationPanel bookingData={lastBooking.data} doctor={lastBooking.doctor} onClose={resetBooking} />}
       {showPayment && selectedDoctor && (
         <PaymentModal doctor={selectedDoctor} bookingData={lastBooking?.data || bookingData} isMembership={isMembershipPayment}
@@ -770,7 +926,14 @@ export default function App() {
           <button style={T.navBtn(view==="home")} onClick={() => setView("home")}>Inicio</button>
           <button style={T.navBtn(view==="doctors")} onClick={() => setView("doctors")}>Médicos</button>
           <button style={T.navBtn(view==="chat")} onClick={() => setView("chat")}>🤖 Asistente IA</button>
-          <button style={T.navBtn(view==="doctor-register")} onClick={() => setView("doctor-register")}>Soy Médico</button>
+          {session ? (
+            <div style={{ display: "flex", gap: 8 }}>
+              <button style={{ ...T.navBtn(true), background: "rgba(59,130,196,0.15)" }} onClick={() => { if(doctors[0]) setDashboardDoctor(doctors[0]); }}>📊 Mi Panel</button>
+              <button style={{ ...T.navBtn(false), color: "#ff6b6b" }} onClick={handleLogout}>Salir</button>
+            </div>
+          ) : (
+            <button style={{ ...T.navBtn(view==="doctor-register"), background: "rgba(59,130,196,0.15)", border: "1px solid rgba(59,130,196,0.4)", color: "#3b82c4" }} onClick={() => setShowLogin(true)}>🔐 Soy Médico</button>
+          )}
         </nav>
       </header>
 
