@@ -1236,7 +1236,16 @@ export default function App() {
               {session.email === ADMIN_EMAIL && (
                 <button style={{ ...T.navBtn(false), background: "rgba(255,100,100,0.15)", border: "1px solid rgba(255,100,100,0.4)", color: "#ff6b6b" }} onClick={() => setShowAdmin(true)}>🛡️ Admin</button>
               )}
-              <button style={{ ...T.navBtn(true), background: "rgba(59,130,196,0.15)" }} onClick={() => { if(doctors[0]) setDashboardDoctor(doctors[0]); }}>📊 Mi Panel</button>
+              <button style={{ ...T.navBtn(true), background: "rgba(59,130,196,0.15)" }} onClick={async () => {
+                const myDoc = doctors.find(d => d.email === session?.email);
+                if (myDoc) { setDashboardDoctor(myDoc); return; }
+                // Si pas trouvé dans les actifs, chercher aussi les inactifs
+                try {
+                  const all = await sb(`doctors?email=eq.${encodeURIComponent(session?.email)}`);
+                  if (all && all.length > 0) setDashboardDoctor(all[0]);
+                  else setView("doctor-register");
+                } catch { setView("doctor-register"); }
+              }}>📊 Mi Panel</button>
               <button style={{ ...T.navBtn(false), color: "#ff6b6b" }} onClick={handleLogout}>Salir</button>
             </div>
           ) : (
