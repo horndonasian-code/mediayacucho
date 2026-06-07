@@ -804,7 +804,10 @@ export default function App() {
   const [dashboardDoctor, setDashboardDoctor] = useState(null);
   const [showLogin, setShowLogin] = useState(false);
   const [session, setSession] = useState(() => auth.getSession());
-  const [regData, setRegData] = useState({ name: "", specialty: "", email: "", phone: "", address: "", reference: "" });
+  const [regData, setRegData] = useState({ name: "", specialty: "", email: "", phone: "", address: "", reference: "", cmp: "", universidad: "" });
+  const [cmpVerification, setCmpVerification] = useState(null); // null | loading | result
+  const [diplomaFile, setDiplomaFile] = useState(null);
+  const [diplomaBase64, setDiplomaBase64] = useState(null);
   const [regLoading, setRegLoading] = useState(false);
   const [regDone, setRegDone] = useState(false);
   const [pendingDoctorId, setPendingDoctorId] = useState(null);
@@ -876,15 +879,55 @@ export default function App() {
     setShowNotifPanel(false);
   }
 
+  async function verifyCMP() {
+    if (!regData.cmp || !regData.name || !regData.specialty) return;
+    setCmpVerification({ status: "loading" });
+    try {
+      const messages = [{ role: "user", content: diplomaBase64 ? [
+        { type: "image", source: { type: "base64", media_type: "image/jpeg", data: diplomaBase64 } },
+        { type: "text", text: `Analiza esta imagen de diploma/título médico. El médico dice llamarse "${regData.name}", especialidad "${regData.specialty}", número CMP "${regData.cmp}", universidad "${regData.universidad}". Verifica: 1) ¿La imagen parece un diploma médico legítimo del Perú? 2) ¿El nombre en el diploma coincide? 3) ¿Hay signos de falsificación? 4) ¿El formato es oficial? Responde SOLO en JSON: {"score": 0-100, "valido": true/false, "nombre_coincide": true/false, "es_diploma": true/false, "alertas": ["alerta1"], "recomendacion": "APROBAR|REVISAR|RECHAZAR", "resumen": "explicación breve"}` }
+      ] : [{ type: "text", text: `Soy el administrador de MediAyacucho, plataforma médica en Perú. Un médico quiere registrarse con estos datos: Nombre: "${regData.name}", Especialidad: "${regData.specialty}", Número CMP: "${regData.cmp}", Universidad: "${regData.universidad}". Basándote en tu conocimiento del sistema médico peruano: 1) ¿El formato del CMP es válido? (normalmente 5-6 dígitos) 2) ¿La especialidad existe en Perú? 3) ¿Hay inconsistencias sospechosas? 4) ¿Qué verificaciones manuales recomiendas? Responde SOLO en JSON sin markdown: {"score": 0-100, "valido": true/false, "formato_cmp_ok": true/false, "alertas": ["alerta1"], "recomendacion": "APROBAR|REVISAR|RECHAZAR", "verificar_en": "https://www.cmp.org.pe", "resumen": "explicación breve"}` }] }];
+
+      const resp = await fetch("https://api.anthropic.com/v1/messages", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ model: "claude-sonnet-4-20250514", max_tokens: 500, system: "Eres un sistema de verificación de credenciales médicas para Perú. Responde SIEMPRE en JSON válido sin markdown ni backticks.", messages })
+      });
+      const data = await resp.json();
+      const text = data.content?.map(b => b.text || "").join("") || "{}";
+      const clean = text.replace(/```json|```/g, "").trim();
+      const result = JSON.parse(clean);
+      setCmpVerification({ status: "done", result });
+    } catch (e) {
+      setCmpVerification({ status: "error", msg: "Error al verificar. Intenta nuevamente." });
+    }
+  }
+
+  function handleDiplomaUpload(e) {
+    const file = e.target.files[0];
+    if (!file) return;
+    setDiplomaFile(file);
+    const reader = new FileReader();
+    reader.onload = (ev) => {
+      const base64 = ev.target.result.split(",")[1];
+      setDiplomaBase64(base64);
+    };
+    reader.readAsDataURL(file);
+  }
+
   async function submitRegistration() {
-    if (!regData.name || !regData.specialty || !regData.phone) return;
+    if (!regData.name || !regData.specialty || !regData.phone || !regData.cmp) return;
     setRegLoading(true);
     try {
       const img = regData.name.split(" ").filter(w=>w[0]===w[0]?.toUpperCase()).slice(0,2).map(w=>w[0]).join("");
       const colors = ["#1a4f8a","#0d2d5e","#2563a8","#3b82c4","#60a5d8","#1A56DB"];
       const color = colors[Math.floor(Math.random()*colors.length)];
-      const result = await db.registerDoctor({ name: regData.name, specialty: regData.specialty, phone: regData.phone, address: regData.address, img, color, available: true, active: false, price: "S/. 60", rating: 5.0 });
+      const cmpScore = cmpVerification?.result?.score || 0;
+      const cmpStatus = cmpVerification?.result?.recomendacion || "SIN_VERIFICAR";
+      const result = await db.registerDoctor({ name: regData.name, specialty: regData.specialty, phone: regData.phone, address: regData.address, img, color, available: true, active: false, price: "S/. 60", rating: 5.0, email: regData.email });
       const docId = Array.isArray(result) ? result[0]?.id : result?.id;
+      const adminMsg = `🏥 *NUEVO MÉDICO - MediAyacucho*\n\n👤 ${regData.name}\n🏥 ${regData.specialty}\n📋 CMP: ${regData.cmp}\n🎓 ${regData.universidad || "No indicada"}\n📞 ${regData.phone}\n\n🤖 *Verificación IA:*\n• Score: ${cmpScore}/100\n• Estado: ${cmpStatus}\n\n✅ Verificar en: https://www.cmp.org.pe\n\nResponde para activar o rechazar.`;
+      window.open(`https://wa.me/51913330712?text=${encodeURIComponent(adminMsg)}`, "_blank");
       setPendingDoctorId(docId);
       setRegDone(true);
       setIsMembershipPayment(true);
@@ -1213,18 +1256,92 @@ export default function App() {
                   <input style={T.input} placeholder={ph} type={type} value={regData[key]} onChange={e=>setRegData({...regData,[key]:e.target.value})} />
                 </div>
               ))}
+
+              {/* CMP SECTION */}
+              <div style={{ background:"rgba(59,130,196,0.06)", border:"1px solid rgba(59,130,196,0.2)", borderRadius:14, padding:20, marginBottom:16 }}>
+                <div style={{ fontSize:15, fontWeight:700, color:"#3b82c4", marginBottom:4 }}>🏥 Verificación CMP obligatoria</div>
+                <p style={{ fontSize:12, color:"#60a5d8", margin:"0 0 14px" }}>Solo médicos registrados en el Colegio Médico del Perú pueden inscribirse.</p>
+
+                <div style={{ marginBottom:12 }}>
+                  <label style={T.label}>NÚMERO CMP *</label>
+                  <div style={{ display:"flex", gap:8 }}>
+                    <input style={{ ...T.input, marginBottom:0, flex:1 }} placeholder="Ej: 12345" value={regData.cmp} onChange={e=>setRegData({...regData,cmp:e.target.value.replace(/\D/g,"")})} maxLength={6} />
+                    <button style={{ padding:"10px 16px", background:"linear-gradient(135deg,#1a4f8a,#3b82c4)", color:"#fff", border:"none", borderRadius:10, cursor:"pointer", fontFamily:"inherit", fontSize:13, fontWeight:700, whiteSpace:"nowrap", opacity:(!regData.cmp||!regData.name||!regData.specialty)?0.5:1 }}
+                      onClick={verifyCMP} disabled={!regData.cmp||!regData.name||!regData.specialty||cmpVerification?.status==="loading"}>
+                      {cmpVerification?.status==="loading" ? "⏳" : "🔍 Verificar"}
+                    </button>
+                  </div>
+                </div>
+
+                <div style={{ marginBottom:12 }}>
+                  <label style={T.label}>UNIVERSIDAD DE GRADUACIÓN</label>
+                  <input style={T.input} placeholder="Ej: Universidad Nacional San Cristóbal de Huamanga" value={regData.universidad} onChange={e=>setRegData({...regData,universidad:e.target.value})} />
+                </div>
+
+                <div style={{ marginBottom:12 }}>
+                  <label style={T.label}>FOTO DEL DIPLOMA / TÍTULO (opcional pero recomendado)</label>
+                  <div style={{ border:"2px dashed rgba(59,130,196,0.3)", borderRadius:10, padding:16, textAlign:"center", cursor:"pointer", position:"relative" }}
+                    onClick={() => document.getElementById("diploma-upload").click()}>
+                    <input id="diploma-upload" type="file" accept="image/*,application/pdf" style={{ display:"none" }} onChange={handleDiplomaUpload} />
+                    {diplomaFile ? (
+                      <div style={{ color:"#3b82c4", fontSize:14 }}>📄 {diplomaFile.name} <span style={{ color:"#52B788" }}>✓</span></div>
+                    ) : (
+                      <div style={{ color:"#60a5d8", fontSize:13 }}>📎 Haz clic para subir tu diploma o título médico<br/><span style={{ fontSize:11, color:"#60a5d8", opacity:0.7 }}>JPG, PNG o PDF — La IA lo analizará automáticamente</span></div>
+                    )}
+                  </div>
+                </div>
+
+                {/* RESULTADO VERIFICACION IA */}
+                {cmpVerification?.status === "loading" && (
+                  <div style={{ background:"rgba(59,130,196,0.08)", borderRadius:10, padding:14, textAlign:"center", color:"#60a5d8", fontSize:14 }}>
+                    🤖 La IA está analizando tus credenciales...
+                  </div>
+                )}
+                {cmpVerification?.status === "error" && (
+                  <div style={{ background:"rgba(255,100,100,0.1)", border:"1px solid rgba(255,100,100,0.3)", borderRadius:10, padding:14, color:"#ff6b6b", fontSize:13 }}>
+                    ⚠️ {cmpVerification.msg}
+                  </div>
+                )}
+                {cmpVerification?.status === "done" && cmpVerification.result && (() => {
+                  const r = cmpVerification.result;
+                  const color = r.recomendacion === "APROBAR" ? "#52B788" : r.recomendacion === "RECHAZAR" ? "#ff6b6b" : "#F4A261";
+                  const bg = r.recomendacion === "APROBAR" ? "rgba(82,183,136,0.08)" : r.recomendacion === "RECHAZAR" ? "rgba(255,107,107,0.08)" : "rgba(244,162,97,0.08)";
+                  const icon = r.recomendacion === "APROBAR" ? "✅" : r.recomendacion === "RECHAZAR" ? "❌" : "⚠️";
+                  return (
+                    <div style={{ background:bg, border:`1px solid ${color}44`, borderRadius:10, padding:16 }}>
+                      <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", marginBottom:10 }}>
+                        <span style={{ fontWeight:700, color, fontSize:15 }}>{icon} {r.recomendacion}</span>
+                        <span style={{ fontSize:13, color:"#60a5d8" }}>Score: <strong style={{ color }}>{r.score}/100</strong></span>
+                      </div>
+                      <p style={{ margin:"0 0 8px", fontSize:13, color:"#93c5e8", lineHeight:1.5 }}>{r.resumen}</p>
+                      {r.alertas?.length > 0 && (
+                        <div style={{ marginTop:8 }}>
+                          {r.alertas.map((a,i) => <div key={i} style={{ fontSize:12, color:"#F4A261", marginBottom:3 }}>• {a}</div>)}
+                        </div>
+                      )}
+                      {r.verificar_en && (
+                        <a href={r.verificar_en} target="_blank" rel="noreferrer" style={{ fontSize:12, color:"#3b82c4", display:"block", marginTop:8 }}>
+                          🔗 Verificar manualmente en el CMP →
+                        </a>
+                      )}
+                    </div>
+                  );
+                })()}
+              </div>
+
               <div style={{ marginBottom:14 }}>
                 <label style={T.label}>DIRECCIÓN DEL CONSULTORIO</label>
-                <input style={T.input} placeholder="Jr. 28 de Julio 312, Of. 2, Perú" value={regData.address} onChange={e=>setRegData({...regData,address:e.target.value})} />
+                <input style={T.input} placeholder="Jr. 28 de Julio 312, Of. 2, Ayacucho" value={regData.address} onChange={e=>setRegData({...regData,address:e.target.value})} />
                 <p style={{ margin:"6px 0 0", fontSize:12, color:"#60a5d8" }}>📍 Visible para tus pacientes al reservar</p>
               </div>
               <div style={{ marginBottom:20 }}>
                 <label style={T.label}>REFERENCIA (opcional)</label>
                 <input style={T.input} placeholder="Frente al Banco de la Nación, 2do piso" value={regData.reference} onChange={e=>setRegData({...regData,reference:e.target.value})} />
               </div>
-              <button style={{ ...T.ctaPrimary, width:"100%", opacity:(!regData.name||!regData.specialty||!regData.phone)?0.5:1 }} onClick={submitRegistration} disabled={regLoading||!regData.name||!regData.specialty||!regData.phone}>
+              <button style={{ ...T.ctaPrimary, width:"100%", opacity:(!regData.name||!regData.specialty||!regData.phone||!regData.cmp)?0.5:1 }} onClick={submitRegistration} disabled={regLoading||!regData.name||!regData.specialty||!regData.phone||!regData.cmp}>
                 {regLoading ? "Guardando en Supabase..." : "💳 Registrarme y pagar S/. 99 →"}
               </button>
+              {!regData.cmp && <p style={{ textAlign:"center", fontSize:12, color:"#ff6b6b", marginTop:8 }}>⚠️ El número CMP es obligatorio para registrarse</p>}
             </div>
           )}
 
