@@ -33,7 +33,13 @@ const db = {
   createPayment: (data) => sb("payments", { method: "POST", body: JSON.stringify(data) }),
 };
 
-// ─── Supabase Auth ─────────────────────────────────────────────────────────
+// ─── Politique d'avance ────────────────────────────────────────────────────
+const AVANCE = {
+  monto: 20,
+  texto: "S/. 20",
+  politica: "Reembolsable si cancelas con 48h de anticipación",
+  horasMinimas: 48,
+};
 const auth = {
   async signUp(email, password) {
     const res = await fetch(`${SUPABASE_URL}/auth/v1/signup`, {
@@ -85,7 +91,9 @@ function buildWhatsAppLink(phone, message) {
 }
 function buildSmsLink(phone, message) { return `sms:${phone}?body=${encodeURIComponent(message)}`; }
 function buildConfirmationMessage(data, doctor) {
-  return `✅ *CONFIRMACIÓN DE CITA - MediPerú*\n\nHola ${data.patient_name}, tu cita ha sido agendada:\n\n👨‍⚕️ Médico: ${doctor.name}\n🏥 Especialidad: ${doctor.specialty}\n📅 Fecha: ${data.date}\n🕐 Hora: ${data.time}\n💰 Precio: ${doctor.price}\n📍 Dirección: ${doctor.address || "Por confirmar"}\n\nPor favor llega 10 minutos antes.\n\n📍 MediPerú - Salud para todos 🌿`;
+  const total = parseInt((doctor.price || "S/. 0").replace(/[^0-9]/g, ""));
+  const resto = total - AVANCE.monto;
+  return `✅ *CONFIRMACIÓN DE CITA - MediAyacucho*\n\nHola ${data.patient_name}, tu cita ha sido reservada:\n\n👨‍⚕️ Médico: ${doctor.name}\n🏥 Especialidad: ${doctor.specialty}\n📅 Fecha: ${data.date}\n🕐 Hora: ${data.time}\n📍 Dirección: ${doctor.address || "Por confirmar"}\n\n💰 *Pagos:*\n✅ Adelanto pagado: S/. ${AVANCE.monto}\n📋 Resto a pagar en consulta: S/. ${resto}\n\n⚠️ ${AVANCE.politica}.\n\nPor favor llega 10 minutos antes.\n\n📍 MediAyacucho - Salud para todos 🌿`;
 }
 function buildReminderMessage(data, doctor) {
   return `⏰ *RECORDATORIO - MediPerú*\n\nHola ${data.patient_name}, te recordamos tu cita MAÑANA:\n\n👨‍⚕️ ${doctor.name} (${doctor.specialty})\n🕐 ${data.time}\n📍 ${doctor.address || ""}\n\n¡Te esperamos! 💚`;
@@ -194,7 +202,7 @@ function PaymentModal({ doctor, bookingData, onSuccess, onClose, isMembership })
   const [step, setStep] = useState("choose");
   const [cardData, setCardData] = useState({ number: "", name: "", expiry: "", cvv: "" });
   const [errors, setErrors] = useState({});
-  const amount = isMembership ? 99 : parseInt((doctor?.price || "S/. 0").replace(/\D/g, ""));
+  const amount = isMembership ? 99 : AVANCE.monto;
 
   const METHODS = [
     { id: "yape", label: "Yape", icon: "🟣", sub: "Pago instantáneo — 0% comisión", color: "#6C3FC5" },
@@ -285,10 +293,14 @@ function PaymentModal({ doctor, bookingData, onSuccess, onClose, isMembership })
         <div style={{ background: "rgba(59,130,196,0.07)", border: "1px solid rgba(59,130,196,0.15)", borderRadius: 12, padding: 16, marginBottom: 20 }}>
           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
             <div>
-              <div style={{ fontSize: 14, color: "#e8f0f8", fontWeight: 700 }}>{isMembership ? "Plan Profesional — MediPerú" : doctor?.name}</div>
+              <div style={{ fontSize: 14, color: "#e8f0f8", fontWeight: 700 }}>{isMembership ? "Plan Profesional — MediAyacucho" : doctor?.name}</div>
               <div style={{ fontSize: 12, color: "#60a5d8" }}>{isMembership ? "Membresía mensual" : `${bookingData?.date} · ${bookingData?.time}`}</div>
+              {!isMembership && <div style={{ fontSize: 11, color: "#F4A261", marginTop: 4 }}>⚠️ {AVANCE.politica}</div>}
             </div>
-            <div style={{ fontSize: 26, fontWeight: 700, color: "#3b82c4" }}>S/. {amount}</div>
+            <div style={{ textAlign: "right" }}>
+              <div style={{ fontSize: 26, fontWeight: 700, color: "#F4A261" }}>S/. {amount}</div>
+              {!isMembership && <div style={{ fontSize: 11, color: "#60a5d8" }}>adelanto de {doctor?.price}</div>}
+            </div>
           </div>
         </div>
 
@@ -831,7 +843,6 @@ export default function App() {
       setShowPayment(true);
     } catch (e) { alert("Error al guardar la cita: " + e.message); }
   }
-
   function onPaymentSuccess() {
     setShowPayment(false);
     setIsMembershipPayment(false);
@@ -1116,9 +1127,35 @@ export default function App() {
                   {(selectedDoctor.schedule||[]).map(t=><button key={t} style={T.timePill(bookingData.time===t)} onClick={()=>setBookingData({...bookingData,time:t})}>{t}</button>)}
                 </div>
               </div>
-              <button style={{ ...T.ctaPrimary, width:"100%", marginTop:8, opacity:(!bookingData.patient_name||!bookingData.patient_phone||!bookingData.date||!bookingData.time)?0.5:1 }} onClick={confirmBooking} disabled={!bookingData.patient_name||!bookingData.patient_phone||!bookingData.date||!bookingData.time}>
-                💳 Ir a pagar · {selectedDoctor.price}
+
+              {/* AVANCE BOX */}
+              <div style={{ background:"rgba(244,162,97,0.08)", border:"2px solid rgba(244,162,97,0.3)", borderRadius:14, padding:"16px 18px", marginBottom:16 }}>
+                <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", marginBottom:10 }}>
+                  <span style={{ fontWeight:700, color:"#F4A261", fontSize:15 }}>💰 Pago para reservar</span>
+                  <span style={{ fontSize:22, fontWeight:700, color:"#e8f0f8" }}>S/. {AVANCE.monto}</span>
+                </div>
+                <div style={{ display:"flex", justifyContent:"space-between", fontSize:13, color:"#60a5d8", marginBottom:6 }}>
+                  <span>Precio total consulta</span>
+                  <span>{selectedDoctor.price}</span>
+                </div>
+                <div style={{ display:"flex", justifyContent:"space-between", fontSize:13, color:"#60a5d8", marginBottom:6 }}>
+                  <span>Adelanto ahora</span>
+                  <span style={{ color:"#F4A261", fontWeight:700 }}>S/. {AVANCE.monto}</span>
+                </div>
+                <div style={{ display:"flex", justifyContent:"space-between", fontSize:13, color:"#60a5d8", paddingTop:8, borderTop:"1px solid rgba(244,162,97,0.2)" }}>
+                  <span>Resto a pagar en consulta</span>
+                  <span style={{ color:"#93c5e8", fontWeight:700 }}>S/. {parseInt((selectedDoctor.price||"S/. 0").replace(/\D/g,"")) - AVANCE.monto}</span>
+                </div>
+                <div style={{ marginTop:12, background:"rgba(82,183,136,0.08)", borderRadius:8, padding:"8px 12px", fontSize:12, color:"#60a5d8", display:"flex", gap:8, alignItems:"flex-start" }}>
+                  <span>✅</span>
+                  <span><strong style={{ color:"#93c5e8" }}>{AVANCE.politica}.</strong> Si no cancelas a tiempo, el adelanto no es reembolsable.</span>
+                </div>
+              </div>
+
+              <button style={{ ...T.ctaPrimary, width:"100%", marginTop:4, opacity:(!bookingData.patient_name||!bookingData.patient_phone||!bookingData.date||!bookingData.time)?0.5:1 }} onClick={confirmBooking} disabled={!bookingData.patient_name||!bookingData.patient_phone||!bookingData.date||!bookingData.time}>
+                💳 Pagar adelanto S/. {AVANCE.monto} y reservar
               </button>
+              <p style={{ textAlign:"center", fontSize:12, color:"#60a5d8", margin:"8px 0 0" }}>El resto (S/. {parseInt((selectedDoctor.price||"S/. 0").replace(/\D/g,"")) - AVANCE.monto}) se paga directamente al médico</p>
             </div>
           )}
         </div>
