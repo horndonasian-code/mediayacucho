@@ -518,6 +518,10 @@ function DoctorDashboard({ doctor, onExit }) {
   const [savingProfile, setSavingProfile] = useState(false);
   const [aiLoading, setAiLoading] = useState(false);
   const [aiTip, setAiTip] = useState("");
+  const [showAddressChange, setShowAddressChange] = useState(false);
+  const [addressChangeAppt, setAddressChangeAppt] = useState(null);
+  const [newAddress, setNewAddress] = useState("");
+  const [sendingAddress, setSendingAddress] = useState(false);
 
   useEffect(() => {
     db.getAppointments(doctor.id).then(data => { setAppointments(data); setLoadingAppts(false); }).catch(() => setLoadingAppts(false));
@@ -577,6 +581,19 @@ function DoctorDashboard({ doctor, onExit }) {
   function cancelByDoctor(appt) {
     if (!window.confirm(`¿Cancelar la cita de ${appt.patient_name} del ${appt.date}?\nSe enviará un WhatsApp de reembolso automáticamente.`)) return;
     updateStatus(appt.id, "cancelada", true);
+  }
+
+  async function sendAddressChange() {
+    if (!newAddress.trim() || !addressChangeAppt) return;
+    setSendingAddress(true);
+    const msg = `📍 *CAMBIO DE DIRECCIÓN - MediAyacucho*\n\nHola ${addressChangeAppt.patient_name}, te informamos que hubo un cambio de última hora en la dirección de tu cita:\n\n👨‍⚕️ ${doctor.name}\n📅 ${addressChangeAppt.date} · 🕐 ${addressChangeAppt.time}\n\n📍 *Nueva dirección:*\n${newAddress}\n\nDisculpa los inconvenientes. ¡Te esperamos! 🌿`;
+    window.open(`https://wa.me/${addressChangeAppt.patient_phone.replace(/\D/g,"")}?text=${encodeURIComponent(msg)}`, "_blank");
+    // Update appointment notes in Supabase
+    await db.updateAppointment(addressChangeAppt.id, { notes: `Dirección cambiada: ${newAddress}` });
+    setSendingAddress(false);
+    setShowAddressChange(false);
+    setNewAddress("");
+    setAddressChangeAppt(null);
   }
 
   async function getAiTip() {
@@ -674,6 +691,9 @@ function DoctorDashboard({ doctor, onExit }) {
                       {a.status === "pendiente" && <button style={{ ...s.selectBtn, color: "#3b82c4", borderColor: "#3b82c4" }} onClick={() => updateStatus(a.id, "confirmada")}>Confirmar</button>}
                       {a.status === "confirmada" && <button style={{ ...s.selectBtn, color: "#60a5d8" }} onClick={() => updateStatus(a.id, "completada")}>Completar</button>}
                       {(a.status === "pendiente" || a.status === "confirmada") && <button style={{ ...s.selectBtn, color: "#ff6b6b", borderColor: "#ff6b6b" }} onClick={() => cancelByDoctor(a)}>✗ Cancelar</button>}
+                      {(a.status === "pendiente" || a.status === "confirmada") && (
+                        <button style={{ ...s.selectBtn, color: "#F4A261", borderColor: "#F4A261" }} onClick={() => { setAddressChangeAppt(a); setShowAddressChange(true); }}>📍 Dir.</button>
+                      )}
                     </div>
                   </div>
                 ))
@@ -684,7 +704,53 @@ function DoctorDashboard({ doctor, onExit }) {
 
         {tab === "appointments" && (
           <>
-            <h2 style={{ margin: "0 0 24px", fontSize: 26, fontWeight: 700 }}>📅 Todas las citas</h2>
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 24, flexWrap: "wrap", gap: 12 }}>
+              <h2 style={{ margin: 0, fontSize: 26, fontWeight: 700 }}>📅 Todas las citas</h2>
+              <div style={{ background: "rgba(255,100,100,0.08)", border: "1px solid rgba(255,100,100,0.25)", borderRadius: 12, padding: "10px 16px", fontSize: 13, color: "#ff6b6b", display: "flex", alignItems: "center", gap: 8 }}>
+                <span>🚨</span>
+                <span>¿Cambio de dirección de última hora?</span>
+              </div>
+            </div>
+
+            {/* ADDRESS CHANGE MODAL */}
+            {showAddressChange && (
+              <div style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.8)", zIndex: 400, display: "flex", alignItems: "center", justifyContent: "center", padding: 16, backdropFilter: "blur(10px)" }}>
+                <div style={{ background: "#030d1a", border: "2px solid rgba(255,100,100,0.4)", borderRadius: 20, padding: 32, maxWidth: 480, width: "100%" }}>
+                  <h3 style={{ margin: "0 0 8px", color: "#ff6b6b", fontSize: 20 }}>🚨 Cambio de dirección urgente</h3>
+                  <p style={{ margin: "0 0 20px", color: "#60a5d8", fontSize: 13 }}>Se enviará un WhatsApp inmediato al paciente con la nueva dirección.</p>
+                  {addressChangeAppt && (
+                    <div style={{ background: "rgba(255,255,255,0.04)", borderRadius: 10, padding: "12px 16px", marginBottom: 16, fontSize: 13 }}>
+                      <div style={{ fontWeight: 700, color: "#e8f0f8" }}>{addressChangeAppt.patient_name}</div>
+                      <div style={{ color: "#60a5d8" }}>📅 {addressChangeAppt.date} · 🕐 {addressChangeAppt.time} · 📞 {addressChangeAppt.patient_phone}</div>
+                    </div>
+                  )}
+                  <label style={{ display: "block", fontSize: 11, color: "#60a5d8", marginBottom: 6, letterSpacing: 0.8, textTransform: "uppercase" }}>NUEVA DIRECCIÓN</label>
+                  <input
+                    style={{ width: "100%", background: "rgba(255,255,255,0.06)", border: "2px solid rgba(255,100,100,0.4)", borderRadius: 10, padding: "12px 14px", color: "#e8f0f8", fontSize: 15, fontFamily: "inherit", outline: "none", boxSizing: "border-box", marginBottom: 16 }}
+                    placeholder="Ej: Jr. Lima 210, Of. 3, 2do piso — Referencia: frente al BCP"
+                    value={newAddress}
+                    onChange={e => setNewAddress(e.target.value)}
+                    autoFocus
+                  />
+                  <div style={{ background: "rgba(244,162,97,0.08)", border: "1px solid rgba(244,162,97,0.2)", borderRadius: 10, padding: 12, marginBottom: 16, fontSize: 12, color: "#F4A261" }}>
+                    💡 El paciente recibirá este mensaje por WhatsApp inmediatamente.
+                  </div>
+                  <div style={{ display: "flex", gap: 10 }}>
+                    <button
+                      style={{ flex: 1, padding: "12px 0", background: "linear-gradient(135deg,#25D366,#128C7E)", color: "#fff", border: "none", borderRadius: 10, cursor: "pointer", fontSize: 15, fontWeight: 700, fontFamily: "inherit", opacity: !newAddress.trim() ? 0.5 : 1 }}
+                      onClick={sendAddressChange}
+                      disabled={!newAddress.trim() || sendingAddress}
+                    >
+                      {sendingAddress ? "Enviando..." : "💬 Enviar WhatsApp ahora"}
+                    </button>
+                    <button style={{ padding: "12px 20px", background: "transparent", border: "1px solid rgba(255,255,255,0.2)", color: "#60a5d8", borderRadius: 10, cursor: "pointer", fontFamily: "inherit", fontSize: 14 }} onClick={() => { setShowAddressChange(false); setNewAddress(""); setAddressChangeAppt(null); }}>
+                      Cancelar
+                    </button>
+                  </div>
+                </div>
+              </div>
+            )}
+
             <div style={{ display: "flex", gap: 8, marginBottom: 20, flexWrap: "wrap" }}>
               {["todas","pendiente","confirmada","completada","cancelada"].map(st => (
                 <button key={st} style={s.filterPill(filterStatus === st)} onClick={() => setFilterStatus(st)}>{st.charAt(0).toUpperCase()+st.slice(1)}</button>
@@ -709,6 +775,11 @@ function DoctorDashboard({ doctor, onExit }) {
                         <button style={{ ...s.selectBtn, color:"#60a5d8" }} onClick={() => updateStatus(a.id,"completada")}>✓ Completar</button>
                         <button style={{ ...s.selectBtn, color:"#ff6b6b", borderColor:"#ff6b6b" }} onClick={() => cancelByDoctor(a)}>✗ Cancelar</button>
                       </>}
+                      {(a.status === "pendiente" || a.status === "confirmada") && (
+                        <button style={{ ...s.selectBtn, color:"#F4A261", borderColor:"#F4A261" }} onClick={() => { setAddressChangeAppt(a); setShowAddressChange(true); }}>
+                          📍 Cambiar dir.
+                        </button>
+                      )}
                       <button style={{ ...s.selectBtn, color:"#25D366", borderColor:"#25D366" }} onClick={() => window.open(buildWhatsAppLink(a.patient_phone,`Hola ${a.patient_name}, le contacta ${doctor.name}. ¿En qué le puedo ayudar?`),"_blank")}>💬 WA</button>
                     </div>
                   </div>
