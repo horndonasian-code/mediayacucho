@@ -1597,7 +1597,21 @@ export default function App() {
     <div style={{ fontFamily: "'Crimson Pro', Georgia, serif", minHeight: "100vh", background: "linear-gradient(135deg, #030d1a 0%, #051628 100%)", color: "#e8f0f8" }}>
       <link href="https://fonts.googleapis.com/css2?family=Crimson+Pro:wght@400;600;700&display=swap" rel="stylesheet" />
       <header style={{ position: "sticky", top: 0, zIndex: 100, background: "rgba(10,22,40,0.92)", backdropFilter: "blur(20px)", borderBottom: "1px solid rgba(59,130,196,0.2)", padding: "0 24px", display: "flex", alignItems: "center", height: 64 }}>
-        <span style={{ fontSize: 22, fontWeight: 700, color: "#3b82c4", cursor: "pointer" }} onClick={() => { setView("home"); setSelectedProfile(null); }}>MediAyacucho</span>
+        <div style={{ cursor: "pointer", display: "flex", alignItems: "center", gap: 10 }} onClick={() => { setView("home"); setSelectedProfile(null); }}>
+          <svg width="32" height="32" viewBox="0 0 72 72" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <circle cx="36" cy="36" r="36" fill="url(#lg2)"/>
+            <rect x="28" y="14" width="16" height="44" rx="4" fill="white"/>
+            <rect x="14" y="28" width="44" height="16" rx="4" fill="white"/>
+            <circle cx="36" cy="36" r="5" fill="url(#lg2)"/>
+            <defs>
+              <linearGradient id="lg2" x1="0" y1="0" x2="72" y2="72" gradientUnits="userSpaceOnUse">
+                <stop offset="0%" stopColor="#1a4f8a"/>
+                <stop offset="100%" stopColor="#3b82c4"/>
+              </linearGradient>
+            </defs>
+          </svg>
+          <span style={{ fontSize: 20, fontWeight: 700 }}><span style={{ color: "#3b82c4" }}>Medi</span><span style={{ color: "#93c5e8", fontWeight: 300 }}>Ayacucho</span></span>
+        </div>
       </header>
       <DoctorProfile
         doctor={selectedProfile}
