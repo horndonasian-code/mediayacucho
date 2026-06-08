@@ -1213,7 +1213,147 @@ function AdminPanel({ onExit }) {
 }
 
 
-export default function App() {
+// ─── Doctor Public Profile ─────────────────────────────────────────────────
+function DoctorProfile({ doctor, onBook, onBack }) {
+  const [tab, setTab] = useState("info");
+  const profileUrl = `${window.location.origin}?medico=${doctor.id}`;
+
+  const s = {
+    wrap: { maxWidth: 720, margin: "0 auto", padding: "32px 24px", position: "relative", zIndex: 1 },
+    hero: { background: `linear-gradient(135deg, ${doctor.color || "#1a4f8a"}22, rgba(5,22,40,0.95))`, border: `1px solid ${doctor.color || "#1a4f8a"}44`, borderRadius: 20, padding: 32, marginBottom: 24, position: "relative", overflow: "hidden" },
+    avatar: { width: 80, height: 80, borderRadius: 20, background: doctor.color || "#1a4f8a", display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 700, fontSize: 28, color: "#fff", marginBottom: 16 },
+    badge: (c) => ({ padding: "4px 12px", borderRadius: 20, background: `${c}22`, color: c, fontSize: 12, fontWeight: 700, border: `1px solid ${c}44` }),
+    tab: (a) => ({ flex: 1, padding: "10px 0", borderRadius: 10, border: `1px solid ${a ? "#3b82c4" : "rgba(59,130,196,0.2)"}`, background: a ? "rgba(59,130,196,0.15)" : "transparent", color: a ? "#3b82c4" : "#60a5d8", cursor: "pointer", fontFamily: "inherit", fontSize: 14 }),
+    card: { background: "rgba(255,255,255,0.04)", border: "1px solid rgba(59,130,196,0.12)", borderRadius: 14, padding: 20, marginBottom: 16 },
+    shareBtn: { padding: "10px 20px", background: "rgba(37,211,102,0.15)", border: "1px solid rgba(37,211,102,0.4)", color: "#25D366", borderRadius: 10, cursor: "pointer", fontFamily: "inherit", fontSize: 13, fontWeight: 700 },
+  };
+
+  return (
+    <div style={s.wrap}>
+      <button onClick={onBack} style={{ background: "none", border: "none", color: "#3b82c4", cursor: "pointer", fontSize: 15, marginBottom: 20, padding: 0, fontFamily: "inherit" }}>← Volver</button>
+
+      {/* HERO */}
+      <div style={s.hero}>
+        <div style={{ position: "absolute", top: 0, right: 0, width: 200, height: 200, borderRadius: "50%", background: `${doctor.color || "#1a4f8a"}15`, transform: "translate(50px,-50px)" }} />
+        <div style={s.avatar}>{doctor.img || initials(doctor.name)}</div>
+        <h1 style={{ margin: "0 0 6px", fontSize: 26, fontWeight: 700, color: "#e8f0f8" }}>{doctor.name}</h1>
+        <div style={{ display: "flex", gap: 8, flexWrap: "wrap", marginBottom: 12 }}>
+          <span style={s.badge("#3b82c4")}>{doctor.specialty}</span>
+          <span style={s.badge("#25D366")}>✅ Verificado CMP</span>
+          {doctor.available ? <span style={s.badge("#52B788")}>🟢 Disponible</span> : <span style={s.badge("#ff6b6b")}>🔴 No disponible</span>}
+        </div>
+        <div style={{ color: "#F4A261", fontSize: 16, marginBottom: 12 }}>{"★".repeat(Math.floor(doctor.rating || 5))} <span style={{ color: "#e8f0f8", fontWeight: 700 }}>{doctor.rating}</span> <span style={{ color: "#60a5d8", fontSize: 13 }}>calificación</span></div>
+        {doctor.address && (
+          <div style={{ display: "flex", gap: 8, alignItems: "center", marginBottom: 16 }}>
+            <span>📍</span>
+            <a href={doctor.maps_url || "#"} target="_blank" rel="noreferrer" style={{ color: "#3b82c4", fontSize: 14, textDecoration: "none" }}>{doctor.address}</a>
+          </div>
+        )}
+        <div style={{ display: "flex", gap: 10, flexWrap: "wrap" }}>
+          {doctor.available && (
+            <>
+              <button style={{ padding: "12px 24px", background: "linear-gradient(135deg,#1a4f8a,#3b82c4)", color: "#fff", border: "none", borderRadius: 12, cursor: "pointer", fontSize: 15, fontWeight: 700, fontFamily: "inherit" }}
+                onClick={() => onBook(doctor, "presencial")}>🏥 Reservar presencial</button>
+              <button style={{ padding: "12px 24px", background: "linear-gradient(135deg,#25D366,#128C7E)", color: "#fff", border: "none", borderRadius: 12, cursor: "pointer", fontSize: 15, fontWeight: 700, fontFamily: "inherit" }}
+                onClick={() => onBook(doctor, "virtual")}>📱 Reservar virtual</button>
+            </>
+          )}
+          <button style={s.shareBtn} onClick={() => {
+            navigator.clipboard?.writeText(profileUrl);
+            const msg = `👨‍⚕️ Te recomiendo al *${doctor.name}* en MediAyacucho!\n\n🏥 ${doctor.specialty}\n⭐ ${doctor.rating} calificación\n\nReserva tu cita aquí: ${profileUrl}`;
+            window.open(`https://wa.me/?text=${encodeURIComponent(msg)}`, "_blank");
+          }}>💬 Compartir en WhatsApp</button>
+        </div>
+      </div>
+
+      {/* TABS */}
+      <div style={{ display: "flex", gap: 8, marginBottom: 20 }}>
+        <button style={s.tab(tab === "info")} onClick={() => setTab("info")}>ℹ️ Información</button>
+        <button style={s.tab(tab === "horarios")} onClick={() => setTab("horarios")}>📅 Horarios</button>
+        <button style={s.tab(tab === "precios")} onClick={() => setTab("precios")}>💰 Precios</button>
+      </div>
+
+      {tab === "info" && (
+        <div style={s.card}>
+          <h3 style={{ margin: "0 0 16px", color: "#3b82c4", fontSize: 17 }}>👨‍⚕️ Sobre el médico</h3>
+          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 14 }}>
+            {[
+              { label: "Especialidad", value: doctor.specialty, icon: "🏥" },
+              { label: "Calificación", value: `⭐ ${doctor.rating}/5.0`, icon: "⭐" },
+              { label: "Estado", value: doctor.available ? "Disponible" : "No disponible", icon: "🟢" },
+              { label: "Verificación", value: "CMP Verificado", icon: "✅" },
+            ].map((item, i) => (
+              <div key={i} style={{ background: "rgba(59,130,196,0.06)", borderRadius: 10, padding: "12px 14px" }}>
+                <div style={{ fontSize: 11, color: "#60a5d8", marginBottom: 4, textTransform: "uppercase", letterSpacing: 0.5 }}>{item.icon} {item.label}</div>
+                <div style={{ fontWeight: 700, color: "#e8f0f8", fontSize: 15 }}>{item.value}</div>
+              </div>
+            ))}
+          </div>
+          {doctor.address && (
+            <div style={{ marginTop: 16, padding: "12px 16px", background: "rgba(59,130,196,0.07)", borderRadius: 10 }}>
+              <div style={{ fontSize: 12, color: "#60a5d8", marginBottom: 4 }}>📍 DIRECCIÓN DEL CONSULTORIO</div>
+              <div style={{ color: "#e8f0f8", fontSize: 14 }}>{doctor.address}</div>
+              <a href={doctor.maps_url || "#"} target="_blank" rel="noreferrer" style={{ fontSize: 12, color: "#3b82c4", display: "inline-block", marginTop: 8, textDecoration: "none", background: "rgba(59,130,196,0.15)", border: "1px solid rgba(59,130,196,0.3)", padding: "4px 12px", borderRadius: 20 }}>🗺️ Ver en Google Maps</a>
+            </div>
+          )}
+        </div>
+      )}
+
+      {tab === "horarios" && (
+        <div style={s.card}>
+          <h3 style={{ margin: "0 0 16px", color: "#3b82c4", fontSize: 17 }}>📅 Horarios de atención</h3>
+          {(doctor.schedule || []).length === 0
+            ? <p style={{ color: "#60a5d8" }}>Horarios por confirmar</p>
+            : (doctor.schedule || []).map((h, i) => (
+              <div key={i} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "10px 0", borderBottom: i < doctor.schedule.length - 1 ? "1px solid rgba(59,130,196,0.1)" : "none" }}>
+                <span style={{ color: "#e8f0f8", fontSize: 14 }}>🕐 {h}</span>
+                <span style={{ padding: "3px 10px", borderRadius: 20, background: "rgba(59,130,196,0.15)", color: "#3b82c4", fontSize: 12 }}>Disponible</span>
+              </div>
+            ))
+          }
+          <div style={{ marginTop: 16, padding: "12px 14px", background: "rgba(37,211,102,0.08)", borderRadius: 10, fontSize: 13, color: "#25D366" }}>
+            📱 También disponible para consultas virtuales por WhatsApp Video
+          </div>
+        </div>
+      )}
+
+      {tab === "precios" && (
+        <div style={s.card}>
+          <h3 style={{ margin: "0 0 16px", color: "#3b82c4", fontSize: 17 }}>💰 Precios</h3>
+          {[
+            { tipo: "🏥 Consulta presencial", precio: doctor.price, desc: "En consultorio" },
+            { tipo: "📱 Consulta virtual", precio: doctor.price, desc: "Por WhatsApp Video" },
+          ].map((item, i) => (
+            <div key={i} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "14px 0", borderBottom: i === 0 ? "1px solid rgba(59,130,196,0.1)" : "none" }}>
+              <div>
+                <div style={{ fontWeight: 700, color: "#e8f0f8", fontSize: 15 }}>{item.tipo}</div>
+                <div style={{ fontSize: 12, color: "#60a5d8" }}>{item.desc}</div>
+              </div>
+              <span style={{ fontSize: 22, fontWeight: 700, color: "#3b82c4" }}>{item.precio}</span>
+            </div>
+          ))}
+          <div style={{ marginTop: 16, padding: "12px 14px", background: "rgba(244,162,97,0.08)", border: "1px solid rgba(244,162,97,0.2)", borderRadius: 10, fontSize: 12, color: "#F4A261" }}>
+            💡 Se requiere un adelanto de <strong>S/. {AVANCE.monto}</strong> para reservar. {AVANCE.politica}.
+          </div>
+        </div>
+      )}
+
+      {/* SHARE SECTION */}
+      <div style={{ background: "rgba(59,130,196,0.06)", border: "1px solid rgba(59,130,196,0.15)", borderRadius: 14, padding: 20, textAlign: "center" }}>
+        <p style={{ margin: "0 0 12px", color: "#60a5d8", fontSize: 14 }}>¿Conoces a alguien que necesite este médico?</p>
+        <button style={{ padding: "10px 24px", background: "linear-gradient(135deg,#25D366,#128C7E)", color: "#fff", border: "none", borderRadius: 10, cursor: "pointer", fontSize: 14, fontWeight: 700, fontFamily: "inherit" }}
+          onClick={() => {
+            const msg = `👨‍⚕️ Te recomiendo al *${doctor.name}* en MediAyacucho!\n\n🏥 ${doctor.specialty}\n⭐ ${doctor.rating} calificación\n📍 ${doctor.address || "Ayacucho"}\n\nReserva tu cita aquí: ${profileUrl}`;
+            window.open(`https://wa.me/?text=${encodeURIComponent(msg)}`, "_blank");
+          }}>
+          💬 Compartir perfil por WhatsApp
+        </button>
+      </div>
+    </div>
+  );
+}
+
+
   const [view, setView] = useState("home");
   const [doctors, setDoctors] = useState([]);
   const [loadingDoctors, setLoadingDoctors] = useState(true);
@@ -1233,6 +1373,7 @@ export default function App() {
   const [showLogin, setShowLogin] = useState(false);
   const [session, setSession] = useState(() => auth.getSession());
   const [showAdmin, setShowAdmin] = useState(false);
+  const [selectedProfile, setSelectedProfile] = useState(null);
   const [regData, setRegData] = useState({ name: "", specialty: "", email: "", phone: "", address: "", reference: "", cmp: "", universidad: "" });
   const [cmpVerification, setCmpVerification] = useState(null); // null | loading | result
   const [diplomaFile, setDiplomaFile] = useState(null);
@@ -1377,6 +1518,19 @@ export default function App() {
 
   if (showAdmin) return <AdminPanel onExit={() => setShowAdmin(false)} />;
   if (dashboardDoctor) return <DoctorDashboard doctor={dashboardDoctor} onExit={() => setDashboardDoctor(null)} />;
+  if (selectedProfile && view === "profile") return (
+    <div style={{ fontFamily: "'Crimson Pro', Georgia, serif", minHeight: "100vh", background: "linear-gradient(135deg, #030d1a 0%, #051628 100%)", color: "#e8f0f8" }}>
+      <link href="https://fonts.googleapis.com/css2?family=Crimson+Pro:wght@400;600;700&display=swap" rel="stylesheet" />
+      <header style={{ position: "sticky", top: 0, zIndex: 100, background: "rgba(10,22,40,0.92)", backdropFilter: "blur(20px)", borderBottom: "1px solid rgba(59,130,196,0.2)", padding: "0 24px", display: "flex", alignItems: "center", height: 64 }}>
+        <span style={{ fontSize: 22, fontWeight: 700, color: "#3b82c4", cursor: "pointer" }} onClick={() => { setView("home"); setSelectedProfile(null); }}>MediAyacucho</span>
+      </header>
+      <DoctorProfile
+        doctor={selectedProfile}
+        onBack={() => { setView("doctors"); setSelectedProfile(null); }}
+        onBook={(doc, modalidad) => { setSelectedDoctor(doc); setBookingData(p => ({...p, modalidad})); setSelectedProfile(null); setView("booking"); }}
+      />
+    </div>
+  );
 
   const T = {
     app: { fontFamily: "'Crimson Pro', Georgia, serif", minHeight: "100vh", background: "linear-gradient(135deg, #030d1a 0%, #051628 50%, #030d1a 100%)", color: "#e8f0f8", position: "relative" },
@@ -1567,6 +1721,9 @@ export default function App() {
                   {/* Demo: acceso al dashboard */}
                   <button style={{ marginTop:8, width:"100%", padding:"6px 0", background:"transparent", border:"1px solid rgba(59,130,196,0.2)", color:"#3b82c4", borderRadius:8, cursor:"pointer", fontSize:12, fontFamily:"inherit" }} onClick={() => setDashboardDoctor(doc)}>
                     📊 Ver mi dashboard
+                  </button>
+                  <button style={{ marginTop:6, width:"100%", padding:"6px 0", background:"transparent", border:"1px solid rgba(59,130,196,0.15)", color:"#60a5d8", borderRadius:8, cursor:"pointer", fontSize:12, fontFamily:"inherit" }} onClick={() => { setSelectedProfile(doc); setView("profile"); }}>
+                    👤 Ver perfil público
                   </button>
                 </div>
               ))}
