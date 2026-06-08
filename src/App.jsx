@@ -546,9 +546,37 @@ function DoctorDashboard({ doctor, onExit }) {
   const filtered = filterStatus === "todas" ? appointments : appointments.filter(a => a.status === filterStatus);
   const maxCitas = Math.max(...MONTHLY_DATA.map(d => d.citas));
 
-  async function updateStatus(id, newStatus) {
+  async function updateStatus(id, newStatus, canceledByDoctor = false) {
     setAppointments(prev => prev.map(a => a.id === id ? { ...a, status: newStatus } : a));
     await db.updateAppointment(id, { status: newStatus });
+
+    // Si le médecin annule → déclencher remboursement automatique
+    if (newStatus === "cancelada" && canceledByDoctor) {
+      const appt = appointments.find(a => a.id === id);
+      if (!appt) return;
+
+      // Message WhatsApp au patient
+      const msgPatient = `😔 *CITA CANCELADA - MediAyacucho*\n\nHola ${appt.patient_name}, lamentamos informarte que tu cita con ${doctor.name} del ${appt.date} a las ${appt.time} ha sido cancelada por el médico.\n\n💰 *TU ADELANTO SERÁ REEMBOLSADO*\nS/. ${AVANCE.monto} serán devueltos a tu Yape/Plin en las próximas 24h.\n\nDisculpa los inconvenientes. Puedes reservar con otro médico en mediayacucho.vercel.app\n\n📍 MediAyacucho 🌿`;
+
+      // Message WhatsApp à l'admin pour rembourser
+      const msgAdmin = `⚠️ *REEMBOLSO REQUERIDO - MediAyacucho*\n\nEl Dr./Dra. ${doctor.name} canceló una cita.\n\n👤 Paciente: ${appt.patient_name}\n📞 Yape/Plin del paciente: ${appt.patient_phone}\n💰 Monto a reembolsar: S/. ${AVANCE.monto}\n📅 Cita cancelada: ${appt.date} · ${appt.time}\n\n✅ Por favor yapea/plina S/. ${AVANCE.monto} al ${appt.patient_phone} a la brevedad.`;
+
+      // Abrir WhatsApp con el paciente
+      setTimeout(() => {
+        window.open(`https://wa.me/${appt.patient_phone.replace(/\D/g,"")}?text=${encodeURIComponent(msgPatient)}`, "_blank");
+      }, 500);
+
+      // Abrir WhatsApp con el admin
+      setTimeout(() => {
+        window.open(`https://wa.me/51913330712?text=${encodeURIComponent(msgAdmin)}`, "_blank");
+      }, 1500);
+    }
+  }
+
+  // Cancelación por parte del médico con confirmación
+  function cancelByDoctor(appt) {
+    if (!window.confirm(`¿Cancelar la cita de ${appt.patient_name} del ${appt.date}?\nSe enviará un WhatsApp de reembolso automáticamente.`)) return;
+    updateStatus(appt.id, "cancelada", true);
   }
 
   async function getAiTip() {
@@ -645,6 +673,7 @@ function DoctorDashboard({ doctor, onExit }) {
                       <span style={s.statusPill(a.status)}>{a.status}</span>
                       {a.status === "pendiente" && <button style={{ ...s.selectBtn, color: "#3b82c4", borderColor: "#3b82c4" }} onClick={() => updateStatus(a.id, "confirmada")}>Confirmar</button>}
                       {a.status === "confirmada" && <button style={{ ...s.selectBtn, color: "#60a5d8" }} onClick={() => updateStatus(a.id, "completada")}>Completar</button>}
+                      {(a.status === "pendiente" || a.status === "confirmada") && <button style={{ ...s.selectBtn, color: "#ff6b6b", borderColor: "#ff6b6b" }} onClick={() => cancelByDoctor(a)}>✗ Cancelar</button>}
                     </div>
                   </div>
                 ))
@@ -674,11 +703,11 @@ function DoctorDashboard({ doctor, onExit }) {
                       <span style={s.statusPill(a.status)}>{a.status}</span>
                       {a.status === "pendiente" && <>
                         <button style={{ ...s.selectBtn, color:"#3b82c4", borderColor:"#3b82c4" }} onClick={() => updateStatus(a.id,"confirmada")}>✓ Confirmar</button>
-                        <button style={{ ...s.selectBtn, color:"#ff6b6b", borderColor:"#ff6b6b" }} onClick={() => updateStatus(a.id,"cancelada")}>✗ Cancelar</button>
+                        <button style={{ ...s.selectBtn, color:"#ff6b6b", borderColor:"#ff6b6b" }} onClick={() => cancelByDoctor(a)}>✗ Cancelar</button>
                       </>}
                       {a.status === "confirmada" && <>
                         <button style={{ ...s.selectBtn, color:"#60a5d8" }} onClick={() => updateStatus(a.id,"completada")}>✓ Completar</button>
-                        <button style={{ ...s.selectBtn, color:"#ff6b6b", borderColor:"#ff6b6b" }} onClick={() => updateStatus(a.id,"cancelada")}>✗ Cancelar</button>
+                        <button style={{ ...s.selectBtn, color:"#ff6b6b", borderColor:"#ff6b6b" }} onClick={() => cancelByDoctor(a)}>✗ Cancelar</button>
                       </>}
                       <button style={{ ...s.selectBtn, color:"#25D366", borderColor:"#25D366" }} onClick={() => window.open(buildWhatsAppLink(a.patient_phone,`Hola ${a.patient_name}, le contacta ${doctor.name}. ¿En qué le puedo ayudar?`),"_blank")}>💬 WA</button>
                     </div>
@@ -1388,14 +1417,46 @@ export default function App() {
       {view === "booking" && selectedDoctor && (
         <div style={T.section}>
           {confirmed ? (
-            <div style={{ maxWidth:480, margin:"0 auto", textAlign:"center", padding:"40px 0" }}>
-              <div style={{ fontSize:72, marginBottom:16 }}>🎉</div>
-              <h2 style={{ color:"#3b82c4", fontSize:28, margin:"0 0 12px" }}>¡Cita Confirmada!</h2>
-              <p style={{ color:"#60a5d8", marginBottom:8 }}>Cita con <strong style={{ color:"#e8f0f8" }}>{selectedDoctor.name}</strong> el {bookingData.date} a las {bookingData.time}.</p>
-              <p style={{ color:"#93c5e8", fontSize:14, marginBottom:32 }}>¿Deseas enviar la confirmación por WhatsApp?</p>
-              <div style={{ display:"flex", gap:12, justifyContent:"center", flexWrap:"wrap" }}>
-                <button style={{ ...T.ctaPrimary, background:"linear-gradient(135deg,#25D366,#128C7E)", fontSize:15 }} onClick={() => setShowNotifPanel(true)}>📲 Enviar WhatsApp</button>
-                <button style={T.ctaSecondary} onClick={resetBooking}>Omitir</button>
+            <div style={{ maxWidth:520, margin:"0 auto", padding:"40px 0" }}>
+              <div style={{ textAlign:"center", marginBottom:32 }}>
+                <div style={{ fontSize:72, marginBottom:16 }}>🎉</div>
+                <h2 style={{ color:"#3b82c4", fontSize:28, margin:"0 0 12px" }}>¡Cita Confirmada!</h2>
+                <p style={{ color:"#60a5d8", marginBottom:8 }}>Cita con <strong style={{ color:"#e8f0f8" }}>{selectedDoctor.name}</strong> el {bookingData.date} a las {bookingData.time}.</p>
+                <p style={{ color:"#93c5e8", fontSize:14, marginBottom:24 }}>¿Deseas enviar la confirmación por WhatsApp?</p>
+                <div style={{ display:"flex", gap:12, justifyContent:"center", flexWrap:"wrap" }}>
+                  <button style={{ ...T.ctaPrimary, background:"linear-gradient(135deg,#25D366,#128C7E)", fontSize:15 }} onClick={() => setShowNotifPanel(true)}>📲 Enviar WhatsApp</button>
+                  <button style={T.ctaSecondary} onClick={resetBooking}>Omitir</button>
+                </div>
+              </div>
+
+              {/* POLÍTICA DE CANCELACIÓN */}
+              <div style={{ background:"rgba(244,162,97,0.08)", border:"1px solid rgba(244,162,97,0.25)", borderRadius:14, padding:20 }}>
+                <h3 style={{ margin:"0 0 12px", color:"#F4A261", fontSize:16 }}>📋 Política de cancelación</h3>
+                <div style={{ display:"flex", flexDirection:"column", gap:10 }}>
+                  {[
+                    { icon:"✅", label:"Cancelas con +48h de anticipación", result:"Reembolso completo de S/. 20", color:"#52B788" },
+                    { icon:"❌", label:"Cancelas con menos de 48h", result:"Sin reembolso (S/. 20 retenidos)", color:"#ff6b6b" },
+                    { icon:"✅", label:"El médico cancela o no se presenta", result:"Reembolso automático de S/. 20", color:"#52B788" },
+                  ].map((item, i) => (
+                    <div key={i} style={{ display:"flex", gap:12, alignItems:"flex-start", padding:"10px 14px", background:"rgba(255,255,255,0.03)", borderRadius:10 }}>
+                      <span style={{ fontSize:18 }}>{item.icon}</span>
+                      <div style={{ flex:1 }}>
+                        <div style={{ fontSize:13, color:"#e8f0f8", marginBottom:2 }}>{item.label}</div>
+                        <div style={{ fontSize:12, color:item.color, fontWeight:700 }}>{item.result}</div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+                <p style={{ margin:"14px 0 0", fontSize:12, color:"#60a5d8" }}>
+                  Para cancelar tu cita, escríbenos por WhatsApp al <strong style={{ color:"#3b82c4" }}>913 330 712</strong> indicando tu nombre y fecha de cita.
+                </p>
+                <button style={{ marginTop:12, width:"100%", padding:"10px 0", background:"linear-gradient(135deg,#25D366,#128C7E)", color:"#fff", border:"none", borderRadius:10, cursor:"pointer", fontSize:14, fontWeight:700, fontFamily:"inherit" }}
+                  onClick={() => {
+                    const msg = `Hola MediAyacucho, quiero cancelar mi cita:\n\n👤 ${bookingData.patient_name}\n📅 ${bookingData.date} · ${bookingData.time}\n👨‍⚕️ ${selectedDoctor.name}\n\nSolicito el reembolso del adelanto de S/. ${AVANCE.monto}.`;
+                    window.open(`https://wa.me/51913330712?text=${encodeURIComponent(msg)}`, "_blank");
+                  }}>
+                  💬 Solicitar cancelación por WhatsApp
+                </button>
               </div>
             </div>
           ) : (
