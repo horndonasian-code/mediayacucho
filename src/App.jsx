@@ -31,6 +31,22 @@ const db = {
   createAppointment: (data) => sb("appointments", { method: "POST", body: JSON.stringify(data) }),
   updateAppointment: (id, data) => sb(`appointments?id=eq.${id}`, { method: "PATCH", body: JSON.stringify(data) }),
   createPayment: (data) => sb("payments", { method: "POST", body: JSON.stringify(data) }),
+  uploadPhoto: async (file, doctorId) => {
+    const ext = file.name.split(".").pop();
+    const fileName = `${doctorId}.${ext}`;
+    const res = await fetch(`${SUPABASE_URL}/storage/v1/object/doctor-photos/${fileName}`, {
+      method: "POST",
+      headers: {
+        "apikey": SUPABASE_KEY,
+        "Authorization": `Bearer ${SUPABASE_KEY}`,
+        "Content-Type": file.type,
+        "x-upsert": "true",
+      },
+      body: file,
+    });
+    if (!res.ok) throw new Error("Error al subir la foto");
+    return `${SUPABASE_URL}/storage/v1/object/public/doctor-photos/${fileName}`;
+  },
 };
 
 // ─── Politique d'avance ────────────────────────────────────────────────────
@@ -520,6 +536,20 @@ function DoctorDashboard({ doctor, onExit }) {
   const [editProfile, setEditProfile] = useState(false);
   const [profileData, setProfileData] = useState({ name: doctor.name, specialty: doctor.specialty, price: doctor.price, address: doctor.address || "" });
   const [savingProfile, setSavingProfile] = useState(false);
+  const [uploadingPhoto, setUploadingPhoto] = useState(false);
+  const [photoUrl, setPhotoUrl] = useState(doctor.photo_url || null);
+
+  async function handlePhotoUpload(e) {
+    const file = e.target.files[0];
+    if (!file) return;
+    setUploadingPhoto(true);
+    try {
+      const url = await db.uploadPhoto(file, doctor.id);
+      setPhotoUrl(url);
+      await db.updateDoctor(doctor.id, { photo_url: url });
+    } catch (err) { alert("Error al subir la foto: " + err.message); }
+    setUploadingPhoto(false);
+  }
   const [aiLoading, setAiLoading] = useState(false);
   const [aiTip, setAiTip] = useState("");
   const [showAddressChange, setShowAddressChange] = useState(false);
@@ -672,7 +702,10 @@ Y cuéntanos brevemente tu experiencia. ¡Tu opinión ayuda a otros pacientes!
       <link href="https://fonts.googleapis.com/css2?family=Crimson+Pro:wght@400;600;700&display=swap" rel="stylesheet" />
       <div style={s.topbar}>
         <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
-          <div style={s.avatar}>{doctor.img || initials(doctor.name)}</div>
+          {photoUrl
+            ? <img src={photoUrl} alt={doctor.name} style={{ width:40, height:40, borderRadius:10, objectFit:"cover", border:"1px solid rgba(59,130,196,0.4)" }} />
+            : <div style={s.avatar}>{doctor.img || initials(doctor.name)}</div>
+          }
           <div>
             <div style={{ fontWeight: 700, color: "#e8f0f8", fontSize: 15 }}>{doctor.name}</div>
             <div style={{ fontSize: 11, color: "#3b82c4" }}>{doctor.specialty} · Panel Médico</div>
@@ -865,12 +898,22 @@ Y cuéntanos brevemente tu experiencia. ¡Tu opinión ayuda a otros pacientes!
             <h2 style={{ margin: "0 0 24px", fontSize: 26, fontWeight: 700 }}>👤 Mi Perfil</h2>
             <div style={s.card}>
               <div style={{ display: "flex", alignItems: "center", gap: 16, marginBottom: 24 }}>
-                <div style={{ width: 72, height: 72, borderRadius: 18, background: doctor.color || "#1a4f8a", display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 700, fontSize: 24, color: "#fff" }}>{doctor.img || initials(doctor.name)}</div>
+                <div style={{ position: "relative" }}>
+                  {photoUrl
+                    ? <img src={photoUrl} alt={doctor.name} style={{ width: 72, height: 72, borderRadius: 18, objectFit: "cover", border: "2px solid rgba(59,130,196,0.4)" }} />
+                    : <div style={{ width: 72, height: 72, borderRadius: 18, background: doctor.color || "#1a4f8a", display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 700, fontSize: 24, color: "#fff" }}>{doctor.img || initials(doctor.name)}</div>
+                  }
+                  <label style={{ position: "absolute", bottom: -6, right: -6, width: 26, height: 26, borderRadius: "50%", background: "#3b82c4", display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", border: "2px solid #030d1a", fontSize: 13 }}>
+                    {uploadingPhoto ? "⏳" : "📷"}
+                    <input type="file" accept="image/*" style={{ display: "none" }} onChange={handlePhotoUpload} />
+                  </label>
+                </div>
                 <div>
                   <h3 style={{ margin: 0, fontSize: 20 }}>{profileData.name}</h3>
                   <p style={{ margin: "4px 0 0", color: "#60a5d8" }}>{profileData.specialty} · {profileData.price}/consulta</p>
                   {profileData.address && <p style={{ margin: "4px 0 0", fontSize: 13, color: "#3b82c4" }}>📍 {profileData.address}</p>}
                   <div style={{ marginTop: 6 }}>⭐ {doctor.rating} · {isAvailable ? <span style={{ color: "#3b82c4" }}>🟢 Disponible</span> : <span style={{ color: "#ff6b6b" }}>🔴 No disponible</span>}</div>
+                  <p style={{ margin: "4px 0 0", fontSize: 11, color: "#60a5d8" }}>📷 Haz clic en la cámara para cambiar tu foto</p>
                 </div>
               </div>
               {editProfile ? (
@@ -1260,7 +1303,10 @@ function DoctorProfile({ doctor, onBook, onBack }) {
       {/* HERO */}
       <div style={s.hero}>
         <div style={{ position: "absolute", top: 0, right: 0, width: 200, height: 200, borderRadius: "50%", background: `${doctor.color || "#1a4f8a"}15`, transform: "translate(50px,-50px)" }} />
-        <div style={s.avatar}>{doctor.img || initials(doctor.name)}</div>
+        {doctor.photo_url
+          ? <img src={doctor.photo_url} alt={doctor.name} style={{ width:80, height:80, borderRadius:20, objectFit:"cover", marginBottom:16, border:"3px solid rgba(59,130,196,0.4)" }} />
+          : <div style={s.avatar}>{doctor.img || initials(doctor.name)}</div>
+        }
         <h1 style={{ margin: "0 0 6px", fontSize: 26, fontWeight: 700, color: "#e8f0f8" }}>{doctor.name}</h1>
         <div style={{ display: "flex", gap: 8, flexWrap: "wrap", marginBottom: 12 }}>
           <span style={s.badge("#3b82c4")}>{doctor.specialty}</span>
@@ -1799,7 +1845,10 @@ export default function App() {
                 <div key={doc.id} style={T.card}
                   onMouseEnter={e=>{e.currentTarget.style.transform="translateY(-4px)";e.currentTarget.style.borderColor="rgba(59,130,196,0.4)";}}
                   onMouseLeave={e=>{e.currentTarget.style.transform="";e.currentTarget.style.borderColor="rgba(59,130,196,0.15)";}}>
-                  <div style={T.avatar(doc.color)}>{doc.img || initials(doc.name)}</div>
+                  {doc.photo_url
+                    ? <img src={doc.photo_url} alt={doc.name} style={{ width:56, height:56, borderRadius:14, objectFit:"cover", marginBottom:16, border:"2px solid rgba(59,130,196,0.3)" }} />
+                    : <div style={T.avatar(doc.color)}>{doc.img || initials(doc.name)}</div>
+                  }
                   <h3 style={{ fontSize:18, fontWeight:700, margin:"0 0 4px", color:"#e8f0f8" }}>{doc.name}</h3>
                   <p style={{ fontSize:13, color:"#60a5d8", margin:"0 0 8px" }}>{doc.specialty}</p>
                   <div style={{ color:"#F4A261", fontSize:13 }}>{"★".repeat(Math.floor(doc.rating||5))} {doc.rating}</div>
