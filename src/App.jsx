@@ -898,11 +898,18 @@ function AdminPanel({ onExit }) {
     actionMsg: { position: "fixed", bottom: 24, right: 24, background: "#1a4f8a", border: "1px solid #3b82c4", borderRadius: 12, padding: "12px 20px", color: "#e8f0f8", fontSize: 14, fontWeight: 700, zIndex: 200 },
   };
 
+  // Citas de mañana para recordatorios
+  const tomorrow = new Date();
+  tomorrow.setDate(tomorrow.getDate() + 1);
+  const tomorrowStr = tomorrow.toISOString().split("T")[0];
+  const tomorrowAppts = appointments.filter(a => a.date === tomorrowStr && a.status !== "cancelada");
+
   const navTabs = [
     { id: "pending", label: `⏳ En espera (${pendingDoctors.length})` },
     { id: "active", label: `✅ Activos (${activeDoctors.length})` },
     { id: "appointments", label: `📅 Citas (${appointments.length})` },
     { id: "payments", label: `💰 Pagos (${payments.length})` },
+    { id: "recordatorios", label: `⏰ Recordatorios (${tomorrowAppts.length})` },
   ];
 
   return (
@@ -1046,6 +1053,75 @@ function AdminPanel({ onExit }) {
                 </div>
               ))
             }
+          </>
+        )}
+
+        {/* RECORDATORIOS */}
+        {!loading && tab === "recordatorios" && (
+          <>
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 20, flexWrap: "wrap", gap: 12 }}>
+              <div>
+                <h3 style={{ margin: "0 0 4px", color: "#F4A261" }}>⏰ Recordatorios del día siguiente</h3>
+                <p style={{ margin: 0, fontSize: 13, color: "#60a5d8" }}>Citas programadas para mañana <strong style={{ color: "#e8f0f8" }}>{tomorrowStr}</strong> — {tomorrowAppts.length} paciente(s)</p>
+              </div>
+              {tomorrowAppts.length > 0 && (
+                <button style={{ padding: "10px 20px", background: "linear-gradient(135deg,#25D366,#128C7E)", color: "#fff", border: "none", borderRadius: 10, cursor: "pointer", fontFamily: "inherit", fontSize: 14, fontWeight: 700 }}
+                  onClick={() => {
+                    tomorrowAppts.forEach((a, i) => {
+                      const doctorName = activeDoctors.find(d => d.id === a.doctor_id)?.name || "el médico";
+                      const doctorAddress = activeDoctors.find(d => d.id === a.doctor_id)?.address || "";
+                      const msg = `⏰ *RECORDATORIO DE CITA - MediAyacucho*\n\nHola ${a.patient_name}, te recordamos tu cita MAÑANA:\n\n👨‍⚕️ ${doctorName}\n🕐 ${a.time}\n📍 ${doctorAddress || "Consultorio del médico"}\n\n💡 Recuerda llegar 10 minutos antes.\n\nPara cancelar escribe al 913 330 712 con +48h de anticipación.\n\n📍 MediAyacucho 🌿`;
+                      setTimeout(() => {
+                        window.open(`https://wa.me/${a.patient_phone.replace(/\D/g,"")}?text=${encodeURIComponent(msg)}`, "_blank");
+                      }, i * 1500);
+                    });
+                    setActionMsg(`📲 Enviando ${tomorrowAppts.length} recordatorio(s)...`);
+                    setTimeout(() => setActionMsg(""), 5000);
+                  }}>
+                  📲 Enviar todos los recordatorios ({tomorrowAppts.length})
+                </button>
+              )}
+            </div>
+
+            {tomorrowAppts.length === 0 ? (
+              <div style={{ ...s.card, textAlign: "center", padding: 40 }}>
+                <div style={{ fontSize: 48, marginBottom: 16 }}>✅</div>
+                <div style={{ color: "#60a5d8", fontSize: 16 }}>No hay citas programadas para mañana</div>
+                <div style={{ color: "#60a5d8", fontSize: 13, marginTop: 8 }}>Vuelve a revisar más tarde</div>
+              </div>
+            ) : (
+              <>
+                <div style={{ background: "rgba(244,162,97,0.08)", border: "1px solid rgba(244,162,97,0.2)", borderRadius: 12, padding: "12px 16px", marginBottom: 16, fontSize: 13, color: "#F4A261" }}>
+                  💡 Haz clic en <strong>"Enviar todos"</strong> para abrir WhatsApp con cada paciente automáticamente, o usa el botón individual por cada cita.
+                </div>
+                {tomorrowAppts.map((a, i) => {
+                  const doc = activeDoctors.find(d => d.id === a.doctor_id);
+                  const msg = `⏰ *RECORDATORIO DE CITA - MediAyacucho*\n\nHola ${a.patient_name}, te recordamos tu cita MAÑANA:\n\n👨‍⚕️ ${doc?.name || "el médico"}\n🕐 ${a.time}\n📍 ${doc?.address || "Consultorio del médico"}\n\n💡 Recuerda llegar 10 minutos antes.\n\nPara cancelar escribe al 913 330 712 con +48h de anticipación.\n\n📍 MediAyacucho 🌿`;
+                  return (
+                    <div key={a.id} style={s.card}>
+                      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: 12 }}>
+                        <div style={{ flex: 1 }}>
+                          <div style={{ fontWeight: 700, color: "#e8f0f8", fontSize: 15 }}>{a.patient_name}</div>
+                          <div style={{ fontSize: 13, color: "#60a5d8", marginTop: 2 }}>🕐 {a.time} · 📞 {a.patient_phone}</div>
+                          {doc && <div style={{ fontSize: 12, color: "#60a5d8", marginTop: 2 }}>👨‍⚕️ {doc.name} · 📍 {doc.address || "Sin dirección"}</div>}
+                          <div style={{ fontSize: 11, color: a.status === "confirmada" ? "#52B788" : "#F4A261", marginTop: 4, fontWeight: 700 }}>
+                            {a.status === "confirmada" ? "✅ Confirmada" : "⏳ Pendiente de confirmar"}
+                          </div>
+                        </div>
+                        <div style={{ display: "flex", gap: 8 }}>
+                          <button style={s.btn("#25D366")} onClick={() => window.open(`https://wa.me/${a.patient_phone.replace(/\D/g,"")}?text=${encodeURIComponent(msg)}`, "_blank")}>
+                            💬 Recordatorio
+                          </button>
+                          <button style={s.btn("#3b82c4")} onClick={() => window.open(`https://wa.me/${a.patient_phone.replace(/\D/g,"")}`, "_blank")}>
+                            📞 WA
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  );
+                })}
+              </>
+            )}
           </>
         )}
       </div>
