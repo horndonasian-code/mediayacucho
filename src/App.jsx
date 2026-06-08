@@ -1353,7 +1353,7 @@ function DoctorProfile({ doctor, onBook, onBack }) {
   );
 }
 
-
+export default function App() {
   const [view, setView] = useState("home");
   const [doctors, setDoctors] = useState([]);
   const [loadingDoctors, setLoadingDoctors] = useState(true);
