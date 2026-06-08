@@ -1654,9 +1654,25 @@ export default function App() {
       )}
 
       <header style={T.header}>
-        <div style={{ cursor: "pointer" }} onClick={() => setView("home")}>
-          <span style={T.logo}>MediPerú</span>
-          <span style={T.logoSub}>Salud para todos</span>
+        <div style={{ cursor: "pointer", display: "flex", alignItems: "center", gap: 10 }} onClick={() => setView("home")}>
+          <svg width="36" height="36" viewBox="0 0 72 72" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <circle cx="36" cy="36" r="36" fill="url(#lg1)"/>
+            <rect x="28" y="14" width="16" height="44" rx="4" fill="white"/>
+            <rect x="14" y="28" width="44" height="16" rx="4" fill="white"/>
+            <circle cx="36" cy="36" r="5" fill="url(#lg1)"/>
+            <defs>
+              <linearGradient id="lg1" x1="0" y1="0" x2="72" y2="72" gradientUnits="userSpaceOnUse">
+                <stop offset="0%" stopColor="#1a4f8a"/>
+                <stop offset="100%" stopColor="#3b82c4"/>
+              </linearGradient>
+            </defs>
+          </svg>
+          <div>
+            <div style={{ fontSize: 20, fontWeight: 700, lineHeight: 1.1 }}>
+              <span style={{ color: "#3b82c4" }}>Medi</span><span style={{ color: "#93c5e8", fontWeight: 300 }}>Ayacucho</span>
+            </div>
+            <span style={{ fontSize: 9, color: "#60a5d8", letterSpacing: 2.5, textTransform: "uppercase", display: "block", marginTop: 1 }}>Salud para todos</span>
+          </div>
         </div>
         <nav style={{ display: "flex", gap: 8 }}>
           <button style={T.navBtn(view==="home")} onClick={() => setView("home")}>Inicio</button>
