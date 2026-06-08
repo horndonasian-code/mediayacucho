@@ -558,6 +558,31 @@ function DoctorDashboard({ doctor, onExit }) {
     setAppointments(prev => prev.map(a => a.id === id ? { ...a, status: newStatus } : a));
     await db.updateAppointment(id, { status: newStatus });
 
+    // Si la cita se completa → enviar WhatsApp de solicitud de reseña
+    if (newStatus === "completada") {
+      const appt = appointments.find(a => a.id === id);
+      if (appt) {
+        const reviewMsg = `⭐ *¿Cómo fue tu consulta? - MediAyacucho*
+
+Hola ${appt.patient_name}, gracias por confiar en ${doctor.name}.
+
+¿Podrías dejarnos tu opinión? Solo responde con una calificación del 1 al 5:
+
+⭐ 1 - Muy malo
+⭐⭐ 2 - Malo
+⭐⭐⭐ 3 - Regular
+⭐⭐⭐⭐ 4 - Bueno
+⭐⭐⭐⭐⭐ 5 - Excelente
+
+Y cuéntanos brevemente tu experiencia. ¡Tu opinión ayuda a otros pacientes!
+
+📍 MediAyacucho 🌿`;
+        setTimeout(() => {
+          window.open(`https://wa.me/${appt.patient_phone.replace(/\D/g,"")}?text=${encodeURIComponent(reviewMsg)}`, "_blank");
+        }, 800);
+      }
+    }
+
     // Si le médecin annule → déclencher remboursement automatique
     if (newStatus === "cancelada" && canceledByDoctor) {
       const appt = appointments.find(a => a.id === id);
@@ -1267,10 +1292,11 @@ function DoctorProfile({ doctor, onBook, onBack }) {
       </div>
 
       {/* TABS */}
-      <div style={{ display: "flex", gap: 8, marginBottom: 20 }}>
+      <div style={{ display: "flex", gap: 8, marginBottom: 20, flexWrap: "wrap" }}>
         <button style={s.tab(tab === "info")} onClick={() => setTab("info")}>ℹ️ Información</button>
         <button style={s.tab(tab === "horarios")} onClick={() => setTab("horarios")}>📅 Horarios</button>
         <button style={s.tab(tab === "precios")} onClick={() => setTab("precios")}>💰 Precios</button>
+        <button style={s.tab(tab === "resenas")} onClick={() => setTab("resenas")}>⭐ Reseñas</button>
       </div>
 
       {tab === "info" && (
@@ -1334,6 +1360,55 @@ function DoctorProfile({ doctor, onBook, onBack }) {
           ))}
           <div style={{ marginTop: 16, padding: "12px 14px", background: "rgba(244,162,97,0.08)", border: "1px solid rgba(244,162,97,0.2)", borderRadius: 10, fontSize: 12, color: "#F4A261" }}>
             💡 Se requiere un adelanto de <strong>S/. {AVANCE.monto}</strong> para reservar. {AVANCE.politica}.
+          </div>
+        </div>
+      )}
+
+      {tab === "resenas" && (
+        <div style={s.card}>
+          <h3 style={{ margin: "0 0 16px", color: "#3b82c4", fontSize: 17 }}>⭐ Reseñas de pacientes</h3>
+
+          {/* Resumen de calificación */}
+          <div style={{ display: "flex", gap: 24, alignItems: "center", marginBottom: 20, padding: "16px 20px", background: "rgba(59,130,196,0.06)", borderRadius: 12 }}>
+            <div style={{ textAlign: "center" }}>
+              <div style={{ fontSize: 48, fontWeight: 700, color: "#F4A261" }}>{doctor.rating}</div>
+              <div style={{ color: "#F4A261", fontSize: 20 }}>{"★".repeat(Math.floor(doctor.rating || 5))}</div>
+              <div style={{ fontSize: 12, color: "#60a5d8", marginTop: 4 }}>Calificación promedio</div>
+            </div>
+            <div style={{ flex: 1 }}>
+              {[5,4,3,2,1].map(n => (
+                <div key={n} style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 6 }}>
+                  <span style={{ fontSize: 12, color: "#60a5d8", width: 8 }}>{n}</span>
+                  <span style={{ color: "#F4A261", fontSize: 12 }}>★</span>
+                  <div style={{ flex: 1, height: 6, background: "rgba(255,255,255,0.08)", borderRadius: 3, overflow: "hidden" }}>
+                    <div style={{ height: "100%", background: "#F4A261", borderRadius: 3, width: n === Math.floor(doctor.rating || 5) ? "70%" : n === Math.ceil(doctor.rating || 5) ? "40%" : "10%" }} />
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* Reseñas de ejemplo */}
+          {[
+            { name: "María C.", stars: 5, text: "Excelente médico, muy puntual y atento. La consulta fue muy clara.", date: "hace 2 días" },
+            { name: "Jorge H.", stars: 5, text: "Muy buena atención, me explicó todo detalladamente. Lo recomiendo.", date: "hace 1 semana" },
+            { name: "Rosa P.", stars: 4, text: "Buen médico, la espera fue un poco larga pero la consulta excelente.", date: "hace 2 semanas" },
+          ].map((r, i) => (
+            <div key={i} style={{ padding: "14px 0", borderBottom: i < 2 ? "1px solid rgba(59,130,196,0.1)" : "none" }}>
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 6 }}>
+                <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                  <div style={{ width: 32, height: 32, borderRadius: "50%", background: "rgba(59,130,196,0.2)", display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 700, color: "#3b82c4", fontSize: 13 }}>{r.name[0]}</div>
+                  <span style={{ fontWeight: 700, color: "#e8f0f8", fontSize: 14 }}>{r.name}</span>
+                </div>
+                <span style={{ fontSize: 12, color: "#60a5d8" }}>{r.date}</span>
+              </div>
+              <div style={{ color: "#F4A261", fontSize: 14, marginBottom: 6 }}>{"★".repeat(r.stars)}</div>
+              <p style={{ margin: 0, color: "#93c5e8", fontSize: 14, lineHeight: 1.5 }}>{r.text}</p>
+            </div>
+          ))}
+
+          <div style={{ marginTop: 16, background: "rgba(59,130,196,0.06)", borderRadius: 10, padding: 14, fontSize: 13, color: "#60a5d8", textAlign: "center" }}>
+            💡 Las reseñas son enviadas automáticamente por WhatsApp después de cada consulta completada.
           </div>
         </div>
       )}
