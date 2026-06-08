@@ -93,7 +93,11 @@ function buildSmsLink(phone, message) { return `sms:${phone}?body=${encodeURICom
 function buildConfirmationMessage(data, doctor) {
   const total = parseInt((doctor.price || "S/. 0").replace(/[^0-9]/g, ""));
   const resto = total - AVANCE.monto;
-  return `✅ *CONFIRMACIÓN DE CITA - MediAyacucho*\n\nHola ${data.patient_name}, tu cita ha sido reservada:\n\n👨‍⚕️ Médico: ${doctor.name}\n🏥 Especialidad: ${doctor.specialty}\n📅 Fecha: ${data.date}\n🕐 Hora: ${data.time}\n📍 Dirección: ${doctor.address || "Por confirmar"}\n\n💰 *Pagos:*\n✅ Adelanto pagado: S/. ${AVANCE.monto}\n📋 Resto a pagar en consulta: S/. ${resto}\n\n⚠️ ${AVANCE.politica}.\n\nPor favor llega 10 minutos antes.\n\n📍 MediAyacucho - Salud para todos 🌿`;
+  const isVirtual = data.modalidad === "virtual";
+  const lugarInfo = isVirtual
+    ? `📱 Modalidad: *VIRTUAL* (WhatsApp Video)\nEl médico te llamará por WhatsApp a la hora de tu cita.`
+    : `📍 Dirección: ${doctor.address || "Por confirmar"}`;
+  return `✅ *CONFIRMACIÓN DE CITA - MediAyacucho*\n\nHola ${data.patient_name}, tu cita ha sido reservada:\n\n👨‍⚕️ Médico: ${doctor.name}\n🏥 Especialidad: ${doctor.specialty}\n📅 Fecha: ${data.date}\n🕐 Hora: ${data.time}\n${lugarInfo}\n\n💰 *Pagos:*\n✅ Adelanto pagado: S/. ${AVANCE.monto}\n📋 Resto a pagar en consulta: S/. ${resto}\n\n⚠️ ${AVANCE.politica}.\n\n${isVirtual ? "Ten lista tu cámara y buena conexión." : "Por favor llega 10 minutos antes."}\n\n📍 MediAyacucho - Salud para todos 🌿`;
 }
 function buildReminderMessage(data, doctor) {
   return `⏰ *RECORDATORIO - MediPerú*\n\nHola ${data.patient_name}, te recordamos tu cita MAÑANA:\n\n👨‍⚕️ ${doctor.name} (${doctor.specialty})\n🕐 ${data.time}\n📍 ${doctor.address || ""}\n\n¡Te esperamos! 💚`;
@@ -762,7 +766,10 @@ function DoctorDashboard({ doctor, onExit }) {
                 : filtered.map(a => (
                   <div key={a.id} style={s.apptRow(a.status)}>
                     <div style={{ flex: 1 }}>
-                      <span style={{ fontWeight: 700, color: "#e8f0f8" }}>{a.patient_name}</span>
+                      <div style={{ display:"flex", alignItems:"center", gap:8 }}>
+                        <span style={{ fontWeight: 700, color: "#e8f0f8" }}>{a.patient_name}</span>
+                        {a.modalidad === "virtual" && <span style={{ padding:"2px 8px", borderRadius:10, background:"rgba(37,211,102,0.15)", color:"#25D366", fontSize:11, fontWeight:700 }}>📱 VIRTUAL</span>}
+                      </div>
                       <span style={{ display: "block", fontSize: 12, color: "#60a5d8" }}>📅 {a.date} · 🕐 {a.time} · 📞 {a.patient_phone}</span>
                     </div>
                     <div style={{ display: "flex", gap: 8, alignItems: "center", flexWrap: "wrap" }}>
@@ -775,9 +782,14 @@ function DoctorDashboard({ doctor, onExit }) {
                         <button style={{ ...s.selectBtn, color:"#60a5d8" }} onClick={() => updateStatus(a.id,"completada")}>✓ Completar</button>
                         <button style={{ ...s.selectBtn, color:"#ff6b6b", borderColor:"#ff6b6b" }} onClick={() => cancelByDoctor(a)}>✗ Cancelar</button>
                       </>}
-                      {(a.status === "pendiente" || a.status === "confirmada") && (
+                      {(a.status === "pendiente" || a.status === "confirmada") && a.modalidad !== "virtual" && (
                         <button style={{ ...s.selectBtn, color:"#F4A261", borderColor:"#F4A261" }} onClick={() => { setAddressChangeAppt(a); setShowAddressChange(true); }}>
                           📍 Cambiar dir.
+                        </button>
+                      )}
+                      {a.modalidad === "virtual" && (a.status === "confirmada" || a.status === "pendiente") && (
+                        <button style={{ ...s.selectBtn, color:"#25D366", borderColor:"#25D366", fontWeight:700 }} onClick={() => window.open(`https://wa.me/${a.patient_phone.replace(/\D/g,"")}`, "_blank")}>
+                          📹 Llamar WA
                         </button>
                       )}
                       <button style={{ ...s.selectBtn, color:"#25D366", borderColor:"#25D366" }} onClick={() => window.open(buildWhatsAppLink(a.patient_phone,`Hola ${a.patient_name}, le contacta ${doctor.name}. ¿En qué le puedo ayudar?`),"_blank")}>💬 WA</button>
@@ -1211,7 +1223,7 @@ export default function App() {
   const [messages, setMessages] = useState([{ role: "assistant", content: "¡Hola! Soy tu asistente médico IA de MediPerú. 🩺\n\nPuedo ayudarte a:\n• Encontrar el médico ideal para ti\n• Agendar una cita\n• Resolver dudas sobre síntomas\n\n¿En qué te puedo ayudar hoy?" }]);
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(false);
-  const [bookingData, setBookingData] = useState({ patient_name: "", patient_phone: "", date: "", time: "" });
+  const [bookingData, setBookingData] = useState({ patient_name: "", patient_phone: "", date: "", time: "", modalidad: "presencial" });
   const [confirmed, setConfirmed] = useState(false);
   const [showNotifPanel, setShowNotifPanel] = useState(false);
   const [lastBooking, setLastBooking] = useState(null);
@@ -1257,7 +1269,7 @@ export default function App() {
   async function confirmBooking() {
     if (!bookingData.patient_name || !bookingData.patient_phone || !bookingData.date || !bookingData.time) return;
     try {
-      const appt = await db.createAppointment({ doctor_id: selectedDoctor.id, ...bookingData, amount: selectedDoctor.price, status: "pendiente", payment_status: "pendiente" });
+      const appt = await db.createAppointment({ doctor_id: selectedDoctor.id, ...bookingData, amount: selectedDoctor.price, status: "pendiente", payment_status: "pendiente", modalidad: bookingData.modalidad || "presencial" });
       const apptId = Array.isArray(appt) ? appt[0]?.id : appt?.id;
       setLastBooking({ data: { ...bookingData, appointmentId: apptId }, doctor: selectedDoctor });
       setShowPayment(true);
@@ -1545,7 +1557,10 @@ export default function App() {
                       <span style={{ fontSize:12, color:"#60a5d8" }}>/consulta</span>
                     </div>
                     {doc.available
-                      ? <button style={{ padding:"8px 16px", background:"linear-gradient(135deg,#1a4f8a,#3b82c4)", color:"#fff", border:"none", borderRadius:10, cursor:"pointer", fontSize:13, fontWeight:600, fontFamily:"inherit" }} onClick={() => { setSelectedDoctor(doc); setView("booking"); }}>Agendar</button>
+                      ? <div style={{ display: "flex", gap: 6, flexDirection: "column" }}>
+                          <button style={{ padding:"8px 16px", background:"linear-gradient(135deg,#1a4f8a,#3b82c4)", color:"#fff", border:"none", borderRadius:10, cursor:"pointer", fontSize:13, fontWeight:600, fontFamily:"inherit" }} onClick={() => { setSelectedDoctor(doc); setBookingData(p => ({...p, modalidad:"presencial"})); setView("booking"); }}>🏥 Presencial</button>
+                          <button style={{ padding:"8px 16px", background:"linear-gradient(135deg,#25D366,#128C7E)", color:"#fff", border:"none", borderRadius:10, cursor:"pointer", fontSize:13, fontWeight:600, fontFamily:"inherit" }} onClick={() => { setSelectedDoctor(doc); setBookingData(p => ({...p, modalidad:"virtual"})); setView("booking"); }}>📱 Virtual</button>
+                        </div>
                       : <span style={{ padding:"4px 10px", borderRadius:20, background:"rgba(255,100,100,0.1)", color:"#ff6b6b", fontSize:12 }}>No disponible</span>
                     }
                   </div>
@@ -1617,14 +1632,36 @@ export default function App() {
                     <p style={{ margin:"4px 0 0", color:"#60a5d8", fontSize:14 }}>{selectedDoctor.specialty} · {selectedDoctor.price}</p>
                   </div>
                 </div>
-                {selectedDoctor.address && (
-                  <div style={{ marginTop:16, padding:"12px 16px", background:"rgba(59,130,196,0.07)", borderRadius:10, display:"flex", alignItems:"flex-start", gap:10 }}>
-                    <span style={{ fontSize:20 }}>📍</span>
+
+                {/* MODALIDAD SELECTOR */}
+                <div style={{ marginTop:16, display:"flex", gap:10 }}>
+                  <button style={{ flex:1, padding:"10px 0", borderRadius:10, border:`2px solid ${bookingData.modalidad==="presencial" ? "#3b82c4" : "rgba(59,130,196,0.2)"}`, background:bookingData.modalidad==="presencial" ? "rgba(59,130,196,0.15)" : "transparent", color:bookingData.modalidad==="presencial" ? "#3b82c4" : "#60a5d8", cursor:"pointer", fontFamily:"inherit", fontSize:14, fontWeight:700 }}
+                    onClick={() => setBookingData({...bookingData, modalidad:"presencial"})}>
+                    🏥 Presencial
+                  </button>
+                  <button style={{ flex:1, padding:"10px 0", borderRadius:10, border:`2px solid ${bookingData.modalidad==="virtual" ? "#25D366" : "rgba(37,211,102,0.2)"}`, background:bookingData.modalidad==="virtual" ? "rgba(37,211,102,0.12)" : "transparent", color:bookingData.modalidad==="virtual" ? "#25D366" : "#60a5d8", cursor:"pointer", fontFamily:"inherit", fontSize:14, fontWeight:700 }}
+                    onClick={() => setBookingData({...bookingData, modalidad:"virtual"})}>
+                    📱 Virtual (WhatsApp)
+                  </button>
+                </div>
+
+                {/* INFO SEGÚN MODALIDAD */}
+                {bookingData.modalidad === "presencial" && selectedDoctor.address && (
+                  <div style={{ marginTop:12, padding:"12px 16px", background:"rgba(59,130,196,0.07)", borderRadius:10, display:"flex", alignItems:"flex-start", gap:10 }}>
+                    <span style={{ fontSize:18 }}>📍</span>
                     <div>
                       <p style={{ margin:"0 0 4px", fontSize:12, color:"#3b82c4", textTransform:"uppercase", letterSpacing:0.5, fontWeight:700 }}>Dirección del consultorio</p>
                       <p style={{ margin:"0 0 6px", color:"#e8f0f8", fontSize:14 }}>{selectedDoctor.address}</p>
                       <a href={selectedDoctor.maps_url||"#"} target="_blank" rel="noreferrer" style={{ fontSize:12, color:"#3b82c4", textDecoration:"none", background:"rgba(59,130,196,0.15)", border:"1px solid rgba(59,130,196,0.3)", padding:"4px 12px", borderRadius:20, display:"inline-block" }}>🗺️ Ver en Google Maps</a>
                     </div>
+                  </div>
+                )}
+                {bookingData.modalidad === "virtual" && (
+                  <div style={{ marginTop:12, padding:"14px 16px", background:"rgba(37,211,102,0.08)", border:"1px solid rgba(37,211,102,0.25)", borderRadius:10 }}>
+                    <p style={{ margin:"0 0 8px", fontSize:13, fontWeight:700, color:"#25D366" }}>📱 Consulta por WhatsApp Video</p>
+                    <p style={{ margin:"0 0 6px", fontSize:13, color:"#93c5e8" }}>• El médico te llamará por WhatsApp Video a la hora de tu cita</p>
+                    <p style={{ margin:"0 0 6px", fontSize:13, color:"#93c5e8" }}>• Asegúrate de tener buena conexión a internet</p>
+                    <p style={{ margin:0, fontSize:13, color:"#93c5e8" }}>• Ten lista tu cámara y micrófono</p>
                   </div>
                 )}
               </div>
