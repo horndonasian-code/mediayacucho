@@ -1971,7 +1971,9 @@ export default function App() {
           <p style={{ color: "#60a5d8", margin: "0 0 24px" }}>
             {loadingDoctors ? "Cargando desde Supabase..." : dbError ? `⚠️ Error: ${dbError}` : `${doctors.length} médico(s) certificado(s) y verificado(s)`}
           </p>
-          <div style={{ display: "flex", gap: 8, marginBottom: 32, overflowX: "auto", paddingBottom: 8, scrollbarWidth: "none", WebkitOverflowScrolling: "touch", flexWrap: "nowrap" }}>
+          {/* Scrollable filter row */}
+          <div style={{ margin: "0 -24px", padding: "0 24px", overflowX: "auto", marginBottom: 32, WebkitOverflowScrolling: "touch" }}>
+            <div style={{ display: "flex", gap: 8, paddingBottom: 8, width: "max-content" }}>
             {SPECIALTIES.map(s => {
               const cfg = SPECIALTY_CONFIG[s];
               const isActive = filter === s;
@@ -1981,6 +1983,7 @@ export default function App() {
                 </button>
               );
             })}
+            </div>
           </div>
           {loadingDoctors ? (
             <div style={{ textAlign:"center", padding:60, color:"#3b82c4", fontSize:18 }}>⏳ Conectando a Supabase...</div>
