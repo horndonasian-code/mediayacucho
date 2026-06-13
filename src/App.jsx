@@ -1694,8 +1694,8 @@ export default function App() {
     header: { position: "sticky", top: 0, zIndex: 100, background: "rgba(10,22,40,0.92)", backdropFilter: "blur(20px)", borderBottom: "1px solid rgba(59,130,196,0.2)", padding: "0 24px", display: "flex", alignItems: "center", justifyContent: "space-between", height: 64 },
     logo: { fontSize: 22, fontWeight: 700, color: "#3b82c4" },
     logoSub: { fontSize: 11, color: "#60a5d8", letterSpacing: 3, textTransform: "uppercase", display: "block", marginTop: -4 },
-    navBtn: (a) => ({ padding: "8px 16px", borderRadius: 8, border: a?"1px solid #3b82c4":"1px solid transparent", background: a?"rgba(59,130,196,0.15)":"transparent", color: a?"#3b82c4":"#93c5e8", cursor: "pointer", fontSize: 14, fontFamily: "inherit" }),
-    section: { maxWidth: 1100, margin: "0 auto", padding: "40px 24px", position: "relative", zIndex: 1 },
+    navBtn: (a) => ({ padding: "6px 12px", borderRadius: 8, border: a?"1px solid #3b82c4":"1px solid transparent", background: a?"rgba(59,130,196,0.15)":"transparent", color: a?"#3b82c4":"#93c5e8", cursor: "pointer", fontSize: 13, fontFamily: "inherit", whiteSpace: "nowrap" }),
+    section: { maxWidth: 1100, margin: "0 auto", padding: "24px 16px", position: "relative", zIndex: 1 },
     ctaPrimary: { padding: "14px 32px", background: "linear-gradient(135deg, #1a4f8a, #3b82c4)", color: "#fff", border: "none", borderRadius: 12, fontSize: 16, cursor: "pointer", fontWeight: 600, fontFamily: "inherit", boxShadow: "0 8px 32px rgba(59,130,196,0.3)" },
     ctaSecondary: { padding: "14px 32px", background: "transparent", color: "#3b82c4", border: "1.5px solid #3b82c4", borderRadius: 12, fontSize: 16, cursor: "pointer", fontFamily: "inherit" },
     grid: { display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(300px, 1fr))", gap: 20 },
@@ -1712,6 +1712,14 @@ export default function App() {
   return (
     <div style={T.app}>
       <link href="https://fonts.googleapis.com/css2?family=Crimson+Pro:wght@400;600;700&display=swap" rel="stylesheet" />
+      <style>{`
+        * { box-sizing: border-box; }
+        @media (max-width: 640px) {
+          .mobile-hide { display: none !important; }
+          body { overflow-x: hidden; }
+        }
+        nav::-webkit-scrollbar { display: none; }
+      `}</style>
 
       {showLogin && <LoginModal onLogin={handleLogin} onClose={() => setShowLogin(false)} />}
       {showNotifPanel && lastBooking && <NotificationPanel bookingData={lastBooking.data} doctor={lastBooking.doctor} onClose={resetBooking} />}
@@ -1721,9 +1729,27 @@ export default function App() {
           onClose={() => { setShowPayment(false); setIsMembershipPayment(false); }} />
       )}
 
+      <style>{`
+        @media (max-width: 768px) {
+          .desktop-nav { display: none !important; }
+          .mobile-nav { display: flex !important; }
+          .hero-grid { grid-template-columns: 1fr !important; gap: 24px !important; }
+          .hero-stats-card { display: none !important; }
+          .trust-grid { grid-template-columns: 1fr !important; }
+          .steps-grid { grid-template-columns: 1fr !important; }
+          .testimonials-grid { grid-template-columns: 1fr !important; }
+          .footer-grid { grid-template-columns: 1fr 1fr !important; gap: 24px !important; }
+          .doctor-grid { grid-template-columns: 1fr !important; }
+          .booking-form { padding: 16px !important; }
+        }
+        @media (max-width: 480px) {
+          .footer-grid { grid-template-columns: 1fr !important; }
+        }
+      `}</style>
+
       <header style={T.header}>
         <div style={{ cursor: "pointer", display: "flex", alignItems: "center", gap: 10 }} onClick={() => setView("home")}>
-          <svg width="36" height="36" viewBox="0 0 72 72" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <svg width="32" height="32" viewBox="0 0 72 72" fill="none" xmlns="http://www.w3.org/2000/svg">
             <circle cx="36" cy="36" r="36" fill="url(#lg1)"/>
             <rect x="28" y="14" width="16" height="44" rx="4" fill="white"/>
             <rect x="14" y="28" width="44" height="16" rx="4" fill="white"/>
@@ -1736,35 +1762,55 @@ export default function App() {
             </defs>
           </svg>
           <div>
-            <div style={{ fontSize: 20, fontWeight: 700, lineHeight: 1.1 }}>
+            <div style={{ fontSize: 18, fontWeight: 700, lineHeight: 1.1 }}>
               <span style={{ color: "#3b82c4" }}>Medi</span><span style={{ color: "#93c5e8", fontWeight: 300 }}>Ayacucho</span>
             </div>
-            <span style={{ fontSize: 9, color: "#60a5d8", letterSpacing: 2.5, textTransform: "uppercase", display: "block", marginTop: 1 }}>Salud para todos</span>
+            <span style={{ fontSize: 8, color: "#60a5d8", letterSpacing: 2, textTransform: "uppercase", display: "block", marginTop: 1 }}>Salud para todos</span>
           </div>
         </div>
-        <nav style={{ display: "flex", gap: 8 }}>
+
+        {/* Desktop nav */}
+        <nav className="desktop-nav" style={{ display: "flex", gap: 8 }}>
           <button style={T.navBtn(view==="home")} onClick={() => setView("home")}>Inicio</button>
           <button style={T.navBtn(view==="doctors")} onClick={() => setView("doctors")}>Médicos</button>
-          <button style={T.navBtn(view==="chat")} onClick={() => setView("chat")}>🤖 Asistente IA</button>
+          <button style={T.navBtn(view==="chat")} onClick={() => setView("chat")}>🤖 IA</button>
           {session ? (
             <div style={{ display: "flex", gap: 8 }}>
               {session.email === ADMIN_EMAIL && (
-                <button style={{ ...T.navBtn(false), background: "rgba(255,100,100,0.15)", border: "1px solid rgba(255,100,100,0.4)", color: "#ff6b6b" }} onClick={() => setShowAdmin(true)}>🛡️ Admin</button>
+                <button style={{ ...T.navBtn(false), background: "rgba(255,100,100,0.15)", border: "1px solid rgba(255,100,100,0.4)", color: "#ff6b6b" }} onClick={() => setShowAdmin(true)}>🛡️</button>
               )}
               <button style={{ ...T.navBtn(true), background: "rgba(59,130,196,0.15)" }} onClick={async () => {
                 const myDoc = doctors.find(d => d.email === session?.email);
                 if (myDoc) { setDashboardDoctor(myDoc); return; }
-                // Si pas trouvé dans les actifs, chercher aussi les inactifs
                 try {
                   const all = await sb(`doctors?email=eq.${encodeURIComponent(session?.email)}`);
                   if (all && all.length > 0) setDashboardDoctor(all[0]);
                   else setView("doctor-register");
                 } catch { setView("doctor-register"); }
-              }}>📊 Mi Panel</button>
+              }}>📊 Panel</button>
               <button style={{ ...T.navBtn(false), color: "#ff6b6b" }} onClick={handleLogout}>Salir</button>
             </div>
           ) : (
-            <button style={{ ...T.navBtn(view==="doctor-register"), background: "rgba(59,130,196,0.15)", border: "1px solid rgba(59,130,196,0.4)", color: "#3b82c4" }} onClick={() => setShowLogin(true)}>🔐 Soy Médico</button>
+            <button style={{ ...T.navBtn(false), background: "rgba(59,130,196,0.15)", border: "1px solid rgba(59,130,196,0.4)", color: "#3b82c4" }} onClick={() => setShowLogin(true)}>🔐 Médico</button>
+          )}
+        </nav>
+
+        {/* Mobile nav — icônes seulement */}
+        <nav className="mobile-nav" style={{ display: "none", gap: 6, alignItems: "center" }}>
+          <button style={{ padding:"8px 10px", borderRadius:8, border:"none", background: view==="doctors" ? "rgba(59,130,196,0.2)" : "transparent", color: view==="doctors" ? "#3b82c4" : "#93c5e8", cursor:"pointer", fontSize:18, fontFamily:"inherit" }} onClick={() => setView("doctors")}>🏥</button>
+          <button style={{ padding:"8px 10px", borderRadius:8, border:"none", background: view==="chat" ? "rgba(59,130,196,0.2)" : "transparent", color: view==="chat" ? "#3b82c4" : "#93c5e8", cursor:"pointer", fontSize:18, fontFamily:"inherit" }} onClick={() => setView("chat")}>🤖</button>
+          {session ? (
+            <>
+              {session.email === ADMIN_EMAIL && <button style={{ padding:"8px 10px", borderRadius:8, border:"none", background:"rgba(255,100,100,0.15)", color:"#ff6b6b", cursor:"pointer", fontSize:18, fontFamily:"inherit" }} onClick={() => setShowAdmin(true)}>🛡️</button>}
+              <button style={{ padding:"8px 10px", borderRadius:8, border:"none", background:"rgba(59,130,196,0.15)", color:"#3b82c4", cursor:"pointer", fontSize:18, fontFamily:"inherit" }} onClick={async () => {
+                const myDoc = doctors.find(d => d.email === session?.email);
+                if (myDoc) { setDashboardDoctor(myDoc); return; }
+                try { const all = await sb(`doctors?email=eq.${encodeURIComponent(session?.email)}`); if (all?.length > 0) setDashboardDoctor(all[0]); else setView("doctor-register"); } catch { setView("doctor-register"); }
+              }}>📊</button>
+              <button style={{ padding:"8px 10px", borderRadius:8, border:"none", background:"transparent", color:"#ff6b6b", cursor:"pointer", fontSize:14, fontFamily:"inherit" }} onClick={handleLogout}>✕</button>
+            </>
+          ) : (
+            <button style={{ padding:"8px 14px", borderRadius:8, border:"1px solid rgba(59,130,196,0.4)", background:"rgba(59,130,196,0.15)", color:"#3b82c4", cursor:"pointer", fontSize:13, fontFamily:"inherit", fontWeight:700 }} onClick={() => setShowLogin(true)}>🔐</button>
           )}
         </nav>
       </header>
@@ -1779,6 +1825,19 @@ export default function App() {
             @keyframes countUp { from { opacity:0; } to { opacity:1; } }
             .hero-card:hover { transform: translateY(-6px) !important; box-shadow: 0 20px 60px rgba(59,130,196,0.2) !important; }
             .spec-card:hover { transform: scale(1.05); border-color: rgba(59,130,196,0.5) !important; }
+            @media (max-width: 768px) {
+              .hero-grid { grid-template-columns: 1fr !important; gap: 24px !important; }
+              .hero-stats { display: none !important; }
+              .hero-section { padding: 40px 16px 32px !important; min-height: auto !important; }
+              .how-grid { grid-template-columns: 1fr !important; }
+              .photos-grid { grid-template-columns: 1fr !important; }
+              .testimonials-grid { grid-template-columns: 1fr !important; }
+              .footer-grid { grid-template-columns: 1fr 1fr !important; gap: 24px !important; }
+              .doctors-grid { grid-template-columns: 1fr !important; }
+            }
+            @media (max-width: 480px) {
+              .footer-grid { grid-template-columns: 1fr !important; }
+            }
           `}</style>
 
           {/* HERO */}
@@ -1791,8 +1850,8 @@ export default function App() {
             <div style={{ position:"absolute", top:"10%", right:"5%", width:400, height:400, borderRadius:"50%", background:"radial-gradient(circle, rgba(59,130,196,0.08) 0%, transparent 70%)", animation:"float 6s ease-in-out infinite" }} />
             <div style={{ position:"absolute", bottom:"10%", left:"5%", width:300, height:300, borderRadius:"50%", background:"radial-gradient(circle, rgba(37,211,102,0.05) 0%, transparent 70%)", animation:"float 8s ease-in-out infinite reverse" }} />
 
-            <div style={{ maxWidth:1100, margin:"0 auto", padding:"80px 24px", width:"100%", position:"relative", zIndex:1 }}>
-              <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:60, alignItems:"center" }}>
+            <div className="hero-section" style={{ maxWidth:1100, margin:"0 auto", padding:"80px 24px", width:"100%", position:"relative", zIndex:1 }}>
+              <div className="hero-grid" style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:60, alignItems:"center" }}>
 
                 {/* LEFT — Text */}
                 <div style={{ animation:"fadeUp 0.8s ease forwards" }}>
@@ -1802,7 +1861,7 @@ export default function App() {
                     <span style={{ fontSize:13, color:"#93c5e8", letterSpacing:0.5 }}>🏥 Plataforma médica certificada — Ayacucho</span>
                   </div>
 
-                  <h1 style={{ fontSize:"clamp(40px,5vw,68px)", fontWeight:700, lineHeight:1.05, margin:"0 0 20px", letterSpacing:"-1px" }}>
+                  <h1 style={{ fontSize:"clamp(32px,6vw,68px)", fontWeight:700, lineHeight:1.1, margin:"0 0 20px", letterSpacing:"-0.5px" }}>
                     Tu salud,<br/>
                     <span style={{ background:"linear-gradient(135deg,#3b82c4,#60a5d8)", WebkitBackgroundClip:"text", WebkitTextFillColor:"transparent", backgroundClip:"text" }}>nuestra</span>
                     <span style={{ color:"#e8f0f8" }}> prioridad</span>
@@ -1828,7 +1887,7 @@ export default function App() {
                   </div>
 
                   {/* Trust badges */}
-                  <div style={{ display:"flex", gap:16, flexWrap:"wrap" }}>
+                  <div style={{ display:"flex", gap:10, flexWrap:"wrap" }}>
                     {[["🔒","Pago seguro","Yape & Plin"],["✅","CMP Verificado","Médicos certificados"],["24/7","Disponible","Asistente IA"]].map(([icon,title,sub],i)=>(
                       <div key={i} style={{ display:"flex", alignItems:"center", gap:8, padding:"8px 14px", background:"rgba(255,255,255,0.04)", border:"1px solid rgba(59,130,196,0.15)", borderRadius:10 }}>
                         <span style={{ fontSize:18 }}>{icon}</span>
@@ -1842,10 +1901,10 @@ export default function App() {
                 </div>
 
                 {/* RIGHT — Stats card */}
-                <div style={{ animation:"fadeUp 0.8s ease 0.2s both" }}>
+                <div className="hero-stats-card" style={{ animation:"fadeUp 0.8s ease 0.2s both" }}>
                   <div style={{ background:"rgba(255,255,255,0.04)", border:"1px solid rgba(59,130,196,0.2)", borderRadius:24, padding:32, backdropFilter:"blur(20px)" }}>
                     <h3 style={{ margin:"0 0 24px", fontSize:18, color:"#e8f0f8", fontWeight:700 }}>📊 MediAyacucho en números</h3>
-                    <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:16, marginBottom:24 }}>
+                    <div style={{ display:"grid", gridTemplateColumns:"repeat(2, 1fr)", gap:12, marginBottom:20 }}>
                       {[[doctors.length||6,"Médicos","verificados","#3b82c4"],["500+","Citas","agendadas","#25D366"],["4.8★","Rating","promedio","#F4A261"],["24/7","Soporte","disponible","#a78bfa"]].map(([n,l,s,c],i)=>(
                         <div key={i} style={{ background:`${c}10`, border:`1px solid ${c}25`, borderRadius:14, padding:"16px", textAlign:"center" }}>
                           <div style={{ fontSize:30, fontWeight:700, color:c }}>{n}</div>
@@ -1878,7 +1937,7 @@ export default function App() {
                 <h2 style={{ fontSize:36, fontWeight:700, margin:"0 0 12px" }}>¿Cómo funciona?</h2>
                 <p style={{ color:"#60a5d8", fontSize:16 }}>Agenda tu cita en 3 simples pasos</p>
               </div>
-              <div style={{ display:"grid", gridTemplateColumns:"repeat(3,1fr)", gap:24, position:"relative" }}>
+              <div className="steps-grid" style={{ display:"grid", gridTemplateColumns:"repeat(3,1fr)", gap:24, position:"relative" }}>
                 {[
                   { n:"01", icon:"🤖", title:"Consulta la IA", desc:"Cuéntanos tus síntomas y nuestra IA te recomienda al médico ideal para ti.", color:"#3b82c4" },
                   { n:"02", icon:"📅", title:"Elige tu cita", desc:"Selecciona el médico, fecha, horario y modalidad (presencial o virtual).", color:"#a78bfa" },
@@ -1901,7 +1960,7 @@ export default function App() {
               <h2 style={{ fontSize:32, fontWeight:700, margin:"0 0 12px" }}>Atención médica de calidad</h2>
               <p style={{ color:"#60a5d8", fontSize:15 }}>Médicos verificados, consultorios equipados, resultados confiables</p>
             </div>
-            <div style={{ display:"grid", gridTemplateColumns:"repeat(3,1fr)", gap:20, marginBottom:60 }}>
+            <div className="trust-grid" style={{ display:"grid", gridTemplateColumns:"repeat(3,1fr)", gap:20, marginBottom:60 }}>
               {[
                 { url:"https://images.unsplash.com/photo-1559757148-5c350d0d3c56?w=600&q=80", label:"Médicos certificados CMP", desc:"Todos verificados por el Colegio Médico del Perú" },
                 { url:"https://images.unsplash.com/photo-1666214280557-f1b5022eb634?w=600&q=80", label:"Atención personalizada", desc:"Consultas presenciales y virtuales disponibles" },
@@ -1924,7 +1983,7 @@ export default function App() {
               <div style={{ color:"#F4A261", fontSize:20, marginBottom:8 }}>★★★★★</div>
               <p style={{ color:"#60a5d8", fontSize:14 }}>+500 pacientes satisfechos en Ayacucho</p>
             </div>
-            <div style={{ display:"grid", gridTemplateColumns:"repeat(3,1fr)", gap:16 }}>
+            <div className="testimonials-grid" style={{ display:"grid", gridTemplateColumns:"repeat(3,1fr)", gap:16 }}>
               {[
                 { name:"María Condori", city:"Huamanga", text:"Encontré al médico perfecto en 5 minutos y pagué por Yape. ¡Increíble!", stars:5, sp:"Medicina General" },
                 { name:"Jorge Quispe", city:"Ayacucho", text:"La consulta virtual fue excelente. El doctor muy atento y puntual.", stars:5, sp:"Cardiología" },
@@ -1988,7 +2047,7 @@ export default function App() {
           {loadingDoctors ? (
             <div style={{ textAlign:"center", padding:60, color:"#3b82c4", fontSize:18 }}>⏳ Conectando a Supabase...</div>
           ) : (
-            <div style={T.grid}>
+            <div className="doctor-grid" style={T.grid}>
               {filtered.map(doc => (
                 <div key={doc.id} style={{ ...T.card, position:"relative", overflow:"hidden" }}
                   onMouseEnter={e=>{e.currentTarget.style.transform="translateY(-6px)";e.currentTarget.style.borderColor="rgba(59,130,196,0.4)";e.currentTarget.style.boxShadow="0 16px 48px rgba(59,130,196,0.15)";}}
@@ -2414,7 +2473,7 @@ export default function App() {
       {view === "home" && (
         <footer style={{ background:"rgba(0,0,0,0.4)", borderTop:"1px solid rgba(59,130,196,0.15)", padding:"60px 24px 24px" }}>
           <div style={{ maxWidth:1100, margin:"0 auto" }}>
-            <div style={{ display:"grid", gridTemplateColumns:"2fr 1fr 1fr 1fr", gap:40, marginBottom:48 }}>
+            <div className="footer-grid" style={{ display:"grid", gridTemplateColumns:"2fr 1fr 1fr 1fr", gap:40, marginBottom:48 }}>
 
               {/* Colonne 1 — Logo + desc */}
               <div>
