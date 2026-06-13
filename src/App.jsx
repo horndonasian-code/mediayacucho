@@ -93,6 +93,15 @@ const auth = {
 
 // ─── Constants ─────────────────────────────────────────────────────────────
 const SPECIALTIES = ["Todos", "Medicina General", "Pediatría", "Cardiología", "Ginecología", "Traumatología", "Dermatología"];
+
+const SPECIALTY_CONFIG = {
+  "Medicina General": { color: "#3b82c4", bg: "rgba(59,130,196,0.15)", icon: "🩺" },
+  "Pediatría":        { color: "#F4A261", bg: "rgba(244,162,97,0.15)",  icon: "👶" },
+  "Cardiología":      { color: "#ff6b6b", bg: "rgba(255,107,107,0.15)", icon: "❤️" },
+  "Ginecología":      { color: "#f472b6", bg: "rgba(244,114,182,0.15)", icon: "🌸" },
+  "Traumatología":    { color: "#60a5d8", bg: "rgba(96,165,216,0.15)",  icon: "🦴" },
+  "Dermatología":     { color: "#a78bfa", bg: "rgba(167,139,250,0.15)", icon: "✨" },
+};
 const MONTHLY_DATA = [
   { mes: "Ene", citas: 18, ingresos: 1080 }, { mes: "Feb", citas: 24, ingresos: 1440 },
   { mes: "Mar", citas: 30, ingresos: 1800 }, { mes: "Abr", citas: 22, ingresos: 1320 },
@@ -1950,7 +1959,15 @@ export default function App() {
             {loadingDoctors ? "Cargando desde Supabase..." : dbError ? `⚠️ Error: ${dbError}` : `${doctors.length} médico(s) certificado(s) y verificado(s)`}
           </p>
           <div style={{ display: "flex", gap: 8, marginBottom: 32, flexWrap: "wrap" }}>
-            {SPECIALTIES.map(s => <button key={s} style={T.filterBtn(filter===s)} onClick={() => setFilter(s)}>{s}</button>)}
+            {SPECIALTIES.map(s => {
+              const cfg = SPECIALTY_CONFIG[s];
+              const isActive = filter === s;
+              return (
+                <button key={s} style={{ padding:"8px 18px", borderRadius:20, border:`1px solid ${isActive ? (cfg?.color || "#3b82c4") : "rgba(59,130,196,0.3)"}`, background: isActive ? (cfg?.bg || "rgba(59,130,196,0.2)") : "transparent", color: isActive ? (cfg?.color || "#3b82c4") : "#60a5d8", cursor:"pointer", fontSize:13, fontFamily:"inherit", fontWeight: isActive ? 700 : 400, transition:"all 0.2s" }} onClick={() => setFilter(s)}>
+                  {cfg?.icon || ""} {s}
+                </button>
+              );
+            })}
           </div>
           {loadingDoctors ? (
             <div style={{ textAlign:"center", padding:60, color:"#3b82c4", fontSize:18 }}>⏳ Conectando a Supabase...</div>
@@ -1958,14 +1975,18 @@ export default function App() {
             <div style={T.grid}>
               {filtered.map(doc => (
                 <div key={doc.id} style={T.card}
-                  onMouseEnter={e=>{e.currentTarget.style.transform="translateY(-4px)";e.currentTarget.style.borderColor="rgba(59,130,196,0.4)";}}
+                  onMouseEnter={e=>{e.currentTarget.style.transform="translateY(-4px)";e.currentTarget.style.borderColor=(SPECIALTY_CONFIG[doc.specialty]?.color || "#3b82c4")+"66";e.currentTarget.style.boxShadow=`0 12px 40px ${SPECIALTY_CONFIG[doc.specialty]?.color || "#3b82c4"}22`;}}
                   onMouseLeave={e=>{e.currentTarget.style.transform="";e.currentTarget.style.borderColor="rgba(59,130,196,0.15)";}}>
                   {doc.photo_url
-                    ? <img src={doc.photo_url} alt={doc.name} style={{ width:56, height:56, borderRadius:14, objectFit:"cover", marginBottom:16, border:"2px solid rgba(59,130,196,0.3)" }} />
-                    : <div style={T.avatar(doc.color)}>{doc.img || initials(doc.name)}</div>
+                    ? <img src={doc.photo_url} alt={doc.name} style={{ width:56, height:56, borderRadius:14, objectFit:"cover", marginBottom:16, border:`2px solid ${SPECIALTY_CONFIG[doc.specialty]?.color || "#3b82c4"}66` }} />
+                    : <div style={{ ...T.avatar(SPECIALTY_CONFIG[doc.specialty]?.color || doc.color), background:`linear-gradient(135deg, ${doc.color}, ${SPECIALTY_CONFIG[doc.specialty]?.color || doc.color})` }}>{doc.img || initials(doc.name)}</div>
                   }
-                  <h3 style={{ fontSize:18, fontWeight:700, margin:"0 0 4px", color:"#e8f0f8" }}>{doc.name}</h3>
-                  <p style={{ fontSize:13, color:"#60a5d8", margin:"0 0 8px" }}>{doc.specialty}</p>
+                  <h3 style={{ fontSize:18, fontWeight:700, margin:"0 0 8px", color:"#e8f0f8" }}>{doc.name}</h3>
+                  <div style={{ marginBottom:10 }}>
+                    <span style={{ display:"inline-flex", alignItems:"center", gap:5, padding:"4px 12px", borderRadius:20, background: SPECIALTY_CONFIG[doc.specialty]?.bg || "rgba(59,130,196,0.15)", border:`1px solid ${SPECIALTY_CONFIG[doc.specialty]?.color || "#3b82c4"}44`, color: SPECIALTY_CONFIG[doc.specialty]?.color || "#3b82c4", fontSize:12, fontWeight:700 }}>
+                      {SPECIALTY_CONFIG[doc.specialty]?.icon || "🏥"} {doc.specialty}
+                    </span>
+                  </div>
                   <div style={{ color:"#F4A261", fontSize:13 }}>{"★".repeat(Math.floor(doc.rating||5))} {doc.rating}</div>
                   <div style={{ marginTop:6, color:"#60a5d8", fontSize:12 }}>{(doc.schedule||[]).join(" · ")}</div>
                   {doc.address && (
