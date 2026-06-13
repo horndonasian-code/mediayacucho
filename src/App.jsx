@@ -1972,7 +1972,7 @@ export default function App() {
             {loadingDoctors ? "Cargando desde Supabase..." : dbError ? `⚠️ Error: ${dbError}` : `${doctors.length} médico(s) certificado(s) y verificado(s)`}
           </p>
           {/* Scrollable filter row */}
-          <div style={{ margin: "0 -24px", padding: "0 24px", overflowX: "auto", marginBottom: 32, WebkitOverflowScrolling: "touch", msOverflowStyle: "none", scrollbarWidth: "none" }}>
+          <div style={{ margin: "0 -24px", padding: "0 24px 12px", overflowX: "scroll", marginBottom: 32, WebkitOverflowScrolling: "touch", cursor: "grab" }}>
             <div style={{ display: "flex", gap: 8, paddingBottom: 8, width: "max-content" }}>
             {SPECIALTIES.map(s => {
               const cfg = SPECIALTY_CONFIG[s];
