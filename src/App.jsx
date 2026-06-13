@@ -1750,84 +1750,199 @@ export default function App() {
       {/* HOME */}
       {view === "home" && (
         <>
+          <style>{`
+            @keyframes fadeUp { from { opacity:0; transform:translateY(30px); } to { opacity:1; transform:translateY(0); } }
+            @keyframes pulse { 0%,100% { opacity:1; } 50% { opacity:0.5; } }
+            @keyframes float { 0%,100% { transform:translateY(0); } 50% { transform:translateY(-10px); } }
+            @keyframes countUp { from { opacity:0; } to { opacity:1; } }
+            .hero-card:hover { transform: translateY(-6px) !important; box-shadow: 0 20px 60px rgba(59,130,196,0.2) !important; }
+            .spec-card:hover { transform: scale(1.05); border-color: rgba(59,130,196,0.5) !important; }
+          `}</style>
+
           {/* HERO */}
-          <div style={{ position: "relative", zIndex: 1, overflow: "hidden" }}>
-            {/* Hero background image */}
-            <div style={{ position: "absolute", inset: 0, backgroundImage: "url(https://images.unsplash.com/photo-1576091160550-2173dba999ef?w=1600&q=80)", backgroundSize: "cover", backgroundPosition: "center", opacity: 0.12, zIndex: 0 }} />
-            <div style={{ padding: "80px 24px 60px", textAlign: "center", position: "relative", zIndex: 1 }}>
-              <div style={{ display: "inline-block", background: "rgba(59,130,196,0.15)", border: "1px solid rgba(59,130,196,0.3)", borderRadius: 20, padding: "6px 16px", fontSize: 13, color: "#93c5e8", marginBottom: 20, letterSpacing: 0.5 }}>
-                🏥 Plataforma médica certificada — Ayacucho, Perú
+          <div style={{ position:"relative", overflow:"hidden", minHeight:"90vh", display:"flex", alignItems:"center" }}>
+            {/* Background image */}
+            <div style={{ position:"absolute", inset:0, backgroundImage:"url(https://images.unsplash.com/photo-1576091160550-2173dba999ef?w=1600&q=80)", backgroundSize:"cover", backgroundPosition:"center", opacity:0.08 }} />
+            {/* Gradient overlay */}
+            <div style={{ position:"absolute", inset:0, background:"linear-gradient(135deg, rgba(3,13,26,0.95) 0%, rgba(5,22,40,0.8) 50%, rgba(26,79,138,0.3) 100%)" }} />
+            {/* Animated circles */}
+            <div style={{ position:"absolute", top:"10%", right:"5%", width:400, height:400, borderRadius:"50%", background:"radial-gradient(circle, rgba(59,130,196,0.08) 0%, transparent 70%)", animation:"float 6s ease-in-out infinite" }} />
+            <div style={{ position:"absolute", bottom:"10%", left:"5%", width:300, height:300, borderRadius:"50%", background:"radial-gradient(circle, rgba(37,211,102,0.05) 0%, transparent 70%)", animation:"float 8s ease-in-out infinite reverse" }} />
+
+            <div style={{ maxWidth:1100, margin:"0 auto", padding:"80px 24px", width:"100%", position:"relative", zIndex:1 }}>
+              <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:60, alignItems:"center" }}>
+
+                {/* LEFT — Text */}
+                <div style={{ animation:"fadeUp 0.8s ease forwards" }}>
+                  {/* Badge */}
+                  <div style={{ display:"inline-flex", alignItems:"center", gap:8, background:"rgba(59,130,196,0.12)", border:"1px solid rgba(59,130,196,0.3)", borderRadius:20, padding:"8px 16px", marginBottom:24 }}>
+                    <div style={{ width:8, height:8, borderRadius:"50%", background:"#25D366", animation:"pulse 2s infinite" }} />
+                    <span style={{ fontSize:13, color:"#93c5e8", letterSpacing:0.5 }}>🏥 Plataforma médica certificada — Ayacucho</span>
+                  </div>
+
+                  <h1 style={{ fontSize:"clamp(40px,5vw,68px)", fontWeight:700, lineHeight:1.05, margin:"0 0 20px", letterSpacing:"-1px" }}>
+                    Tu salud,<br/>
+                    <span style={{ background:"linear-gradient(135deg,#3b82c4,#60a5d8)", WebkitBackgroundClip:"text", WebkitTextFillColor:"transparent", backgroundClip:"text" }}>nuestra</span>
+                    <span style={{ color:"#e8f0f8" }}> prioridad</span>
+                  </h1>
+
+                  <p style={{ fontSize:18, color:"#93c5e8", lineHeight:1.7, margin:"0 0 36px", maxWidth:480 }}>
+                    Conectamos a la población de Ayacucho con <strong style={{ color:"#e8f0f8" }}>médicos calificados y verificados</strong>. Agenda tu cita en minutos con IA.
+                  </p>
+
+                  <div style={{ display:"flex", gap:12, flexWrap:"wrap", marginBottom:40 }}>
+                    <button style={{ padding:"15px 32px", background:"linear-gradient(135deg,#1a4f8a,#3b82c4)", color:"#fff", border:"none", borderRadius:14, fontSize:16, cursor:"pointer", fontWeight:700, fontFamily:"inherit", boxShadow:"0 8px 32px rgba(59,130,196,0.4)", transition:"all 0.2s" }}
+                      onMouseEnter={e=>e.target.style.transform="translateY(-2px)"}
+                      onMouseLeave={e=>e.target.style.transform=""}
+                      onClick={() => setView("doctors")}>
+                      🏥 Buscar Médico
+                    </button>
+                    <button style={{ padding:"15px 32px", background:"transparent", color:"#3b82c4", border:"2px solid rgba(59,130,196,0.5)", borderRadius:14, fontSize:16, cursor:"pointer", fontFamily:"inherit", transition:"all 0.2s" }}
+                      onMouseEnter={e=>{e.target.style.background="rgba(59,130,196,0.1)";e.target.style.transform="translateY(-2px)"}}
+                      onMouseLeave={e=>{e.target.style.background="transparent";e.target.style.transform=""}}
+                      onClick={() => setView("chat")}>
+                      🤖 Hablar con IA
+                    </button>
+                  </div>
+
+                  {/* Trust badges */}
+                  <div style={{ display:"flex", gap:16, flexWrap:"wrap" }}>
+                    {[["🔒","Pago seguro","Yape & Plin"],["✅","CMP Verificado","Médicos certificados"],["24/7","Disponible","Asistente IA"]].map(([icon,title,sub],i)=>(
+                      <div key={i} style={{ display:"flex", alignItems:"center", gap:8, padding:"8px 14px", background:"rgba(255,255,255,0.04)", border:"1px solid rgba(59,130,196,0.15)", borderRadius:10 }}>
+                        <span style={{ fontSize:18 }}>{icon}</span>
+                        <div>
+                          <div style={{ fontSize:12, fontWeight:700, color:"#e8f0f8" }}>{title}</div>
+                          <div style={{ fontSize:11, color:"#60a5d8" }}>{sub}</div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                {/* RIGHT — Stats card */}
+                <div style={{ animation:"fadeUp 0.8s ease 0.2s both" }}>
+                  <div style={{ background:"rgba(255,255,255,0.04)", border:"1px solid rgba(59,130,196,0.2)", borderRadius:24, padding:32, backdropFilter:"blur(20px)" }}>
+                    <h3 style={{ margin:"0 0 24px", fontSize:18, color:"#e8f0f8", fontWeight:700 }}>📊 MediAyacucho en números</h3>
+                    <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:16, marginBottom:24 }}>
+                      {[[doctors.length||6,"Médicos","verificados","#3b82c4"],["500+","Citas","agendadas","#25D366"],["4.8★","Rating","promedio","#F4A261"],["24/7","Soporte","disponible","#a78bfa"]].map(([n,l,s,c],i)=>(
+                        <div key={i} style={{ background:`${c}10`, border:`1px solid ${c}25`, borderRadius:14, padding:"16px", textAlign:"center" }}>
+                          <div style={{ fontSize:30, fontWeight:700, color:c }}>{n}</div>
+                          <div style={{ fontSize:13, fontWeight:700, color:"#e8f0f8" }}>{l}</div>
+                          <div style={{ fontSize:11, color:"#60a5d8" }}>{s}</div>
+                        </div>
+                      ))}
+                    </div>
+
+                    {/* Specialties quick access */}
+                    <p style={{ margin:"0 0 12px", fontSize:13, color:"#60a5d8" }}>Especialidades disponibles:</p>
+                    <div style={{ display:"flex", gap:6, flexWrap:"wrap" }}>
+                      {["Medicina General","Pediatría","Cardiología","Ginecología","Traumatología","Dermatología"].map((sp,i)=>(
+                        <button key={i} className="spec-card" style={{ padding:"5px 12px", borderRadius:20, background:"rgba(59,130,196,0.1)", border:"1px solid rgba(59,130,196,0.2)", color:"#60a5d8", fontSize:12, cursor:"pointer", fontFamily:"inherit", transition:"all 0.2s" }}
+                          onClick={()=>{ setFilter(sp); setView("doctors"); }}>
+                          {sp}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                </div>
               </div>
-              <h1 style={{ fontSize: "clamp(36px,6vw,72px)", fontWeight: 700, lineHeight: 1.1, margin: "0 0 20px" }}>
-                Tu salud,<span style={{ color: "#3b82c4", display: "block" }}>nuestra prioridad</span>
-              </h1>
-              <p style={{ fontSize: 18, color: "#93c5e8", maxWidth: 560, margin: "0 auto 40px", lineHeight: 1.6 }}>Conectamos a la población de Ayacucho con médicos calificados. Agenda tu cita en minutos con IA.</p>
-              <div style={{ display: "flex", gap: 16, justifyContent: "center", flexWrap: "wrap" }}>
-                <button style={T.ctaPrimary} onClick={() => setView("doctors")}>Buscar Médico</button>
-                <button style={T.ctaSecondary} onClick={() => setView("chat")}>Hablar con IA 🤖</button>
+            </div>
+          </div>
+
+          {/* HOW IT WORKS */}
+          <div style={{ background:"rgba(255,255,255,0.02)", borderTop:"1px solid rgba(59,130,196,0.1)", borderBottom:"1px solid rgba(59,130,196,0.1)", padding:"60px 24px" }}>
+            <div style={{ maxWidth:1100, margin:"0 auto" }}>
+              <div style={{ textAlign:"center", marginBottom:48 }}>
+                <h2 style={{ fontSize:36, fontWeight:700, margin:"0 0 12px" }}>¿Cómo funciona?</h2>
+                <p style={{ color:"#60a5d8", fontSize:16 }}>Agenda tu cita en 3 simples pasos</p>
               </div>
-              <div style={{ display: "flex", gap: 40, justifyContent: "center", margin: "60px 0", flexWrap: "wrap" }}>
-                {[[doctors.length||"6", "Médicos Certificados"],["500+","Citas Agendadas"],["4.8★","Calificación Promedio"],["24/7","Asistente IA"]].map(([n,l])=>(
-                  <div key={l} style={{ textAlign: "center" }}>
-                    <span style={{ fontSize: 40, fontWeight: 700, color: "#3b82c4", display: "block" }}>{n}</span>
-                    <span style={{ fontSize: 14, color: "#60a5d8" }}>{l}</span>
+              <div style={{ display:"grid", gridTemplateColumns:"repeat(3,1fr)", gap:24, position:"relative" }}>
+                {[
+                  { n:"01", icon:"🤖", title:"Consulta la IA", desc:"Cuéntanos tus síntomas y nuestra IA te recomienda al médico ideal para ti.", color:"#3b82c4" },
+                  { n:"02", icon:"📅", title:"Elige tu cita", desc:"Selecciona el médico, fecha, horario y modalidad (presencial o virtual).", color:"#a78bfa" },
+                  { n:"03", icon:"📲", title:"Confirmación WhatsApp", desc:"Recibe confirmación instantánea con dirección, precio y política de cancelación.", color:"#25D366" },
+                ].map((step,i)=>(
+                  <div key={i} className="hero-card" style={{ background:"rgba(255,255,255,0.04)", border:`1px solid ${step.color}22`, borderRadius:20, padding:28, position:"relative", transition:"all 0.3s", cursor:"default" }}>
+                    <div style={{ position:"absolute", top:20, right:20, fontSize:48, fontWeight:900, color:`${step.color}15`, lineHeight:1 }}>{step.n}</div>
+                    <div style={{ width:56, height:56, borderRadius:16, background:`${step.color}18`, border:`1px solid ${step.color}33`, display:"flex", alignItems:"center", justifyContent:"center", fontSize:26, marginBottom:16 }}>{step.icon}</div>
+                    <h3 style={{ margin:"0 0 10px", fontSize:19, fontWeight:700, color:"#e8f0f8" }}>{step.title}</h3>
+                    <p style={{ margin:0, color:"#60a5d8", fontSize:14, lineHeight:1.6 }}>{step.desc}</p>
                   </div>
                 ))}
               </div>
             </div>
           </div>
 
-          {/* TRUST PHOTOS SECTION */}
-          <div style={{ maxWidth: 1100, margin: "0 auto", padding: "0 24px 60px", position: "relative", zIndex: 1 }}>
-            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 16, marginBottom: 60 }}>
+          {/* TRUST PHOTOS */}
+          <div style={{ maxWidth:1100, margin:"0 auto", padding:"60px 24px" }}>
+            <div style={{ textAlign:"center", marginBottom:40 }}>
+              <h2 style={{ fontSize:32, fontWeight:700, margin:"0 0 12px" }}>Atención médica de calidad</h2>
+              <p style={{ color:"#60a5d8", fontSize:15 }}>Médicos verificados, consultorios equipados, resultados confiables</p>
+            </div>
+            <div style={{ display:"grid", gridTemplateColumns:"repeat(3,1fr)", gap:20, marginBottom:60 }}>
               {[
-                { url: "https://images.unsplash.com/photo-1559757148-5c350d0d3c56?w=600&q=80", label: "Médicos certificados", desc: "Todos nuestros médicos están verificados y colegiados" },
-                { url: "https://images.unsplash.com/photo-1666214280557-f1b5022eb634?w=600&q=80", label: "Atención de calidad", desc: "Consultas presenciales en consultorios equipados" },
-                { url: "https://images.unsplash.com/photo-1584820927498-cfe5211fd8bf?w=600&q=80", label: "Reserva en minutos", desc: "Agenda tu cita desde tu celular sin filas" },
-              ].map((item, i) => (
-                <div key={i} style={{ borderRadius: 16, overflow: "hidden", position: "relative", border: "1px solid rgba(59,130,196,0.2)" }}>
-                  <img src={item.url} alt={item.label} style={{ width: "100%", height: 200, objectFit: "cover", display: "block" }} onError={e => { e.target.style.display = "none"; }} />
-                  <div style={{ padding: "16px 18px", background: "rgba(5,22,40,0.95)" }}>
-                    <div style={{ fontWeight: 700, color: "#e8f0f8", fontSize: 15, marginBottom: 4 }}>{item.label}</div>
-                    <div style={{ fontSize: 13, color: "#60a5d8", lineHeight: 1.5 }}>{item.desc}</div>
+                { url:"https://images.unsplash.com/photo-1559757148-5c350d0d3c56?w=600&q=80", label:"Médicos certificados CMP", desc:"Todos verificados por el Colegio Médico del Perú" },
+                { url:"https://images.unsplash.com/photo-1666214280557-f1b5022eb634?w=600&q=80", label:"Atención personalizada", desc:"Consultas presenciales y virtuales disponibles" },
+                { url:"https://images.unsplash.com/photo-1584820927498-cfe5211fd8bf?w=600&q=80", label:"Reserva en minutos", desc:"Paga con Yape o Plin, sin complicaciones" },
+              ].map((item,i)=>(
+                <div key={i} style={{ borderRadius:20, overflow:"hidden", border:"1px solid rgba(59,130,196,0.15)", transition:"all 0.3s" }}
+                  className="hero-card">
+                  <img src={item.url} alt={item.label} style={{ width:"100%", height:200, objectFit:"cover", display:"block" }} onError={e=>{e.target.style.display="none"}} />
+                  <div style={{ padding:"18px 20px", background:"rgba(5,22,40,0.98)" }}>
+                    <div style={{ fontWeight:700, color:"#e8f0f8", fontSize:15, marginBottom:4 }}>{item.label}</div>
+                    <div style={{ fontSize:13, color:"#60a5d8", lineHeight:1.5 }}>{item.desc}</div>
                   </div>
                 </div>
               ))}
             </div>
 
-            {/* TESTIMONIOS */}
-            <h2 style={{ fontSize: 26, fontWeight: 700, margin: "0 0 24px", textAlign: "center" }}>Lo que dicen nuestros pacientes</h2>
-            <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))", gap: 16, marginBottom: 60 }}>
+            {/* TESTIMONIALS */}
+            <div style={{ textAlign:"center", marginBottom:32 }}>
+              <h2 style={{ fontSize:28, fontWeight:700, margin:"0 0 8px" }}>Lo que dicen nuestros pacientes</h2>
+              <div style={{ color:"#F4A261", fontSize:20, marginBottom:8 }}>★★★★★</div>
+              <p style={{ color:"#60a5d8", fontSize:14 }}>+500 pacientes satisfechos en Ayacucho</p>
+            </div>
+            <div style={{ display:"grid", gridTemplateColumns:"repeat(3,1fr)", gap:16 }}>
               {[
-                { name: "María C.", city: "Ayacucho", text: "Encontré médico en 5 minutos y pagué por Yape. ¡Muy fácil!", stars: 5 },
-                { name: "Jorge H.", city: "Huamanga", text: "El doctor llegó puntual y la consulta fue excelente. Lo recomiendo.", stars: 5 },
-                { name: "Rosa P.", city: "Ayacucho", text: "Me mandaron la confirmación por WhatsApp con la dirección. Perfecto.", stars: 5 },
-              ].map((t, i) => (
-                <div key={i} style={{ background: "rgba(255,255,255,0.04)", border: "1px solid rgba(59,130,196,0.15)", borderRadius: 14, padding: 20 }}>
-                  <div style={{ color: "#F4A261", fontSize: 16, marginBottom: 10 }}>{"★".repeat(t.stars)}</div>
-                  <p style={{ color: "#93c5e8", fontSize: 14, lineHeight: 1.6, margin: "0 0 12px", fontStyle: "italic" }}>"{t.text}"</p>
-                  <div style={{ fontWeight: 700, color: "#e8f0f8", fontSize: 14 }}>{t.name}</div>
-                  <div style={{ color: "#60a5d8", fontSize: 12 }}>{t.city}</div>
+                { name:"María Condori", city:"Huamanga", text:"Encontré al médico perfecto en 5 minutos y pagué por Yape. ¡Increíble!", stars:5, sp:"Medicina General" },
+                { name:"Jorge Quispe", city:"Ayacucho", text:"La consulta virtual fue excelente. El doctor muy atento y puntual.", stars:5, sp:"Cardiología" },
+                { name:"Rosa Palomino", city:"Ayacucho", text:"Me enviaron la confirmación con la dirección exacta. Muy profesional.", stars:5, sp:"Pediatría" },
+              ].map((t,i)=>(
+                <div key={i} className="hero-card" style={{ background:"rgba(255,255,255,0.04)", border:"1px solid rgba(59,130,196,0.12)", borderRadius:16, padding:22, transition:"all 0.3s" }}>
+                  <div style={{ display:"flex", justifyContent:"space-between", alignItems:"flex-start", marginBottom:12 }}>
+                    <div style={{ display:"flex", gap:10, alignItems:"center" }}>
+                      <div style={{ width:40, height:40, borderRadius:"50%", background:"linear-gradient(135deg,#1a4f8a,#3b82c4)", display:"flex", alignItems:"center", justifyContent:"center", fontWeight:700, color:"#fff", fontSize:16 }}>{t.name[0]}</div>
+                      <div>
+                        <div style={{ fontWeight:700, color:"#e8f0f8", fontSize:14 }}>{t.name}</div>
+                        <div style={{ fontSize:11, color:"#60a5d8" }}>📍 {t.city}</div>
+                      </div>
+                    </div>
+                    <span style={{ padding:"3px 10px", borderRadius:20, background:"rgba(59,130,196,0.12)", color:"#3b82c4", fontSize:11 }}>{t.sp}</span>
+                  </div>
+                  <div style={{ color:"#F4A261", fontSize:14, marginBottom:8 }}>{"★".repeat(t.stars)}</div>
+                  <p style={{ margin:0, color:"#93c5e8", fontSize:14, lineHeight:1.6, fontStyle:"italic" }}>"{t.text}"</p>
                 </div>
               ))}
             </div>
+          </div>
 
-            {/* COMO FUNCIONA */}
-            <h2 style={{ fontSize: 28, fontWeight: 700, margin: "0 0 32px", textAlign: "center" }}>¿Cómo funciona?</h2>
-            <div style={{ display: "flex", gap: 24, justifyContent: "center", flexWrap: "wrap" }}>
-              {[["🤖","Consulta la IA","Cuéntanos tus síntomas y te recomendamos al médico ideal"],["📅","Elige tu cita","Selecciona el médico, fecha y hora disponible"],["📲","Recibe confirmación","WhatsApp instantáneo con dirección y todos los detalles"]].map(([icon,title,desc])=>(
-                <div key={title} style={{ background:"rgba(255,255,255,0.04)", border:"1px solid rgba(59,130,196,0.15)", borderRadius:16, padding:28, maxWidth:240 }}>
-                  <div style={{ fontSize: 40, marginBottom: 12 }}>{icon}</div>
-                  <h3 style={{ margin:"0 0 8px", color:"#3b82c4", fontSize:18 }}>{title}</h3>
-                  <p style={{ margin:0, color:"#60a5d8", fontSize:14, lineHeight:1.6 }}>{desc}</p>
-                </div>
-              ))}
+          {/* CTA BOTTOM */}
+          <div style={{ background:"linear-gradient(135deg, rgba(26,79,138,0.3), rgba(59,130,196,0.15))", borderTop:"1px solid rgba(59,130,196,0.2)", padding:"60px 24px", textAlign:"center" }}>
+            <h2 style={{ fontSize:32, fontWeight:700, margin:"0 0 12px" }}>¿Listo para cuidar tu salud?</h2>
+            <p style={{ color:"#60a5d8", fontSize:16, margin:"0 0 32px" }}>Únete a los cientos de pacientes que ya confían en MediAyacucho</p>
+            <div style={{ display:"flex", gap:12, justifyContent:"center", flexWrap:"wrap" }}>
+              <button style={{ padding:"16px 40px", background:"linear-gradient(135deg,#1a4f8a,#3b82c4)", color:"#fff", border:"none", borderRadius:14, fontSize:17, cursor:"pointer", fontWeight:700, fontFamily:"inherit", boxShadow:"0 8px 32px rgba(59,130,196,0.4)" }} onClick={()=>setView("doctors")}>
+                🏥 Buscar mi médico ahora
+              </button>
+              <button style={{ padding:"16px 40px", background:"linear-gradient(135deg,#25D366,#128C7E)", color:"#fff", border:"none", borderRadius:14, fontSize:17, cursor:"pointer", fontWeight:700, fontFamily:"inherit" }} onClick={()=>setView("chat")}>
+                🤖 Consultar con IA gratis
+              </button>
             </div>
           </div>
         </>
       )}
 
-      {/* DOCTORS */}
+            {/* DOCTORS */}
       {view === "doctors" && (
         <div style={T.section}>
           <h2 style={{ fontSize: 32, fontWeight: 700, margin: "0 0 8px" }}>Médicos en tu ciudad</h2>
