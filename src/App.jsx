@@ -1990,11 +1990,9 @@ export default function App() {
           ) : (
             <div style={T.grid}>
               {filtered.map(doc => (
-                <div key={doc.id} style={{ ...T.card, borderTop: `3px solid ${SPECIALTY_CONFIG[doc.specialty]?.color || "#3b82c4"}`, position:"relative", overflow:"hidden" }}
-                  onMouseEnter={e=>{e.currentTarget.style.transform="translateY(-6px)";e.currentTarget.style.borderColor=(SPECIALTY_CONFIG[doc.specialty]?.color || "#3b82c4")+"88";e.currentTarget.style.boxShadow=`0 16px 48px ${SPECIALTY_CONFIG[doc.specialty]?.color || "#3b82c4"}25`;}}
+                <div key={doc.id} style={{ ...T.card, position:"relative", overflow:"hidden" }}
+                  onMouseEnter={e=>{e.currentTarget.style.transform="translateY(-6px)";e.currentTarget.style.borderColor="rgba(59,130,196,0.4)";e.currentTarget.style.boxShadow="0 16px 48px rgba(59,130,196,0.15)";}}
                   onMouseLeave={e=>{e.currentTarget.style.transform="";e.currentTarget.style.borderColor="rgba(59,130,196,0.15)";e.currentTarget.style.boxShadow="";}}>
-                  {/* Gradient accent */}
-                  <div style={{ position:"absolute", top:0, left:0, right:0, height:60, background:`linear-gradient(180deg, ${SPECIALTY_CONFIG[doc.specialty]?.color || "#3b82c4"}10, transparent)`, pointerEvents:"none" }} />
                   {doc.photo_url
                     ? <img src={doc.photo_url} alt={doc.name} style={{ width:56, height:56, borderRadius:14, objectFit:"cover", marginBottom:16, border:`2px solid ${SPECIALTY_CONFIG[doc.specialty]?.color || "#3b82c4"}66` }} />
                     : <div style={{ ...T.avatar(SPECIALTY_CONFIG[doc.specialty]?.color || doc.color), background:`linear-gradient(135deg, ${doc.color}, ${SPECIALTY_CONFIG[doc.specialty]?.color || doc.color})` }}>{doc.img || initials(doc.name)}</div>
@@ -2015,7 +2013,7 @@ export default function App() {
                   )}
                   <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", marginTop:16 }}>
                     <div>
-                      <span style={{ fontSize:22, fontWeight:800, color: SPECIALTY_CONFIG[doc.specialty]?.color || "#3b82c4", letterSpacing:"-0.5px" }}>{doc.price}</span>
+                      <span style={{ fontSize:22, fontWeight:800, color: "#3b82c4", letterSpacing:"-0.5px" }}>{doc.price}</span>
                       <span style={{ fontSize:11, color:"#60a5d8" }}>/consulta</span>
                     </div>
                     {doc.available
@@ -2031,7 +2029,7 @@ export default function App() {
                     <button style={{ flex:1, padding:"7px 0", background:"rgba(59,130,196,0.08)", border:"1px solid rgba(59,130,196,0.2)", color:"#3b82c4", borderRadius:8, cursor:"pointer", fontSize:11, fontFamily:"inherit", fontWeight:600 }} onClick={() => setDashboardDoctor(doc)}>
                       📊 Dashboard
                     </button>
-                    <button style={{ flex:1, padding:"7px 0", background:`${SPECIALTY_CONFIG[doc.specialty]?.bg || "rgba(59,130,196,0.08)"}`, border:`1px solid ${SPECIALTY_CONFIG[doc.specialty]?.color || "#3b82c4"}33`, color: SPECIALTY_CONFIG[doc.specialty]?.color || "#60a5d8", borderRadius:8, cursor:"pointer", fontSize:11, fontFamily:"inherit", fontWeight:600 }} onClick={() => { setSelectedProfile(doc); setView("profile"); }}>
+                    <button style={{ flex:1, padding:"7px 0", background:"rgba(59,130,196,0.08)", border:"1px solid rgba(59,130,196,0.2)", color:"#60a5d8", borderRadius:8, cursor:"pointer", fontSize:11, fontFamily:"inherit", fontWeight:600 }} onClick={() => { setSelectedProfile(doc); setView("profile"); }}>
                       👤 Ver perfil
                     </button>
                   </div>
