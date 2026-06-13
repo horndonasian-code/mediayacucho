@@ -2033,10 +2033,61 @@ export default function App() {
 
           {confirmed ? (
             <div style={{ maxWidth:520, margin:"0 auto", padding:"40px 0" }}>
+              {/* CONFETTIS */}
+              <style>{`
+                @keyframes confetti-fall {
+                  0% { transform: translateY(-100px) rotate(0deg); opacity: 1; }
+                  100% { transform: translateY(100vh) rotate(720deg); opacity: 0; }
+                }
+                @keyframes bounce-in {
+                  0% { transform: scale(0); opacity: 0; }
+                  60% { transform: scale(1.2); }
+                  100% { transform: scale(1); opacity: 1; }
+                }
+                .confetti-piece {
+                  position: fixed;
+                  width: 10px;
+                  height: 10px;
+                  top: -20px;
+                  animation: confetti-fall linear forwards;
+                  z-index: 9999;
+                  border-radius: 2px;
+                }
+                .bounce-icon { animation: bounce-in 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards; }
+              `}</style>
+
+              {/* Confetti pieces */}
+              {[...Array(40)].map((_, i) => (
+                <div key={i} className="confetti-piece" style={{
+                  left: `${Math.random() * 100}%`,
+                  background: ["#3b82c4","#25D366","#F4A261","#a78bfa","#ff6b6b","#60a5d8","#fff"][i % 7],
+                  width: `${6 + Math.random() * 8}px`,
+                  height: `${6 + Math.random() * 8}px`,
+                  animationDuration: `${2 + Math.random() * 3}s`,
+                  animationDelay: `${Math.random() * 1.5}s`,
+                  borderRadius: i % 3 === 0 ? "50%" : "2px",
+                }} />
+              ))}
+
               <div style={{ textAlign:"center", marginBottom:32 }}>
-                <div style={{ fontSize:72, marginBottom:16 }}>🎉</div>
-                <h2 style={{ color:"#3b82c4", fontSize:28, margin:"0 0 12px" }}>¡Cita Confirmada!</h2>
-                <p style={{ color:"#60a5d8", marginBottom:8 }}>Cita con <strong style={{ color:"#e8f0f8" }}>{selectedDoctor.name}</strong> el {bookingData.date} a las {bookingData.time}.</p>
+                <div className="bounce-icon" style={{ fontSize:80, marginBottom:16, display:"block" }}>🎉</div>
+                <h2 style={{ color:"#3b82c4", fontSize:32, margin:"0 0 8px", fontWeight:700 }}>¡Cita Confirmada!</h2>
+                <p style={{ color:"#60a5d8", marginBottom:4, fontSize:16 }}>Cita con <strong style={{ color:"#e8f0f8" }}>{selectedDoctor.name}</strong></p>
+                <p style={{ color:"#93c5e8", fontSize:14, marginBottom:4 }}>📅 {bookingData.date} · 🕐 {bookingData.time}</p>
+                <p style={{ color:"#93c5e8", fontSize:14, marginBottom:24 }}>{bookingData.modalidad === "virtual" ? "📱 Consulta virtual por WhatsApp Video" : `📍 ${selectedDoctor.address || "Consultorio del médico"}`}</p>
+
+                {/* Resumen pago */}
+                <div style={{ background:"rgba(59,130,196,0.08)", border:"1px solid rgba(59,130,196,0.2)", borderRadius:14, padding:"14px 20px", marginBottom:24, display:"inline-block", minWidth:280 }}>
+                  <div style={{ display:"flex", justifyContent:"space-between", fontSize:14, marginBottom:6 }}>
+                    <span style={{ color:"#60a5d8" }}>✅ Adelanto pagado</span>
+                    <span style={{ color:"#25D366", fontWeight:700 }}>S/. {AVANCE.monto}</span>
+                  </div>
+                  <div style={{ display:"flex", justifyContent:"space-between", fontSize:14 }}>
+                    <span style={{ color:"#60a5d8" }}>📋 Resto en consulta</span>
+                    <span style={{ color:"#e8f0f8", fontWeight:700 }}>S/. {parseInt((selectedDoctor.price||"S/. 0").replace(/\D/g,"")) - AVANCE.monto}</span>
+                  </div>
+                </div>
+
                 <p style={{ color:"#93c5e8", fontSize:14, marginBottom:24 }}>¿Deseas enviar la confirmación por WhatsApp?</p>
                 <div style={{ display:"flex", gap:12, justifyContent:"center", flexWrap:"wrap" }}>
                   <button style={{ ...T.ctaPrimary, background:"linear-gradient(135deg,#25D366,#128C7E)", fontSize:15 }} onClick={() => setShowNotifPanel(true)}>📲 Enviar WhatsApp</button>
