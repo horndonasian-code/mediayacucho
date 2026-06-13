@@ -1,0 +1,18 @@
+{
+  "name": "MediAyacucho",
+  "short_name": "MediAyacucho",
+  "description": "Conectamos pacientes con médicos calificados en Ayacucho",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#030d1a",
+  "theme_color": "#1a4f8a",
+  "orientation": "portrait",
+  "icons": [
+    {
+      "src": "data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 72 72'><circle cx='36' cy='36' r='36' fill='%231a4f8a'/><rect x='28' y='14' width='16' height='44' rx='4' fill='white'/><rect x='14' y='28' width='44' height='16' rx='4' fill='white'/></svg>",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}
