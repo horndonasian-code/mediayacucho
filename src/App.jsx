@@ -2004,6 +2004,33 @@ export default function App() {
       {/* BOOKING */}
       {view === "booking" && selectedDoctor && (
         <div style={T.section}>
+
+          {/* BARRA DE PROGRESO */}
+          {!confirmed && (
+            <div style={{ maxWidth:540, margin:"0 auto 32px" }}>
+              <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between", marginBottom:8 }}>
+                {[
+                  { n:1, label:"Médico", done:true },
+                  { n:2, label:"Tus datos", done: !!(bookingData.patient_name && bookingData.patient_phone && bookingData.date && bookingData.time) },
+                  { n:3, label:"Pago", done:false },
+                  { n:4, label:"Confirmación", done:false },
+                ].map((step, i, arr) => (
+                  <div key={i} style={{ display:"flex", alignItems:"center", flex: i < arr.length-1 ? 1 : "none" }}>
+                    <div style={{ display:"flex", flexDirection:"column", alignItems:"center", gap:4 }}>
+                      <div style={{ width:32, height:32, borderRadius:"50%", background: step.done ? "linear-gradient(135deg,#1a4f8a,#3b82c4)" : "rgba(59,130,196,0.1)", border:`2px solid ${step.done ? "#3b82c4" : "rgba(59,130,196,0.2)"}`, display:"flex", alignItems:"center", justifyContent:"center", fontSize:13, fontWeight:700, color: step.done ? "#fff" : "#60a5d8", transition:"all 0.3s" }}>
+                        {step.done ? "✓" : step.n}
+                      </div>
+                      <span style={{ fontSize:11, color: step.done ? "#3b82c4" : "#60a5d8", whiteSpace:"nowrap" }}>{step.label}</span>
+                    </div>
+                    {i < arr.length-1 && (
+                      <div style={{ flex:1, height:2, background: step.done ? "linear-gradient(90deg,#3b82c4,rgba(59,130,196,0.3))" : "rgba(59,130,196,0.15)", margin:"0 8px", marginBottom:18, transition:"all 0.3s" }} />
+                    )}
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
           {confirmed ? (
             <div style={{ maxWidth:520, margin:"0 auto", padding:"40px 0" }}>
               <div style={{ textAlign:"center", marginBottom:32 }}>
