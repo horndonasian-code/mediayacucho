@@ -2370,6 +2370,123 @@ export default function App() {
           <p style={{ textAlign:"center", color:"#3b82c4", fontSize:14, marginTop:20 }}>¿Preguntas? WhatsApp: <strong>913 330 712</strong></p>
         </div>
       )}
+
+      {/* FOOTER */}
+      {view === "home" && (
+        <footer style={{ background:"rgba(0,0,0,0.4)", borderTop:"1px solid rgba(59,130,196,0.15)", padding:"60px 24px 24px" }}>
+          <div style={{ maxWidth:1100, margin:"0 auto" }}>
+            <div style={{ display:"grid", gridTemplateColumns:"2fr 1fr 1fr 1fr", gap:40, marginBottom:48 }}>
+
+              {/* Colonne 1 — Logo + desc */}
+              <div>
+                <div style={{ display:"flex", alignItems:"center", gap:10, marginBottom:16 }}>
+                  <svg width="36" height="36" viewBox="0 0 72 72" fill="none">
+                    <circle cx="36" cy="36" r="36" fill="url(#lgf)"/>
+                    <rect x="28" y="14" width="16" height="44" rx="4" fill="white"/>
+                    <rect x="14" y="28" width="44" height="16" rx="4" fill="white"/>
+                    <circle cx="36" cy="36" r="5" fill="url(#lgf)"/>
+                    <defs>
+                      <linearGradient id="lgf" x1="0" y1="0" x2="72" y2="72" gradientUnits="userSpaceOnUse">
+                        <stop offset="0%" stopColor="#1a4f8a"/>
+                        <stop offset="100%" stopColor="#3b82c4"/>
+                      </linearGradient>
+                    </defs>
+                  </svg>
+                  <div>
+                    <div style={{ fontSize:18, fontWeight:700 }}><span style={{ color:"#3b82c4" }}>Medi</span><span style={{ color:"#93c5e8", fontWeight:300 }}>Ayacucho</span></div>
+                    <div style={{ fontSize:9, color:"#60a5d8", letterSpacing:2, textTransform:"uppercase" }}>Salud para todos</div>
+                  </div>
+                </div>
+                <p style={{ color:"#60a5d8", fontSize:14, lineHeight:1.7, margin:"0 0 20px", maxWidth:260 }}>
+                  Conectamos a la población de Ayacucho con médicos calificados y verificados por el CMP.
+                </p>
+                {/* Redes sociales */}
+                <div style={{ display:"flex", gap:10 }}>
+                  {[
+                    { icon:"📘", label:"Facebook", url:"https://facebook.com" },
+                    { icon:"📸", label:"Instagram", url:"https://instagram.com" },
+                    { icon:"💬", label:"WhatsApp", url:"https://wa.me/51913330712" },
+                    { icon:"🐦", label:"TikTok", url:"https://tiktok.com" },
+                  ].map((s,i)=>(
+                    <a key={i} href={s.url} target="_blank" rel="noreferrer" title={s.label}
+                      style={{ width:36, height:36, borderRadius:10, background:"rgba(59,130,196,0.12)", border:"1px solid rgba(59,130,196,0.2)", display:"flex", alignItems:"center", justifyContent:"center", fontSize:16, textDecoration:"none", transition:"all 0.2s" }}
+                      onMouseEnter={e=>{e.target.style.background="rgba(59,130,196,0.25)";e.target.style.transform="translateY(-2px)"}}
+                      onMouseLeave={e=>{e.target.style.background="rgba(59,130,196,0.12)";e.target.style.transform=""}}>
+                      {s.icon}
+                    </a>
+                  ))}
+                </div>
+              </div>
+
+              {/* Colonne 2 — Navegación */}
+              <div>
+                <h4 style={{ color:"#e8f0f8", fontSize:14, fontWeight:700, margin:"0 0 16px", textTransform:"uppercase", letterSpacing:1 }}>Navegación</h4>
+                <div style={{ display:"flex", flexDirection:"column", gap:10 }}>
+                  {[["Inicio","home"],["Médicos","doctors"],["Asistente IA","chat"],["Soy Médico","doctor-register"]].map(([label,v])=>(
+                    <button key={v} style={{ background:"none", border:"none", color:"#60a5d8", cursor:"pointer", fontSize:14, textAlign:"left", padding:0, fontFamily:"inherit", transition:"color 0.2s" }}
+                      onMouseEnter={e=>e.target.style.color="#3b82c4"}
+                      onMouseLeave={e=>e.target.style.color="#60a5d8"}
+                      onClick={()=>setView(v)}>{label}</button>
+                  ))}
+                </div>
+              </div>
+
+              {/* Colonne 3 — Contacto */}
+              <div>
+                <h4 style={{ color:"#e8f0f8", fontSize:14, fontWeight:700, margin:"0 0 16px", textTransform:"uppercase", letterSpacing:1 }}>Contacto</h4>
+                <div style={{ display:"flex", flexDirection:"column", gap:12 }}>
+                  {[
+                    { icon:"💬", label:"WhatsApp", val:"913 330 712", url:"https://wa.me/51913330712" },
+                    { icon:"📧", label:"Email", val:"info@mediayacucho.pe", url:"mailto:info@mediayacucho.pe" },
+                    { icon:"📍", label:"Ciudad", val:"Ayacucho, Perú", url:null },
+                    { icon:"🕐", label:"Horario", val:"Lun–Sáb 8am–8pm", url:null },
+                  ].map((item,i)=>(
+                    <div key={i} style={{ display:"flex", gap:8, alignItems:"flex-start" }}>
+                      <span style={{ fontSize:14 }}>{item.icon}</span>
+                      <div>
+                        <div style={{ fontSize:11, color:"#60a5d8", marginBottom:1 }}>{item.label}</div>
+                        {item.url
+                          ? <a href={item.url} style={{ fontSize:13, color:"#3b82c4", textDecoration:"none" }}>{item.val}</a>
+                          : <span style={{ fontSize:13, color:"#93c5e8" }}>{item.val}</span>
+                        }
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {/* Colonne 4 — Legal */}
+              <div>
+                <h4 style={{ color:"#e8f0f8", fontSize:14, fontWeight:700, margin:"0 0 16px", textTransform:"uppercase", letterSpacing:1 }}>Legal</h4>
+                <div style={{ display:"flex", flexDirection:"column", gap:10 }}>
+                  {["Términos y condiciones","Política de privacidad","Política de cancelación","Política de reembolso"].map((item,i)=>(
+                    <span key={i} style={{ color:"#60a5d8", fontSize:13, cursor:"pointer", transition:"color 0.2s" }}
+                      onMouseEnter={e=>e.target.style.color="#3b82c4"}
+                      onMouseLeave={e=>e.target.style.color="#60a5d8"}>
+                      {item}
+                    </span>
+                  ))}
+                </div>
+                <div style={{ marginTop:20, padding:"10px 14px", background:"rgba(37,211,102,0.08)", border:"1px solid rgba(37,211,102,0.2)", borderRadius:10 }}>
+                  <div style={{ fontSize:11, color:"#25D366", fontWeight:700, marginBottom:2 }}>✅ Plataforma verificada</div>
+                  <div style={{ fontSize:11, color:"#60a5d8" }}>Médicos CMP certificados</div>
+                </div>
+              </div>
+            </div>
+
+            {/* Bottom bar */}
+            <div style={{ borderTop:"1px solid rgba(59,130,196,0.1)", paddingTop:24, display:"flex", justifyContent:"space-between", alignItems:"center", flexWrap:"wrap", gap:12 }}>
+              <span style={{ color:"#60a5d8", fontSize:13 }}>© 2026 MediAyacucho · Todos los derechos reservados</span>
+              <div style={{ display:"flex", gap:16 }}>
+                <span style={{ color:"#60a5d8", fontSize:12 }}>🇵🇪 Hecho en Perú</span>
+                <span style={{ color:"#60a5d8", fontSize:12 }}>🔒 Pagos seguros</span>
+                <span style={{ color:"#60a5d8", fontSize:12 }}>✅ CMP Verificado</span>
+              </div>
+            </div>
+          </div>
+        </footer>
+      )}
+
     </div>
   );
 }
