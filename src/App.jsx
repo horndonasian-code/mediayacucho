@@ -92,15 +92,28 @@ const auth = {
 };
 
 // ─── Constants ─────────────────────────────────────────────────────────────
-const SPECIALTIES = ["Todos", "Medicina General", "Pediatría", "Cardiología", "Ginecología", "Traumatología", "Dermatología"];
+const SPECIALTIES = ["Todos", "Medicina General", "Pediatría", "Cardiología", "Ginecología", "Traumatología", "Dermatología", "Odontología", "Oftalmología", "Psicología", "Nutrición", "Neurología", "Urología", "Endocrinología", "Oncología", "Medicina Interna", "Cirugía General", "Gastroenterología", "Nefrología", "Neumología"];
 
 const SPECIALTY_CONFIG = {
-  "Medicina General": { color: "#3b82c4", bg: "rgba(59,130,196,0.15)", icon: "🩺" },
-  "Pediatría":        { color: "#F4A261", bg: "rgba(244,162,97,0.15)",  icon: "👶" },
-  "Cardiología":      { color: "#ff6b6b", bg: "rgba(255,107,107,0.15)", icon: "❤️" },
-  "Ginecología":      { color: "#f472b6", bg: "rgba(244,114,182,0.15)", icon: "🌸" },
-  "Traumatología":    { color: "#60a5d8", bg: "rgba(96,165,216,0.15)",  icon: "🦴" },
-  "Dermatología":     { color: "#a78bfa", bg: "rgba(167,139,250,0.15)", icon: "✨" },
+  "Medicina General": { color: "#3b82c4", bg: "rgba(59,130,196,0.15)",  icon: "🩺" },
+  "Pediatría":        { color: "#F4A261", bg: "rgba(244,162,97,0.15)",   icon: "👶" },
+  "Cardiología":      { color: "#ff6b6b", bg: "rgba(255,107,107,0.15)",  icon: "❤️" },
+  "Ginecología":      { color: "#f472b6", bg: "rgba(244,114,182,0.15)",  icon: "🌸" },
+  "Traumatología":    { color: "#60a5d8", bg: "rgba(96,165,216,0.15)",   icon: "🦴" },
+  "Dermatología":     { color: "#a78bfa", bg: "rgba(167,139,250,0.15)",  icon: "✨" },
+  "Odontología":      { color: "#34d399", bg: "rgba(52,211,153,0.15)",   icon: "🦷" },
+  "Oftalmología":     { color: "#22d3ee", bg: "rgba(34,211,238,0.15)",   icon: "👁️" },
+  "Psicología":       { color: "#c084fc", bg: "rgba(192,132,252,0.15)",  icon: "🧠" },
+  "Nutrición":        { color: "#86efac", bg: "rgba(134,239,172,0.15)",  icon: "🥗" },
+  "Neurología":       { color: "#818cf8", bg: "rgba(129,140,248,0.15)",  icon: "🧬" },
+  "Urología":         { color: "#38bdf8", bg: "rgba(56,189,248,0.15)",   icon: "💧" },
+  "Endocrinología":   { color: "#fb923c", bg: "rgba(251,146,60,0.15)",   icon: "⚡" },
+  "Oncología":        { color: "#f87171", bg: "rgba(248,113,113,0.15)",  icon: "🎗️" },
+  "Medicina Interna": { color: "#4ade80", bg: "rgba(74,222,128,0.15)",   icon: "🏥" },
+  "Cirugía General":  { color: "#e879f9", bg: "rgba(232,121,249,0.15)",  icon: "🔬" },
+  "Gastroenterología":{ color: "#fbbf24", bg: "rgba(251,191,36,0.15)",   icon: "🫃" },
+  "Nefrología":       { color: "#2dd4bf", bg: "rgba(45,212,191,0.15)",   icon: "🫘" },
+  "Neumología":       { color: "#93c5fd", bg: "rgba(147,197,253,0.15)",  icon: "🫁" },
 };
 const MONTHLY_DATA = [
   { mes: "Ene", citas: 18, ingresos: 1080 }, { mes: "Feb", citas: 24, ingresos: 1440 },
@@ -1958,7 +1971,7 @@ export default function App() {
           <p style={{ color: "#60a5d8", margin: "0 0 24px" }}>
             {loadingDoctors ? "Cargando desde Supabase..." : dbError ? `⚠️ Error: ${dbError}` : `${doctors.length} médico(s) certificado(s) y verificado(s)`}
           </p>
-          <div style={{ display: "flex", gap: 8, marginBottom: 32, flexWrap: "wrap" }}>
+          <div style={{ display: "flex", gap: 8, marginBottom: 32, overflowX: "auto", paddingBottom: 8, scrollbarWidth: "none" }}>
             {SPECIALTIES.map(s => {
               const cfg = SPECIALTY_CONFIG[s];
               const isActive = filter === s;
