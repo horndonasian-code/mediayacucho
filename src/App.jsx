@@ -2073,9 +2073,10 @@ export default function App() {
 
             {/* TESTIMONIALS */}
             <div style={{ textAlign:"center", marginBottom:32 }}>
-              <h2 style={{ fontSize:28, fontWeight:700, margin:"0 0 8px" }}>Lo que dicen nuestros pacientes</h2>
-              <div style={{ color:"#F4A261", fontSize:20, marginBottom:8 }}>★★★★★</div>
-              <p style={{ color:"#64748b", fontSize:14 }}>+500 pacientes satisfechos en Ayacucho</p>
+              <span style={{ display:"inline-block", padding:"6px 16px", borderRadius:20, background:"#fff7ed", color:"#c2410c", fontSize:13, fontWeight:700, letterSpacing:0.5, marginBottom:14 }}>TESTIMONIOS REALES</span>
+              <h2 style={{ fontSize:32, fontWeight:800, margin:"0 0 10px", color:"#082f49", letterSpacing:"-0.5px" }}>Lo que dicen nuestros pacientes</h2>
+              <div style={{ color:"#F4A261", fontSize:22, marginBottom:8 }}>★★★★★</div>
+              <p style={{ color:"#475569", fontSize:15 }}>+500 pacientes satisfechos en Ayacucho</p>
             </div>
             <div className="testimonials-grid" style={{ display:"grid", gridTemplateColumns:"repeat(3,1fr)", gap:16 }}>
               {[
