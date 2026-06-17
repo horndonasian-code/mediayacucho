@@ -2026,8 +2026,9 @@ export default function App() {
           <div style={{ background:"#f0f9ff", borderTop:"1px solid #e0f2fe", borderBottom:"1px solid #e0f2fe", padding:"60px 24px" }}>
             <div style={{ maxWidth:1100, margin:"0 auto" }}>
               <div style={{ textAlign:"center", marginBottom:48 }}>
-                <h2 style={{ fontSize:36, fontWeight:700, margin:"0 0 12px" }}>¿Cómo funciona?</h2>
-                <p style={{ color:"#64748b", fontSize:16 }}>Agenda tu cita en 3 simples pasos</p>
+                <span style={{ display:"inline-block", padding:"6px 16px", borderRadius:20, background:"#e0f2fe", color:"#0369a1", fontSize:13, fontWeight:700, letterSpacing:0.5, marginBottom:14 }}>PROCESO SIMPLE</span>
+                <h2 style={{ fontSize:40, fontWeight:800, margin:"0 0 12px", color:"#082f49", letterSpacing:"-0.5px" }}>¿Cómo funciona?</h2>
+                <p style={{ color:"#475569", fontSize:17 }}>Agenda tu cita en 3 simples pasos</p>
               </div>
               <div className="steps-grid" style={{ display:"grid", gridTemplateColumns:"repeat(3,1fr)", gap:24, position:"relative" }}>
                 {[
@@ -2049,8 +2050,9 @@ export default function App() {
           {/* TRUST PHOTOS */}
           <div style={{ maxWidth:1100, margin:"0 auto", padding:"60px 24px" }}>
             <div style={{ textAlign:"center", marginBottom:40 }}>
-              <h2 style={{ fontSize:32, fontWeight:700, margin:"0 0 12px" }}>Atención médica de calidad</h2>
-              <p style={{ color:"#64748b", fontSize:15 }}>Médicos verificados, consultorios equipados, resultados confiables</p>
+              <span style={{ display:"inline-block", padding:"6px 16px", borderRadius:20, background:"#f0fdf4", color:"#15803d", fontSize:13, fontWeight:700, letterSpacing:0.5, marginBottom:14 }}>CALIDAD GARANTIZADA</span>
+              <h2 style={{ fontSize:36, fontWeight:800, margin:"0 0 12px", color:"#082f49", letterSpacing:"-0.5px" }}>Atención médica de calidad</h2>
+              <p style={{ color:"#475569", fontSize:16 }}>Médicos verificados, consultorios equipados, resultados confiables</p>
             </div>
             <div className="trust-grid" style={{ display:"grid", gridTemplateColumns:"repeat(3,1fr)", gap:20, marginBottom:60 }}>
               {[
