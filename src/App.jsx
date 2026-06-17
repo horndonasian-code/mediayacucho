@@ -2039,7 +2039,7 @@ export default function App() {
       {view === "doctors" && (
         <div style={T.section}>
           <h2 style={{ fontSize: 32, fontWeight: 700, margin: "0 0 8px" }}>Médicos en tu ciudad</h2>
-          <p style={{ color: "#64748b", margin: "0 0 24px" }}>
+          <p style={{ color: "#60a5d8", margin: "0 0 24px" }}>
             {loadingDoctors ? "Cargando desde Supabase..." : dbError ? `⚠️ Error: ${dbError}` : `${doctors.length} médico(s) certificado(s) y verificado(s)`}
           </p>
           {/* Scrollable filter row */}
@@ -2049,7 +2049,7 @@ export default function App() {
               const cfg = SPECIALTY_CONFIG[s];
               const isActive = filter === s;
               return (
-                <button key={s} style={{ padding:"8px 18px", borderRadius:20, border:`1px solid ${isActive ? (cfg?.color || "#7dd3fc") : "rgba(59,130,196,0.3)"}`, background: isActive ? (cfg?.bg || "rgba(59,130,196,0.2)") : "transparent", color: isActive ? (cfg?.color || "#7dd3fc") : "#64748b", cursor:"pointer", fontSize:13, fontFamily:"inherit", fontWeight: isActive ? 700 : 400, transition:"all 0.2s", whiteSpace:"nowrap", flexShrink:0 }} onClick={() => setFilter(s)}>
+                <button key={s} style={{ padding:"8px 18px", borderRadius:20, border:`1px solid ${isActive ? (cfg?.color || "#7dd3fc") : "rgba(59,130,196,0.3)"}`, background: isActive ? (cfg?.bg || "rgba(59,130,196,0.2)") : "transparent", color: isActive ? (cfg?.color || "#7dd3fc") : "#60a5d8", cursor:"pointer", fontSize:13, fontFamily:"inherit", fontWeight: isActive ? 700 : 400, transition:"all 0.2s", whiteSpace:"nowrap", flexShrink:0 }} onClick={() => setFilter(s)}>
                   {cfg?.icon || ""} {s}
                 </button>
               );
@@ -2068,14 +2068,14 @@ export default function App() {
                     ? <img src={doc.photo_url} alt={doc.name} style={{ width:56, height:56, borderRadius:14, objectFit:"cover", marginBottom:16, border:`2px solid ${SPECIALTY_CONFIG[doc.specialty]?.color || "#7dd3fc"}66` }} />
                     : <div style={{ ...T.avatar(SPECIALTY_CONFIG[doc.specialty]?.color || doc.color), background:`linear-gradient(135deg, ${doc.color}, ${SPECIALTY_CONFIG[doc.specialty]?.color || doc.color})` }}>{doc.img || initials(doc.name)}</div>
                   }
-                  <h3 style={{ fontSize:18, fontWeight:700, margin:"0 0 8px", color:"#082f49" }}>{doc.name}</h3>
+                  <h3 style={{ fontSize:18, fontWeight:700, margin:"0 0 8px", color:"#e8f0f8" }}>{doc.name}</h3>
                   <div style={{ marginBottom:10 }}>
                     <span style={{ display:"inline-flex", alignItems:"center", gap:5, padding:"4px 12px", borderRadius:20, background: SPECIALTY_CONFIG[doc.specialty]?.bg || "rgba(59,130,196,0.15)", border:`1px solid ${SPECIALTY_CONFIG[doc.specialty]?.color || "#7dd3fc"}44`, color: SPECIALTY_CONFIG[doc.specialty]?.color || "#7dd3fc", fontSize:12, fontWeight:700 }}>
                       {SPECIALTY_CONFIG[doc.specialty]?.icon || "🏥"} {doc.specialty}
                     </span>
                   </div>
                   <div style={{ color:"#F4A261", fontSize:13 }}>{"★".repeat(Math.floor(doc.rating||5))} {doc.rating}</div>
-                  <div style={{ marginTop:6, color:"#64748b", fontSize:12 }}>{(doc.schedule||[]).join(" · ")}</div>
+                  <div style={{ marginTop:6, color:"#60a5d8", fontSize:12 }}>{(doc.schedule||[]).join(" · ")}</div>
                   {doc.address && (
                     <div style={{ marginTop:8, display:"flex", alignItems:"flex-start", gap:6 }}>
                       <span style={{ fontSize:12 }}>📍</span>
@@ -2085,7 +2085,7 @@ export default function App() {
                   <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", marginTop:16 }}>
                     <div>
                       <span style={{ fontSize:22, fontWeight:800, color: "#7dd3fc", letterSpacing:"-0.5px" }}>{doc.price}</span>
-                      <span style={{ fontSize:11, color:"#64748b" }}>/consulta</span>
+                      <span style={{ fontSize:11, color:"#60a5d8" }}>/consulta</span>
                     </div>
                     {doc.available
                       ? <div style={{ display: "flex", gap: 6, flexDirection: "column" }}>
@@ -2100,7 +2100,7 @@ export default function App() {
                     <button style={{ flex:1, padding:"7px 0", background:"rgba(59,130,196,0.08)", border:"1px solid rgba(14,165,233,0.25)", color:"#7dd3fc", borderRadius:8, cursor:"pointer", fontSize:11, fontFamily:"inherit", fontWeight:600 }} onClick={() => setDashboardDoctor(doc)}>
                       📊 Dashboard
                     </button>
-                    <button style={{ flex:1, padding:"7px 0", background:"rgba(59,130,196,0.08)", border:"1px solid rgba(14,165,233,0.25)", color:"#64748b", borderRadius:8, cursor:"pointer", fontSize:11, fontFamily:"inherit", fontWeight:600 }} onClick={() => { setSelectedProfile(doc); setView("profile"); }}>
+                    <button style={{ flex:1, padding:"7px 0", background:"rgba(59,130,196,0.08)", border:"1px solid rgba(14,165,233,0.25)", color:"#60a5d8", borderRadius:8, cursor:"pointer", fontSize:11, fontFamily:"inherit", fontWeight:600 }} onClick={() => { setSelectedProfile(doc); setView("profile"); }}>
                       👤 Ver perfil
                     </button>
                   </div>
@@ -2127,10 +2127,10 @@ export default function App() {
                 ].map((step, i, arr) => (
                   <div key={i} style={{ display:"flex", alignItems:"center", flex: i < arr.length-1 ? 1 : "none" }}>
                     <div style={{ display:"flex", flexDirection:"column", alignItems:"center", gap:4 }}>
-                      <div style={{ width:32, height:32, borderRadius:"50%", background: step.done ? "linear-gradient(135deg,#0ea5e9,#7dd3fc)" : "rgba(59,130,196,0.1)", border:`2px solid ${step.done ? "#7dd3fc" : "rgba(59,130,196,0.2)"}`, display:"flex", alignItems:"center", justifyContent:"center", fontSize:13, fontWeight:700, color: step.done ? "#fff" : "#64748b", transition:"all 0.3s" }}>
+                      <div style={{ width:32, height:32, borderRadius:"50%", background: step.done ? "linear-gradient(135deg,#0ea5e9,#7dd3fc)" : "rgba(59,130,196,0.1)", border:`2px solid ${step.done ? "#7dd3fc" : "rgba(59,130,196,0.2)"}`, display:"flex", alignItems:"center", justifyContent:"center", fontSize:13, fontWeight:700, color: step.done ? "#fff" : "#60a5d8", transition:"all 0.3s" }}>
                         {step.done ? "✓" : step.n}
                       </div>
-                      <span style={{ fontSize:11, color: step.done ? "#7dd3fc" : "#64748b", whiteSpace:"nowrap" }}>{step.label}</span>
+                      <span style={{ fontSize:11, color: step.done ? "#7dd3fc" : "#60a5d8", whiteSpace:"nowrap" }}>{step.label}</span>
                     </div>
                     {i < arr.length-1 && (
                       <div style={{ flex:1, height:2, background: step.done ? "linear-gradient(90deg,#7dd3fc,rgba(59,130,196,0.3))" : "rgba(59,130,196,0.15)", margin:"0 8px", marginBottom:18, transition:"all 0.3s" }} />
@@ -2170,7 +2170,7 @@ export default function App() {
               {[...Array(40)].map((_, i) => (
                 <div key={i} className="confetti-piece" style={{
                   left: `${Math.random() * 100}%`,
-                  background: ["#7dd3fc","#25D366","#F4A261","#a78bfa","#ff6b6b","#64748b","#fff"][i % 7],
+                  background: ["#7dd3fc","#25D366","#F4A261","#a78bfa","#ff6b6b","#60a5d8","#fff"][i % 7],
                   width: `${6 + Math.random() * 8}px`,
                   height: `${6 + Math.random() * 8}px`,
                   animationDuration: `${2 + Math.random() * 3}s`,
@@ -2182,19 +2182,19 @@ export default function App() {
               <div style={{ textAlign:"center", marginBottom:32 }}>
                 <div className="bounce-icon" style={{ fontSize:80, marginBottom:16, display:"block" }}>🎉</div>
                 <h2 style={{ color:"#7dd3fc", fontSize:32, margin:"0 0 8px", fontWeight:700 }}>¡Cita Confirmada!</h2>
-                <p style={{ color:"#64748b", marginBottom:4, fontSize:16 }}>Cita con <strong style={{ color:"#082f49" }}>{selectedDoctor.name}</strong></p>
+                <p style={{ color:"#60a5d8", marginBottom:4, fontSize:16 }}>Cita con <strong style={{ color:"#e8f0f8" }}>{selectedDoctor.name}</strong></p>
                 <p style={{ color:"#e0f2fe", fontSize:14, marginBottom:4 }}>📅 {bookingData.date} · 🕐 {bookingData.time}</p>
                 <p style={{ color:"#e0f2fe", fontSize:14, marginBottom:24 }}>{bookingData.modalidad === "virtual" ? "📱 Consulta virtual por WhatsApp Video" : `📍 ${selectedDoctor.address || "Consultorio del médico"}`}</p>
 
                 {/* Resumen pago */}
                 <div style={{ background:"rgba(59,130,196,0.08)", border:"1px solid rgba(14,165,233,0.25)", borderRadius:14, padding:"14px 20px", marginBottom:24, display:"inline-block", minWidth:280 }}>
                   <div style={{ display:"flex", justifyContent:"space-between", fontSize:14, marginBottom:6 }}>
-                    <span style={{ color:"#64748b" }}>✅ Adelanto pagado</span>
+                    <span style={{ color:"#60a5d8" }}>✅ Adelanto pagado</span>
                     <span style={{ color:"#25D366", fontWeight:700 }}>S/. {AVANCE.monto}</span>
                   </div>
                   <div style={{ display:"flex", justifyContent:"space-between", fontSize:14 }}>
-                    <span style={{ color:"#64748b" }}>📋 Resto en consulta</span>
-                    <span style={{ color:"#082f49", fontWeight:700 }}>S/. {parseInt((selectedDoctor.price||"S/. 0").replace(/\D/g,"")) - AVANCE.monto}</span>
+                    <span style={{ color:"#60a5d8" }}>📋 Resto en consulta</span>
+                    <span style={{ color:"#e8f0f8", fontWeight:700 }}>S/. {parseInt((selectedDoctor.price||"S/. 0").replace(/\D/g,"")) - AVANCE.monto}</span>
                   </div>
                 </div>
 
@@ -2217,13 +2217,13 @@ export default function App() {
                     <div key={i} style={{ display:"flex", gap:12, alignItems:"flex-start", padding:"10px 14px", background:"rgba(255,255,255,0.03)", borderRadius:10 }}>
                       <span style={{ fontSize:18 }}>{item.icon}</span>
                       <div style={{ flex:1 }}>
-                        <div style={{ fontSize:13, color:"#082f49", marginBottom:2 }}>{item.label}</div>
+                        <div style={{ fontSize:13, color:"#e8f0f8", marginBottom:2 }}>{item.label}</div>
                         <div style={{ fontSize:12, color:item.color, fontWeight:700 }}>{item.result}</div>
                       </div>
                     </div>
                   ))}
                 </div>
-                <p style={{ margin:"14px 0 0", fontSize:12, color:"#64748b" }}>
+                <p style={{ margin:"14px 0 0", fontSize:12, color:"#60a5d8" }}>
                   Para cancelar tu cita, escríbenos por WhatsApp al <strong style={{ color:"#7dd3fc" }}>913 330 712</strong> indicando tu nombre y fecha de cita.
                 </p>
                 <button style={{ marginTop:12, width:"100%", padding:"10px 0", background:"linear-gradient(135deg,#25D366,#128C7E)", color:"#fff", border:"none", borderRadius:10, cursor:"pointer", fontSize:14, fontWeight:700, fontFamily:"inherit" }}
@@ -2238,22 +2238,22 @@ export default function App() {
           ) : (
             <div style={{ maxWidth:540, margin:"0 auto" }}>
               <button onClick={() => setView("doctors")} style={{ background:"none", border:"none", color:"#7dd3fc", cursor:"pointer", fontSize:15, marginBottom:24, padding:0, fontFamily:"inherit" }}>← Volver</button>
-              <div style={{ background:"rgba(255,255,255,0.92)", border:"1px solid rgba(14,165,233,0.25)", borderRadius:16, padding:24, marginBottom:24 }}>
+              <div style={{ background:"rgba(255,255,255,0.04)", border:"1px solid rgba(14,165,233,0.25)", borderRadius:16, padding:24, marginBottom:24 }}>
                 <div style={{ display:"flex", gap:16, alignItems:"center" }}>
                   <div style={T.avatar(selectedDoctor.color)}>{selectedDoctor.img||initials(selectedDoctor.name)}</div>
                   <div>
-                    <h3 style={{ margin:0, color:"#082f49" }}>{selectedDoctor.name}</h3>
-                    <p style={{ margin:"4px 0 0", color:"#64748b", fontSize:14 }}>{selectedDoctor.specialty} · {selectedDoctor.price}</p>
+                    <h3 style={{ margin:0, color:"#e8f0f8" }}>{selectedDoctor.name}</h3>
+                    <p style={{ margin:"4px 0 0", color:"#60a5d8", fontSize:14 }}>{selectedDoctor.specialty} · {selectedDoctor.price}</p>
                   </div>
                 </div>
 
                 {/* MODALIDAD SELECTOR */}
                 <div style={{ marginTop:16, display:"flex", gap:10 }}>
-                  <button style={{ flex:1, padding:"10px 0", borderRadius:10, border:`2px solid ${bookingData.modalidad==="presencial" ? "#7dd3fc" : "rgba(59,130,196,0.2)"}`, background:bookingData.modalidad==="presencial" ? "rgba(59,130,196,0.15)" : "transparent", color:bookingData.modalidad==="presencial" ? "#7dd3fc" : "#64748b", cursor:"pointer", fontFamily:"inherit", fontSize:14, fontWeight:700 }}
+                  <button style={{ flex:1, padding:"10px 0", borderRadius:10, border:`2px solid ${bookingData.modalidad==="presencial" ? "#7dd3fc" : "rgba(59,130,196,0.2)"}`, background:bookingData.modalidad==="presencial" ? "rgba(59,130,196,0.15)" : "transparent", color:bookingData.modalidad==="presencial" ? "#7dd3fc" : "#60a5d8", cursor:"pointer", fontFamily:"inherit", fontSize:14, fontWeight:700 }}
                     onClick={() => setBookingData({...bookingData, modalidad:"presencial"})}>
                     🏥 Presencial
                   </button>
-                  <button style={{ flex:1, padding:"10px 0", borderRadius:10, border:`2px solid ${bookingData.modalidad==="virtual" ? "#25D366" : "rgba(37,211,102,0.2)"}`, background:bookingData.modalidad==="virtual" ? "rgba(37,211,102,0.12)" : "transparent", color:bookingData.modalidad==="virtual" ? "#25D366" : "#64748b", cursor:"pointer", fontFamily:"inherit", fontSize:14, fontWeight:700 }}
+                  <button style={{ flex:1, padding:"10px 0", borderRadius:10, border:`2px solid ${bookingData.modalidad==="virtual" ? "#25D366" : "rgba(37,211,102,0.2)"}`, background:bookingData.modalidad==="virtual" ? "rgba(37,211,102,0.12)" : "transparent", color:bookingData.modalidad==="virtual" ? "#25D366" : "#60a5d8", cursor:"pointer", fontFamily:"inherit", fontSize:14, fontWeight:700 }}
                     onClick={() => setBookingData({...bookingData, modalidad:"virtual"})}>
                     📱 Virtual (WhatsApp)
                   </button>
@@ -2265,7 +2265,7 @@ export default function App() {
                     <span style={{ fontSize:18 }}>📍</span>
                     <div>
                       <p style={{ margin:"0 0 4px", fontSize:12, color:"#7dd3fc", textTransform:"uppercase", letterSpacing:0.5, fontWeight:700 }}>Dirección del consultorio</p>
-                      <p style={{ margin:"0 0 6px", color:"#082f49", fontSize:14 }}>{selectedDoctor.address}</p>
+                      <p style={{ margin:"0 0 6px", color:"#e8f0f8", fontSize:14 }}>{selectedDoctor.address}</p>
                       <a href={selectedDoctor.maps_url||"#"} target="_blank" rel="noreferrer" style={{ fontSize:12, color:"#7dd3fc", textDecoration:"none", background:"rgba(59,130,196,0.15)", border:"1px solid rgba(59,130,196,0.3)", padding:"4px 12px", borderRadius:20, display:"inline-block" }}>🗺️ Ver en Google Maps</a>
                     </div>
                   </div>
@@ -2297,21 +2297,21 @@ export default function App() {
               <div style={{ background:"rgba(244,162,97,0.08)", border:"2px solid rgba(244,162,97,0.3)", borderRadius:14, padding:"16px 18px", marginBottom:16 }}>
                 <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", marginBottom:10 }}>
                   <span style={{ fontWeight:700, color:"#F4A261", fontSize:15 }}>💰 Pago para reservar</span>
-                  <span style={{ fontSize:22, fontWeight:700, color:"#082f49" }}>S/. {AVANCE.monto}</span>
+                  <span style={{ fontSize:22, fontWeight:700, color:"#e8f0f8" }}>S/. {AVANCE.monto}</span>
                 </div>
-                <div style={{ display:"flex", justifyContent:"space-between", fontSize:13, color:"#64748b", marginBottom:6 }}>
+                <div style={{ display:"flex", justifyContent:"space-between", fontSize:13, color:"#60a5d8", marginBottom:6 }}>
                   <span>Precio total consulta</span>
                   <span>{selectedDoctor.price}</span>
                 </div>
-                <div style={{ display:"flex", justifyContent:"space-between", fontSize:13, color:"#64748b", marginBottom:6 }}>
+                <div style={{ display:"flex", justifyContent:"space-between", fontSize:13, color:"#60a5d8", marginBottom:6 }}>
                   <span>Adelanto ahora</span>
                   <span style={{ color:"#F4A261", fontWeight:700 }}>S/. {AVANCE.monto}</span>
                 </div>
-                <div style={{ display:"flex", justifyContent:"space-between", fontSize:13, color:"#64748b", paddingTop:8, borderTop:"1px solid rgba(244,162,97,0.2)" }}>
+                <div style={{ display:"flex", justifyContent:"space-between", fontSize:13, color:"#60a5d8", paddingTop:8, borderTop:"1px solid rgba(244,162,97,0.2)" }}>
                   <span>Resto a pagar en consulta</span>
                   <span style={{ color:"#e0f2fe", fontWeight:700 }}>S/. {parseInt((selectedDoctor.price||"S/. 0").replace(/\D/g,"")) - AVANCE.monto}</span>
                 </div>
-                <div style={{ marginTop:12, background:"rgba(82,183,136,0.08)", borderRadius:8, padding:"8px 12px", fontSize:12, color:"#64748b", display:"flex", gap:8, alignItems:"flex-start" }}>
+                <div style={{ marginTop:12, background:"rgba(82,183,136,0.08)", borderRadius:8, padding:"8px 12px", fontSize:12, color:"#60a5d8", display:"flex", gap:8, alignItems:"flex-start" }}>
                   <span>✅</span>
                   <span><strong style={{ color:"#e0f2fe" }}>{AVANCE.politica}.</strong> Si no cancelas a tiempo, el adelanto no es reembolsable.</span>
                 </div>
@@ -2320,7 +2320,7 @@ export default function App() {
               <button style={{ ...T.ctaPrimary, width:"100%", marginTop:4, opacity:(!bookingData.patient_name||!bookingData.patient_phone||!bookingData.date||!bookingData.time)?0.5:1 }} onClick={confirmBooking} disabled={!bookingData.patient_name||!bookingData.patient_phone||!bookingData.date||!bookingData.time}>
                 💳 Pagar adelanto S/. {AVANCE.monto} y reservar
               </button>
-              <p style={{ textAlign:"center", fontSize:12, color:"#64748b", margin:"8px 0 0" }}>El resto (S/. {parseInt((selectedDoctor.price||"S/. 0").replace(/\D/g,"")) - AVANCE.monto}) se paga directamente al médico</p>
+              <p style={{ textAlign:"center", fontSize:12, color:"#60a5d8", margin:"8px 0 0" }}>El resto (S/. {parseInt((selectedDoctor.price||"S/. 0").replace(/\D/g,"")) - AVANCE.monto}) se paga directamente al médico</p>
             </div>
           )}
         </div>
@@ -2329,9 +2329,9 @@ export default function App() {
       {/* CHAT */}
       {view === "chat" && (
         <div style={{ maxWidth:720, margin:"0 auto", padding:"40px 24px", position:"relative", zIndex:1 }}>
-          <h2 style={{ fontSize:32, fontWeight:700, margin:"0 0 8px" }}>Asistente Médico IA</h2>
-          <p style={{ color:"#64748b", margin:"0 0 24px" }}>Cuéntame tus síntomas y te ayudo a encontrar el médico ideal</p>
-          <div style={{ background:"rgba(255,255,255,0.92)", border:"1px solid rgba(14,165,233,0.25)", borderRadius:20, overflow:"hidden", display:"flex", flexDirection:"column", height:"70vh" }}>
+          <h2 style={{ fontSize:32, fontWeight:700, margin:"0 0 8px", color:"#e8f0f8" }}>Asistente Médico IA</h2>
+          <p style={{ color:"#bae6fd", margin:"0 0 24px" }}>Cuéntame tus síntomas y te ayudo a encontrar el médico ideal</p>
+          <div style={{ background:"rgba(255,255,255,0.04)", border:"1px solid rgba(59,130,196,0.2)", borderRadius:20, overflow:"hidden", display:"flex", flexDirection:"column", height:"70vh" }}>
             <div style={{ flex:1, overflowY:"auto", padding:24, display:"flex", flexDirection:"column", gap:16 }}>
               {messages.map((m,i)=>(
                 <div key={i} style={T.msgBubble(m.role)}>
@@ -2343,7 +2343,7 @@ export default function App() {
               <div ref={chatEndRef} />
             </div>
             <div style={{ display:"flex", gap:12, padding:16, borderTop:"1px solid rgba(59,130,196,0.15)" }}>
-              <input style={{ flex:1, background:"rgba(255,255,255,0.06)", border:"1px solid rgba(59,130,196,0.25)", borderRadius:12, padding:"12px 16px", color:"#082f49", fontSize:15, fontFamily:"inherit", outline:"none" }} placeholder="Escribe tu consulta aquí..." value={input} onChange={e=>setInput(e.target.value)} onKeyDown={e=>e.key==="Enter"&&sendMessage()} />
+              <input style={{ flex:1, background:"rgba(255,255,255,0.06)", border:"1px solid rgba(59,130,196,0.25)", borderRadius:12, padding:"12px 16px", color:"#e8f0f8", fontSize:15, fontFamily:"inherit", outline:"none" }} placeholder="Escribe tu consulta aquí..." value={input} onChange={e=>setInput(e.target.value)} onKeyDown={e=>e.key==="Enter"&&sendMessage()} />
               <button style={{ padding:"12px 20px", background:"linear-gradient(135deg,#0ea5e9,#7dd3fc)", color:"#fff", border:"none", borderRadius:12, cursor:"pointer", fontSize:20, fontFamily:"inherit" }} onClick={sendMessage} disabled={loading}>➤</button>
             </div>
           </div>
@@ -2355,18 +2355,18 @@ export default function App() {
       {view === "doctor-register" && (
         <div style={{ maxWidth:600, margin:"0 auto", padding:"40px 24px", zIndex:1, position:"relative" }}>
           <h2 style={{ fontSize:32, fontWeight:700, margin:"0 0 8px" }}>Únete como Médico</h2>
-          <p style={{ color:"#64748b", margin:"0 0 24px" }}>Llega a más pacientes en Perú</p>
+          <p style={{ color:"#60a5d8", margin:"0 0 24px" }}>Llega a más pacientes en Perú</p>
 
           {regDone ? (
             <div style={{ background:"rgba(59,130,196,0.08)", border:"1px solid rgba(59,130,196,0.3)", borderRadius:16, padding:32, textAlign:"center" }}>
               <div style={{ fontSize:56, marginBottom:16 }}>✅</div>
               <h3 style={{ color:"#7dd3fc", fontSize:22, margin:"0 0 8px" }}>¡Registro enviado!</h3>
-              <p style={{ color:"#64748b", fontSize:14 }}>Tu perfil está en revisión. Te activaremos en 24h tras verificar el pago.</p>
+              <p style={{ color:"#60a5d8", fontSize:14 }}>Tu perfil está en revisión. Te activaremos en 24h tras verificar el pago.</p>
             </div>
           ) : (
-            <div style={{ background:"rgba(255,255,255,0.92)", border:"2px solid rgba(59,130,196,0.3)", borderRadius:20, padding:32, marginBottom:24 }}>
+            <div style={{ background:"rgba(255,255,255,0.04)", border:"2px solid rgba(59,130,196,0.3)", borderRadius:20, padding:32, marginBottom:24 }}>
               <div style={{ fontSize:24, fontWeight:700, color:"#7dd3fc" }}>Plan Profesional</div>
-              <div style={{ fontSize:48, fontWeight:700, color:"#082f49", margin:"12px 0" }}>S/. 99<span style={{ fontSize:18, color:"#64748b" }}>/mes</span></div>
+              <div style={{ fontSize:48, fontWeight:700, color:"#e8f0f8", margin:"12px 0" }}>S/. 99<span style={{ fontSize:18, color:"#60a5d8" }}>/mes</span></div>
               <ul style={{ listStyle:"none", padding:0, margin:"0 0 24px" }}>
                 {["✅ Perfil médico verificado","✅ Gestión de citas online","✅ Panel de control completo","✅ Notificaciones WhatsApp/SMS","✅ Recomendaciones por IA","✅ Estadísticas en tiempo real","✅ Soporte prioritario 24/7"].map((f,i)=>(
                   <li key={i} style={{ padding:"8px 0", borderBottom:"1px solid rgba(14,165,233,0.2)", color:"#e0f2fe", fontSize:15 }}>{f}</li>
@@ -2382,7 +2382,7 @@ export default function App() {
               {/* CMP SECTION */}
               <div style={{ background:"rgba(59,130,196,0.06)", border:"1px solid rgba(14,165,233,0.25)", borderRadius:14, padding:20, marginBottom:16 }}>
                 <div style={{ fontSize:15, fontWeight:700, color:"#7dd3fc", marginBottom:4 }}>🏥 Verificación CMP obligatoria</div>
-                <p style={{ fontSize:12, color:"#64748b", margin:"0 0 14px" }}>Solo médicos registrados en el Colegio Médico del Perú pueden inscribirse.</p>
+                <p style={{ fontSize:12, color:"#60a5d8", margin:"0 0 14px" }}>Solo médicos registrados en el Colegio Médico del Perú pueden inscribirse.</p>
 
                 <div style={{ marginBottom:12 }}>
                   <label style={T.label}>NÚMERO CMP *</label>
@@ -2408,14 +2408,14 @@ export default function App() {
                     {diplomaFile ? (
                       <div style={{ color:"#7dd3fc", fontSize:14 }}>📄 {diplomaFile.name} <span style={{ color:"#52B788" }}>✓</span></div>
                     ) : (
-                      <div style={{ color:"#64748b", fontSize:13 }}>📎 Haz clic para subir tu diploma o título médico<br/><span style={{ fontSize:11, color:"#64748b", opacity:0.7 }}>JPG, PNG o PDF — La IA lo analizará automáticamente</span></div>
+                      <div style={{ color:"#60a5d8", fontSize:13 }}>📎 Haz clic para subir tu diploma o título médico<br/><span style={{ fontSize:11, color:"#60a5d8", opacity:0.7 }}>JPG, PNG o PDF — La IA lo analizará automáticamente</span></div>
                     )}
                   </div>
                 </div>
 
                 {/* RESULTADO VERIFICACION IA */}
                 {cmpVerification?.status === "loading" && (
-                  <div style={{ background:"rgba(59,130,196,0.08)", borderRadius:10, padding:14, textAlign:"center", color:"#64748b", fontSize:14 }}>
+                  <div style={{ background:"rgba(59,130,196,0.08)", borderRadius:10, padding:14, textAlign:"center", color:"#60a5d8", fontSize:14 }}>
                     🤖 La IA está analizando tus credenciales...
                   </div>
                 )}
@@ -2433,7 +2433,7 @@ export default function App() {
                     <div style={{ background:bg, border:`1px solid ${color}44`, borderRadius:10, padding:16 }}>
                       <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", marginBottom:10 }}>
                         <span style={{ fontWeight:700, color, fontSize:15 }}>{icon} {r.recomendacion}</span>
-                        <span style={{ fontSize:13, color:"#64748b" }}>Score: <strong style={{ color }}>{r.score}/100</strong></span>
+                        <span style={{ fontSize:13, color:"#60a5d8" }}>Score: <strong style={{ color }}>{r.score}/100</strong></span>
                       </div>
                       <p style={{ margin:"0 0 8px", fontSize:13, color:"#e0f2fe", lineHeight:1.5 }}>{r.resumen}</p>
                       {r.alertas?.length > 0 && (
@@ -2454,7 +2454,7 @@ export default function App() {
               <div style={{ marginBottom:14 }}>
                 <label style={T.label}>DIRECCIÓN DEL CONSULTORIO</label>
                 <input style={T.input} placeholder="Jr. 28 de Julio 312, Of. 2, Ayacucho" value={regData.address} onChange={e=>setRegData({...regData,address:e.target.value})} />
-                <p style={{ margin:"6px 0 0", fontSize:12, color:"#64748b" }}>📍 Visible para tus pacientes al reservar</p>
+                <p style={{ margin:"6px 0 0", fontSize:12, color:"#60a5d8" }}>📍 Visible para tus pacientes al reservar</p>
               </div>
               <div style={{ marginBottom:20 }}>
                 <label style={T.label}>REFERENCIA (opcional)</label>
@@ -2468,7 +2468,7 @@ export default function App() {
           )}
 
           <div style={{ background:"rgba(59,130,196,0.07)", border:"1px solid rgba(14,165,233,0.25)", borderRadius:16, padding:20, textAlign:"center" }}>
-            <p style={{ color:"#64748b", fontSize:13, margin:"0 0 12px" }}>🎯 ¿Quieres ver el panel de control antes de inscribirte?</p>
+            <p style={{ color:"#60a5d8", fontSize:13, margin:"0 0 12px" }}>🎯 ¿Quieres ver el panel de control antes de inscribirte?</p>
             <div style={{ display:"flex", gap:10, flexWrap:"wrap", justifyContent:"center" }}>
               {doctors.slice(0,3).map(doc=>(
                 <button key={doc.id} style={{ padding:"8px 16px", background:"rgba(59,130,196,0.15)", border:"1px solid rgba(59,130,196,0.3)", borderRadius:10, color:"#7dd3fc", cursor:"pointer", fontFamily:"inherit", fontSize:13 }} onClick={() => setDashboardDoctor(doc)}>
