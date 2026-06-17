@@ -1545,8 +1545,9 @@ export default function App() {
       const doctorList = doctors.map(d => `${d.name} (${d.specialty}, ${d.price}, ${d.available?"disponible":"no disponible"}, ${d.address||""})`).join("; ");
       const response = await fetch("/api/claude", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ max_tokens: 1000, system: `Eres un asistente médico IA amable para Ayacucho, Perú. Médicos disponibles: ${doctorList}. Especialidades disponibles: Medicina General, Pediatría, Cardiología, Ginecología, Traumatología, Dermatología, Odontología, Oftalmología, Psicología, Nutrición, Neurología, Urología, Endocrinología, Oncología, Medicina Interna, Cirugía General, Gastroenterología, Nefrología, Neumología. Responde en español, cálido. Si el usuario describe síntomas, sugiere la especialidad más adecuada. Nunca diagnostiques. Máximo 3 párrafos.`, messages: [...messages, { role: "user", content: userMsg }].map(m => ({ role: m.role, content: m.content })) }) });
       const data = await response.json();
-      setMessages(prev => [...prev, { role: "assistant", content: data.content?.map(b => b.text||"").join("")||"Error." }]);
-    } catch { setMessages(prev => [...prev, { role: "assistant", content: "Error de conexión." }]); }
+      const errMsg = data.error?.message || data.error?.error?.message || JSON.stringify(data).slice(0,200);
+      setMessages(prev => [...prev, { role: "assistant", content: data.content?.map(b => b.text||"").join("") || `Error: ${errMsg}` }]);
+    } catch (e) { setMessages(prev => [...prev, { role: "assistant", content: "Error de conexión: " + e.message }]); }
     setLoading(false);
   }
 
