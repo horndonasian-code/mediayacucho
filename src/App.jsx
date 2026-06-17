@@ -27,7 +27,7 @@ const db = {
   getDoctors: () => sb("doctors?active=eq.true&order=name"),
   registerDoctor: (data) => sb("doctors", { method: "POST", body: JSON.stringify(data) }),
   updateDoctor: (id, data) => sb(`doctors?id=eq.${id}`, { method: "PATCH", body: JSON.stringify(data) }),
-  getAppointments: (doctorId) => sb(`appointments?doctor_id=eq.${doctorId}&order=date,time`),
+  getAppointments: (doctorId) => doctorId ? sb(`appointments?doctor_id=eq.${doctorId}&order=date,time`) : sb(`appointments?order=date,time`),
   createAppointment: (data) => sb("appointments", { method: "POST", body: JSON.stringify(data) }),
   updateAppointment: (id, data) => sb(`appointments?id=eq.${id}`, { method: "PATCH", body: JSON.stringify(data) }),
   createPayment: (data) => sb("payments", { method: "POST", body: JSON.stringify(data) }),
@@ -144,40 +144,66 @@ function initials(name) { return name.split(" ").filter(w => w[0] === w[0]?.toUp
 
 const DAY_MAP = { "Dom":0, "Lun":1, "Mar":2, "Mié":3, "Jue":4, "Vie":5, "Sáb":6 };
 
-function getNextAvailability(schedule) {
+function formatDateISO(d) {
+  return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,"0")}-${String(d.getDate()).padStart(2,"0")}`;
+}
+
+// bookedSlots: Set of "YYYY-MM-DD HH:MM" strings already reserved (status pendiente/confirmada)
+function getNextAvailability(schedule, bookedSlots) {
   if (!schedule || schedule.length === 0) return null;
+  bookedSlots = bookedSlots || new Set();
   const now = new Date();
-  const todayDow = now.getDay();
   const todayMinutes = now.getHours() * 60 + now.getMinutes();
 
-  let best = null; // { daysAhead, label }
-
+  // Parse weekly slots into { dow, hh, mm }
+  const weeklySlots = [];
   for (const slot of schedule) {
     const match = slot.match(/^(\p{L}{3})\s+(\d{1,2}):(\d{2})/u);
     if (!match) continue;
     const [, dayAbbr, hh, mm] = match;
     const dow = DAY_MAP[dayAbbr];
     if (dow === undefined) continue;
-    const slotMinutes = parseInt(hh) * 60 + parseInt(mm);
+    weeklySlots.push({ dow, hh, mm, slotMinutes: parseInt(hh) * 60 + parseInt(mm) });
+  }
+  if (weeklySlots.length === 0) return null;
 
-    let daysAhead = (dow - todayDow + 7) % 7;
-    if (daysAhead === 0 && slotMinutes <= todayMinutes) daysAhead = 7; // today's slot already passed
+  // Search up to 8 weeks ahead for the first slot that's not booked
+  for (let dayOffset = 0; dayOffset <= 56; dayOffset++) {
+    const candidate = new Date(now);
+    candidate.setDate(candidate.getDate() + dayOffset);
+    const candidateDow = candidate.getDay();
+    const dateISO = formatDateISO(candidate);
 
-    if (best === null || daysAhead < best.daysAhead || (daysAhead === best.daysAhead && slotMinutes < best.slotMinutes)) {
-      best = { daysAhead, slotMinutes, dayAbbr, hh, mm };
+    const slotsToday = weeklySlots.filter(s => s.dow === candidateDow);
+    for (const s of slotsToday.sort((a,b) => a.slotMinutes - b.slotMinutes)) {
+      if (dayOffset === 0 && s.slotMinutes <= todayMinutes) continue; // already passed today
+      const key = `${dateISO} ${s.hh}:${s.mm}`;
+      if (bookedSlots.has(key)) continue; // already reserved by another patient
+
+      let label;
+      if (dayOffset === 0) label = `Hoy ${s.hh}:${s.mm}`;
+      else if (dayOffset === 1) label = `Mañana ${s.hh}:${s.mm}`;
+      else {
+        const fullDayNames = { "Dom":"Domingo", "Lun":"Lunes", "Mar":"Martes", "Mié":"Miércoles", "Jue":"Jueves", "Vie":"Viernes", "Sáb":"Sábado" };
+        const dayAbbrRev = Object.keys(DAY_MAP).find(k => DAY_MAP[k] === candidateDow);
+        label = `${fullDayNames[dayAbbrRev] || dayAbbrRev} ${s.hh}:${s.mm}`;
+      }
+      return { label, daysAhead: dayOffset };
     }
   }
+  return null; // fully booked for 8 weeks (unlikely)
+}
 
-  if (!best) return null;
-
-  let label;
-  if (best.daysAhead === 0) label = `Hoy ${best.hh}:${best.mm}`;
-  else if (best.daysAhead === 1) label = `Mañana ${best.hh}:${best.mm}`;
-  else {
-    const fullDayNames = { "Dom":"Domingo", "Lun":"Lunes", "Mar":"Martes", "Mié":"Miércoles", "Jue":"Jueves", "Vie":"Viernes", "Sáb":"Sábado" };
-    label = `${fullDayNames[best.dayAbbr] || best.dayAbbr} ${best.hh}:${best.mm}`;
+// Build a Set of "YYYY-MM-DD HH:MM" strings for a doctor's already-booked (non-cancelled) appointments
+function getBookedSlotsForDoctor(allAppointments, doctorId) {
+  const set = new Set();
+  for (const a of allAppointments || []) {
+    if (a.doctor_id !== doctorId) continue;
+    if (a.status === "cancelada") continue;
+    if (!a.date || !a.time) continue;
+    set.add(`${a.date} ${a.time}`);
   }
-  return { label, daysAhead: best.daysAhead };
+  return set;
 }
 
 // ─── Login Modal ───────────────────────────────────────────────────────────
@@ -1342,7 +1368,7 @@ function AdminPanel({ onExit }) {
 
 
 // ─── Doctor Public Profile ─────────────────────────────────────────────────
-function DoctorProfile({ doctor, onBook, onBack }) {
+function DoctorProfile({ doctor, onBook, onBack, allAppointments }) {
   const [tab, setTab] = useState("info");
   const profileUrl = `${window.location.origin}?medico=${doctor.id}`;
 
@@ -1375,7 +1401,8 @@ function DoctorProfile({ doctor, onBook, onBack }) {
         </div>
         <div style={{ color: "#F4A261", fontSize: 16, marginBottom: 12 }}>{"★".repeat(Math.floor(doctor.rating || 5))} <span style={{ color: "#e8f0f8", fontWeight: 700 }}>{doctor.rating}</span> <span style={{ color: "#bae6fd", fontSize: 13 }}>calificación</span></div>
         {(() => {
-          const next = getNextAvailability(doctor.schedule);
+          const booked = getBookedSlotsForDoctor(allAppointments, doctor.id);
+          const next = getNextAvailability(doctor.schedule, booked);
           if (!next) return null;
           const isSoon = next.daysAhead <= 1;
           return (
@@ -1573,12 +1600,14 @@ export default function App() {
   const [regLoading, setRegLoading] = useState(false);
   const [regDone, setRegDone] = useState(false);
   const [pendingDoctorId, setPendingDoctorId] = useState(null);
+  const [allAppointments, setAllAppointments] = useState([]);
   const chatEndRef = useRef(null);
 
   useEffect(() => {
     db.getDoctors()
       .then(data => { setDoctors(data); setLoadingDoctors(false); })
       .catch(e => { setDbError(e.message); setLoadingDoctors(false); });
+    db.getAppointments().then(data => setAllAppointments(data || [])).catch(() => {});
   }, []);
 
   useEffect(() => { chatEndRef.current?.scrollIntoView({ behavior: "smooth" }); }, [messages]);
@@ -1607,6 +1636,7 @@ export default function App() {
       const apptId = Array.isArray(appt) ? appt[0]?.id : appt?.id;
       setLastBooking({ data: { ...bookingData, appointmentId: apptId }, doctor: selectedDoctor });
       setShowPayment(true);
+      db.getAppointments().then(data => setAllAppointments(data || [])).catch(() => {});
     } catch (e) { alert("Error al guardar la cita: " + e.message); }
   }
   function onPaymentSuccess() {
@@ -1735,6 +1765,7 @@ export default function App() {
         doctor={selectedProfile}
         onBack={() => { setView("doctors"); setSelectedProfile(null); }}
         onBook={(doc, modalidad) => { setSelectedDoctor(doc); setBookingData(p => ({...p, modalidad})); setSelectedProfile(null); setView("booking"); }}
+        allAppointments={allAppointments}
       />
     </div>
   );
@@ -2125,7 +2156,8 @@ export default function App() {
                   </div>
                   <div style={{ color:"#F4A261", fontSize:13 }}>{"★".repeat(Math.floor(doc.rating||5))} {doc.rating}</div>
                   {(() => {
-                    const next = getNextAvailability(doc.schedule);
+                    const booked = getBookedSlotsForDoctor(allAppointments, doc.id);
+                    const next = getNextAvailability(doc.schedule, booked);
                     if (!next) return null;
                     const isSoon = next.daysAhead <= 1;
                     return (
