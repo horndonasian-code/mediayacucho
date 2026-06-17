@@ -753,7 +753,7 @@ Y cuéntanos brevemente tu experiencia. ¡Tu opinión ayuda a otros pacientes!
   }
 
   const s = {
-    wrap: { minHeight: "100vh", background: "linear-gradient(135deg, #030d1a 0%, #051628 100%)", fontFamily: "'Crimson Pro', Georgia, serif", color: "#e8f0f8" },
+    wrap: { minHeight: "100vh", background: "linear-gradient(135deg, #030d1a 0%, #051628 100%)", fontFamily: "'Inter', sans-serif", color: "#e8f0f8" },
     topbar: { background: "rgba(10,22,40,0.95)", borderBottom: "1px solid rgba(59,130,196,0.2)", padding: "0 24px", display: "flex", alignItems: "center", justifyContent: "space-between", height: 64, position: "sticky", top: 0, zIndex: 50 },
     avatar: { width: 40, height: 40, borderRadius: 10, background: doctor.color || "#0ea5e9", display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 700, fontSize: 14, color: "#fff" },
     sidebar: { width: 220, minHeight: "calc(100vh - 64px)", background: "rgba(0,0,0,0.2)", borderRight: "1px solid rgba(59,130,196,0.1)", padding: "24px 0", position: "fixed", top: 64 },
@@ -785,7 +785,7 @@ Y cuéntanos brevemente tu experiencia. ¡Tu opinión ayuda a otros pacientes!
 
   return (
     <div style={s.wrap}>
-      <link href="https://fonts.googleapis.com/css2?family=Crimson+Pro:wght@400;600;700&display=swap" rel="stylesheet" />
+      <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
       <div style={s.topbar}>
         <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
           {photoUrl
@@ -1120,7 +1120,7 @@ function AdminPanel({ onExit }) {
   const totalIngresos = payments.filter(p => p.status === "verificado").reduce((sum, p) => sum + (p.amount || 0), 0);
 
   const s = {
-    wrap: { minHeight: "100vh", background: "linear-gradient(135deg, #0a0f1e 0%, #0d1529 100%)", fontFamily: "'Crimson Pro', Georgia, serif", color: "#e8f0f8" },
+    wrap: { minHeight: "100vh", background: "linear-gradient(135deg, #0a0f1e 0%, #0d1529 100%)", fontFamily: "'Inter', sans-serif", color: "#e8f0f8" },
     topbar: { background: "rgba(10,15,30,0.98)", borderBottom: "1px solid rgba(255,100,100,0.2)", padding: "0 24px", display: "flex", alignItems: "center", justifyContent: "space-between", height: 64, position: "sticky", top: 0, zIndex: 50 },
     main: { maxWidth: 1100, margin: "0 auto", padding: "32px 24px" },
     kpiGrid: { display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(180px, 1fr))", gap: 16, marginBottom: 32 },
@@ -1151,7 +1151,7 @@ function AdminPanel({ onExit }) {
 
   return (
     <div style={s.wrap}>
-      <link href="https://fonts.googleapis.com/css2?family=Crimson+Pro:wght@400;600;700&display=swap" rel="stylesheet" />
+      <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
       {actionMsg && <div style={s.actionMsg}>{actionMsg}</div>}
 
       <div style={s.topbar}>
@@ -1745,8 +1745,8 @@ export default function App() {
   if (showAdmin) return <AdminPanel onExit={() => setShowAdmin(false)} />;
   if (dashboardDoctor) return <DoctorDashboard doctor={dashboardDoctor} onExit={() => setDashboardDoctor(null)} />;
   if (selectedProfile && view === "profile") return (
-    <div style={{ fontFamily: "'Crimson Pro', Georgia, serif", minHeight: "100vh", background: "linear-gradient(135deg, #030d1a 0%, #051628 100%)", color: "#e8f0f8" }}>
-      <link href="https://fonts.googleapis.com/css2?family=Crimson+Pro:wght@400;600;700&display=swap" rel="stylesheet" />
+    <div style={{ fontFamily: "'Inter', sans-serif", minHeight: "100vh", background: "linear-gradient(135deg, #030d1a 0%, #051628 100%)", color: "#e8f0f8" }}>
+      <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
       <header style={{ position: "sticky", top: 0, zIndex: 100, background: "rgba(10,22,40,0.92)", backdropFilter: "blur(20px)", borderBottom: "1px solid rgba(59,130,196,0.2)", padding: "0 24px", display: "flex", alignItems: "center", height: 64 }}>
         <div style={{ cursor: "pointer", display: "flex", alignItems: "center", gap: 10 }} onClick={() => { setView("home"); setSelectedProfile(null); }}>
           <svg width="32" height="32" viewBox="0 0 72 72" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -1774,7 +1774,7 @@ export default function App() {
   );
 
   const T = {
-    app: { fontFamily: "'Crimson Pro', Georgia, serif", minHeight: "100vh", background: "linear-gradient(135deg, #030d1a 0%, #051628 50%, #030d1a 100%)", color: "#e8f0f8", position: "relative" },
+    app: { fontFamily: "'Inter', sans-serif", minHeight: "100vh", background: "linear-gradient(135deg, #030d1a 0%, #051628 50%, #030d1a 100%)", color: "#e8f0f8", position: "relative" },
     header: { position: "sticky", top: 0, zIndex: 100, background: "rgba(10,22,40,0.92)", backdropFilter: "blur(20px)", borderBottom: "1px solid rgba(59,130,196,0.2)", padding: "0 24px", display: "flex", alignItems: "center", justifyContent: "space-between", height: 64 },
     logo: { fontSize: 22, fontWeight: 700, color: "#7dd3fc" },
     logoSub: { fontSize: 11, color: "#bae6fd", letterSpacing: 3, textTransform: "uppercase", display: "block", marginTop: -4 },
@@ -1795,7 +1795,7 @@ export default function App() {
 
   return (
     <div style={{ ...T.app, background: (view==="home"||view==="doctors"||view==="chat") ? "#ffffff" : T.app.background }}>
-      <link href="https://fonts.googleapis.com/css2?family=Crimson+Pro:wght@400;600;700&display=swap" rel="stylesheet" />
+      <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
       <style>{`
         * { box-sizing: border-box; }
         @media (max-width: 640px) {
