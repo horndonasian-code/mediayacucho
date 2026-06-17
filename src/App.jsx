@@ -665,8 +665,8 @@ function DoctorDashboard({ doctor, onExit }) {
   const completedCount = appointments.filter(a => a.status === "completada").length;
   const cancelledCount = appointments.filter(a => a.status === "cancelada").length;
   const totalIncome = completedCount * parseInt((doctor.price || "S/. 0").replace(/\D/g, ""));
-  const statusColor = { confirmada: "#7dd3fc", pendiente: "#F4A261", completada: "#bae6fd", cancelada: "#ff6b6b" };
-  const statusBg = { confirmada: "rgba(59,130,196,0.15)", pendiente: "rgba(244,162,97,0.15)", completada: "rgba(96,165,216,0.1)", cancelada: "rgba(255,107,107,0.1)" };
+  const statusColor = { confirmada: "#0369a1", pendiente: "#c2410c", completada: "#15803d", cancelada: "#dc2626" };
+  const statusBg = { confirmada: "#e0f2fe", pendiente: "#fff7ed", completada: "#f0fdf4", cancelada: "#fef2f2" };
   const filtered = filterStatus === "todas" ? appointments : appointments.filter(a => a.status === filterStatus);
   const maxCitas = Math.max(...MONTHLY_DATA.map(d => d.citas));
 
@@ -753,26 +753,26 @@ Y cuéntanos brevemente tu experiencia. ¡Tu opinión ayuda a otros pacientes!
   }
 
   const s = {
-    wrap: { minHeight: "100vh", background: "linear-gradient(135deg, #030d1a 0%, #051628 100%)", fontFamily: "'Inter', sans-serif", color: "#e8f0f8" },
-    topbar: { background: "rgba(10,22,40,0.95)", borderBottom: "1px solid rgba(59,130,196,0.2)", padding: "0 24px", display: "flex", alignItems: "center", justifyContent: "space-between", height: 64, position: "sticky", top: 0, zIndex: 50 },
+    wrap: { minHeight: "100vh", background: "#ffffff", fontFamily: "'Inter', sans-serif", color: "#082f49" },
+    topbar: { background: "rgba(255,255,255,0.95)", borderBottom: "1px solid #e0f2fe", padding: "0 24px", display: "flex", alignItems: "center", justifyContent: "space-between", height: 64, position: "sticky", top: 0, zIndex: 50 },
     avatar: { width: 40, height: 40, borderRadius: 10, background: doctor.color || "#0ea5e9", display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 700, fontSize: 14, color: "#fff" },
-    sidebar: { width: 220, minHeight: "calc(100vh - 64px)", background: "rgba(0,0,0,0.2)", borderRight: "1px solid rgba(59,130,196,0.1)", padding: "24px 0", position: "fixed", top: 64 },
-    sideBtn: (a) => ({ display: "flex", alignItems: "center", gap: 10, padding: "12px 24px", cursor: "pointer", background: a ? "rgba(59,130,196,0.12)" : "transparent", borderLeft: a ? "3px solid #7dd3fc" : "3px solid transparent", color: a ? "#7dd3fc" : "#bae6fd", fontSize: 14, border: "none", width: "100%", textAlign: "left", fontFamily: "inherit" }),
+    sidebar: { width: 220, minHeight: "calc(100vh - 64px)", background: "#f8fafc", borderRight: "1px solid #e0f2fe", padding: "24px 0", position: "fixed", top: 64 },
+    sideBtn: (a) => ({ display: "flex", alignItems: "center", gap: 10, padding: "12px 24px", cursor: "pointer", background: a ? "#e0f2fe" : "transparent", borderLeft: a ? "3px solid #0ea5e9" : "3px solid transparent", color: a ? "#0369a1" : "#64748b", fontSize: 14, border: "none", width: "100%", textAlign: "left", fontFamily: "inherit" }),
     main: { marginLeft: 220, padding: "32px" },
     kpiGrid: { display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(170px, 1fr))", gap: 16, marginBottom: 28 },
-    kpiCard: (accent) => ({ background: "rgba(255,255,255,0.04)", border: `1px solid ${accent}33`, borderRadius: 16, padding: "20px 24px" }),
+    kpiCard: (accent) => ({ background: "#ffffff", border: `1px solid ${accent}33`, borderRadius: 16, padding: "20px 24px", boxShadow:"0 8px 24px rgba(15,23,42,0.05)" }),
     kpiNum: (accent) => ({ fontSize: 34, fontWeight: 700, color: accent, display: "block", margin: "4px 0" }),
-    kpiLabel: { fontSize: 12, color: "#bae6fd", letterSpacing: 0.5, textTransform: "uppercase" },
-    card: { background: "rgba(255,255,255,0.04)", border: "1px solid rgba(59,130,196,0.12)", borderRadius: 16, padding: 24, marginBottom: 20 },
-    cardTitle: { fontSize: 16, fontWeight: 700, color: "#e8f0f8", margin: "0 0 16px" },
-    apptRow: (st) => ({ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "12px 16px", borderRadius: 10, background: statusBg[st] || "rgba(255,255,255,0.03)", marginBottom: 8, flexWrap: "wrap", gap: 8 }),
+    kpiLabel: { fontSize: 12, color: "#64748b", letterSpacing: 0.5, textTransform: "uppercase" },
+    card: { background: "#ffffff", border: "1px solid #e0f2fe", borderRadius: 16, padding: 24, marginBottom: 20, boxShadow:"0 8px 24px rgba(15,23,42,0.05)" },
+    cardTitle: { fontSize: 16, fontWeight: 700, color: "#082f49", margin: "0 0 16px" },
+    apptRow: (st) => ({ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "12px 16px", borderRadius: 10, background: statusBg[st] || "#f8fafc", marginBottom: 8, flexWrap: "wrap", gap: 8 }),
     statusPill: (st) => ({ padding: "3px 10px", borderRadius: 12, background: statusBg[st], color: statusColor[st], fontSize: 11, fontWeight: 700, textTransform: "uppercase" }),
-    selectBtn: { background: "rgba(255,255,255,0.06)", border: "1px solid rgba(59,130,196,0.2)", borderRadius: 8, padding: "4px 10px", color: "#bae6fd", fontSize: 12, cursor: "pointer", fontFamily: "inherit" },
-    filterPill: (a) => ({ padding: "6px 14px", borderRadius: 20, border: `1px solid ${a ? "#7dd3fc" : "rgba(59,130,196,0.25)"}`, background: a ? "rgba(59,130,196,0.15)" : "transparent", color: a ? "#7dd3fc" : "#bae6fd", cursor: "pointer", fontSize: 12, fontFamily: "inherit" }),
-    toggleBtn: (on) => ({ padding: "8px 20px", borderRadius: 10, border: "none", background: on ? "linear-gradient(135deg, #0ea5e9, #7dd3fc)" : "rgba(255,100,100,0.15)", color: on ? "#fff" : "#ff6b6b", cursor: "pointer", fontFamily: "inherit", fontSize: 13, fontWeight: 700 }),
-    inp: { width: "100%", background: "rgba(255,255,255,0.06)", border: "1px solid rgba(59,130,196,0.25)", borderRadius: 8, padding: "8px 12px", color: "#e8f0f8", fontSize: 14, fontFamily: "inherit", outline: "none", boxSizing: "border-box", marginBottom: 10 },
+    selectBtn: { background: "#f0f9ff", border: "1px solid #bae6fd", borderRadius: 8, padding: "4px 10px", color: "#0369a1", fontSize: 12, cursor: "pointer", fontFamily: "inherit" },
+    filterPill: (a) => ({ padding: "6px 14px", borderRadius: 20, border: `1px solid ${a ? "#0ea5e9" : "#cbd5e1"}`, background: a ? "#e0f2fe" : "#ffffff", color: a ? "#0369a1" : "#64748b", cursor: "pointer", fontSize: 12, fontFamily: "inherit" }),
+    toggleBtn: (on) => ({ padding: "8px 20px", borderRadius: 10, border: "none", background: on ? "linear-gradient(135deg, #0ea5e9, #7dd3fc)" : "#fee2e2", color: on ? "#fff" : "#dc2626", cursor: "pointer", fontFamily: "inherit", fontSize: 13, fontWeight: 700 }),
+    inp: { width: "100%", background: "#f0f9ff", border: "1px solid #bae6fd", borderRadius: 8, padding: "8px 12px", color: "#082f49", fontSize: 14, fontFamily: "inherit", outline: "none", boxSizing: "border-box", marginBottom: 10 },
     saveBtn: { padding: "10px 24px", background: "linear-gradient(135deg, #0ea5e9, #7dd3fc)", color: "#fff", border: "none", borderRadius: 10, cursor: "pointer", fontFamily: "inherit", fontSize: 14, fontWeight: 700 },
-    lbl: { display: "block", fontSize: 12, color: "#bae6fd", marginBottom: 4 },
+    lbl: { display: "block", fontSize: 12, color: "#0369a1", marginBottom: 4, fontWeight: 600 },
   };
 
   const navItems = [
@@ -789,26 +789,26 @@ Y cuéntanos brevemente tu experiencia. ¡Tu opinión ayuda a otros pacientes!
       <div style={s.topbar}>
         <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
           {photoUrl
-            ? <img src={photoUrl} alt={doctor.name} style={{ width:40, height:40, borderRadius:10, objectFit:"cover", border:"1px solid rgba(59,130,196,0.4)" }} />
+            ? <img src={photoUrl} alt={doctor.name} style={{ width:40, height:40, borderRadius:10, objectFit:"cover", border:"1px solid #7dd3fc" }} />
             : <div style={s.avatar}>{doctor.img || initials(doctor.name)}</div>
           }
           <div>
-            <div style={{ fontWeight: 700, color: "#e8f0f8", fontSize: 15 }}>{doctor.name}</div>
-            <div style={{ fontSize: 11, color: "#7dd3fc" }}>{doctor.specialty} · Panel Médico</div>
+            <div style={{ fontWeight: 700, color: "#082f49", fontSize: 15 }}>{doctor.name}</div>
+            <div style={{ fontSize: 11, color: "#0369a1" }}>{doctor.specialty} · Panel Médico</div>
           </div>
         </div>
         <div style={{ display: "flex", gap: 12 }}>
           <button style={s.toggleBtn(isAvailable)} onClick={toggleAvailable}>{isAvailable ? "🟢 Disponible" : "🔴 No disponible"}</button>
-          <button onClick={onExit} style={{ padding: "8px 16px", background: "transparent", border: "1px solid rgba(59,130,196,0.3)", color: "#bae6fd", borderRadius: 8, cursor: "pointer", fontFamily: "inherit", fontSize: 13 }}>← Salir</button>
+          <button onClick={onExit} style={{ padding: "8px 16px", background: "transparent", border: "1px solid #bae6fd", color: "#475569", borderRadius: 8, cursor: "pointer", fontFamily: "inherit", fontSize: 13 }}>← Salir</button>
         </div>
       </div>
 
       <div style={s.sidebar}>
         {navItems.map(n => <button key={n.id} style={s.sideBtn(tab === n.id)} onClick={() => setTab(n.id)}><span>{n.icon}</span> {n.label}</button>)}
-        <div style={{ padding: "24px 24px 0", borderTop: "1px solid rgba(59,130,196,0.1)", marginTop: 24 }}>
-          <div style={{ fontSize: 11, color: "#bae6fd", marginBottom: 4 }}>MEMBRESÍA ACTIVA</div>
-          <div style={{ fontSize: 13, color: "#7dd3fc", fontWeight: 700 }}>Plan Profesional</div>
-          <div style={{ fontSize: 12, color: "#bae6fd" }}>S/. 99/mes</div>
+        <div style={{ padding: "24px 24px 0", borderTop: "1px solid #e0f2fe", marginTop: 24 }}>
+          <div style={{ fontSize: 11, color: "#475569", marginBottom: 4 }}>MEMBRESÍA ACTIVA</div>
+          <div style={{ fontSize: 13, color: "#0369a1", fontWeight: 700 }}>Plan Profesional</div>
+          <div style={{ fontSize: 12, color: "#475569" }}>S/. 99/mes</div>
         </div>
       </div>
 
@@ -818,26 +818,26 @@ Y cuéntanos brevemente tu experiencia. ¡Tu opinión ayuda a otros pacientes!
           <>
             <h2 style={{ margin: "0 0 24px", fontSize: 26, fontWeight: 700 }}>Buenos días 👋</h2>
             <div style={s.kpiGrid}>
-              <div style={s.kpiCard("#7dd3fc")}><span style={s.kpiLabel}>Citas hoy</span><span style={s.kpiNum("#7dd3fc")}>{todayAppts.length}</span></div>
+              <div style={s.kpiCard("#0369a1")}><span style={s.kpiLabel}>Citas hoy</span><span style={s.kpiNum("#0369a1")}>{todayAppts.length}</span></div>
               <div style={s.kpiCard("#F4A261")}><span style={s.kpiLabel}>Pendientes</span><span style={s.kpiNum("#F4A261")}>{appointments.filter(a=>a.status==="pendiente").length}</span></div>
-              <div style={s.kpiCard("#bae6fd")}><span style={s.kpiLabel}>Completadas</span><span style={s.kpiNum("#bae6fd")}>{completedCount}</span></div>
-              <div style={s.kpiCard("#7dd3fc")}><span style={s.kpiLabel}>Ingresos</span><span style={s.kpiNum("#7dd3fc")}>S/. {totalIncome}</span></div>
+              <div style={s.kpiCard("#475569")}><span style={s.kpiLabel}>Completadas</span><span style={s.kpiNum("#475569")}>{completedCount}</span></div>
+              <div style={s.kpiCard("#0369a1")}><span style={s.kpiLabel}>Ingresos</span><span style={s.kpiNum("#0369a1")}>S/. {totalIncome}</span></div>
               <div style={s.kpiCard("#F4A261")}><span style={s.kpiLabel}>Calificación</span><span style={s.kpiNum("#F4A261")}>⭐ {doctor.rating}</span></div>
             </div>
             <div style={s.card}>
               <p style={s.cardTitle}>📅 Agenda de hoy</p>
-              {loadingAppts ? <p style={{ color: "#bae6fd" }}>Cargando...</p> : todayAppts.length === 0
-                ? <p style={{ color: "#bae6fd", fontSize: 14 }}>No hay citas para hoy.</p>
+              {loadingAppts ? <p style={{ color: "#475569" }}>Cargando...</p> : todayAppts.length === 0
+                ? <p style={{ color: "#475569", fontSize: 14 }}>No hay citas para hoy.</p>
                 : todayAppts.map(a => (
                   <div key={a.id} style={s.apptRow(a.status)}>
                     <div>
-                      <span style={{ fontWeight: 700, color: "#e8f0f8" }}>{a.time} · {a.patient_name}</span>
-                      <span style={{ display: "block", fontSize: 12, color: "#bae6fd" }}>📞 {a.patient_phone}</span>
+                      <span style={{ fontWeight: 700, color: "#082f49" }}>{a.time} · {a.patient_name}</span>
+                      <span style={{ display: "block", fontSize: 12, color: "#475569" }}>📞 {a.patient_phone}</span>
                     </div>
                     <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
                       <span style={s.statusPill(a.status)}>{a.status}</span>
-                      {a.status === "pendiente" && <button style={{ ...s.selectBtn, color: "#7dd3fc", borderColor: "#7dd3fc" }} onClick={() => updateStatus(a.id, "confirmada")}>Confirmar</button>}
-                      {a.status === "confirmada" && <button style={{ ...s.selectBtn, color: "#bae6fd" }} onClick={() => updateStatus(a.id, "completada")}>Completar</button>}
+                      {a.status === "pendiente" && <button style={{ ...s.selectBtn, color: "#0369a1", borderColor: "#0369a1" }} onClick={() => updateStatus(a.id, "confirmada")}>Confirmar</button>}
+                      {a.status === "confirmada" && <button style={{ ...s.selectBtn, color: "#475569" }} onClick={() => updateStatus(a.id, "completada")}>Completar</button>}
                       {(a.status === "pendiente" || a.status === "confirmada") && <button style={{ ...s.selectBtn, color: "#ff6b6b", borderColor: "#ff6b6b" }} onClick={() => cancelByDoctor(a)}>✗ Cancelar</button>}
                       {(a.status === "pendiente" || a.status === "confirmada") && (
                         <button style={{ ...s.selectBtn, color: "#F4A261", borderColor: "#F4A261" }} onClick={() => { setAddressChangeAppt(a); setShowAddressChange(true); }}>📍 Dir.</button>
@@ -863,24 +863,24 @@ Y cuéntanos brevemente tu experiencia. ¡Tu opinión ayuda a otros pacientes!
             {/* ADDRESS CHANGE MODAL */}
             {showAddressChange && (
               <div style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.8)", zIndex: 400, display: "flex", alignItems: "center", justifyContent: "center", padding: 16, backdropFilter: "blur(10px)" }}>
-                <div style={{ background: "#030d1a", border: "2px solid rgba(255,100,100,0.4)", borderRadius: 20, padding: 32, maxWidth: 480, width: "100%" }}>
+                <div style={{ background: "#ffffff", border: "2px solid rgba(255,100,100,0.4)", borderRadius: 20, padding: 32, maxWidth: 480, width: "100%" }}>
                   <h3 style={{ margin: "0 0 8px", color: "#ff6b6b", fontSize: 20 }}>🚨 Cambio de dirección urgente</h3>
-                  <p style={{ margin: "0 0 20px", color: "#bae6fd", fontSize: 13 }}>Se enviará un WhatsApp inmediato al paciente con la nueva dirección.</p>
+                  <p style={{ margin: "0 0 20px", color: "#475569", fontSize: 13 }}>Se enviará un WhatsApp inmediato al paciente con la nueva dirección.</p>
                   {addressChangeAppt && (
-                    <div style={{ background: "rgba(255,255,255,0.04)", borderRadius: 10, padding: "12px 16px", marginBottom: 16, fontSize: 13 }}>
-                      <div style={{ fontWeight: 700, color: "#e8f0f8" }}>{addressChangeAppt.patient_name}</div>
-                      <div style={{ color: "#bae6fd" }}>📅 {addressChangeAppt.date} · 🕐 {addressChangeAppt.time} · 📞 {addressChangeAppt.patient_phone}</div>
+                    <div style={{ background: "#f8fafc", borderRadius: 10, padding: "12px 16px", marginBottom: 16, fontSize: 13 }}>
+                      <div style={{ fontWeight: 700, color: "#082f49" }}>{addressChangeAppt.patient_name}</div>
+                      <div style={{ color: "#475569" }}>📅 {addressChangeAppt.date} · 🕐 {addressChangeAppt.time} · 📞 {addressChangeAppt.patient_phone}</div>
                     </div>
                   )}
-                  <label style={{ display: "block", fontSize: 11, color: "#bae6fd", marginBottom: 6, letterSpacing: 0.8, textTransform: "uppercase" }}>NUEVA DIRECCIÓN</label>
+                  <label style={{ display: "block", fontSize: 11, color: "#475569", marginBottom: 6, letterSpacing: 0.8, textTransform: "uppercase" }}>NUEVA DIRECCIÓN</label>
                   <input
-                    style={{ width: "100%", background: "rgba(255,255,255,0.06)", border: "2px solid rgba(255,100,100,0.4)", borderRadius: 10, padding: "12px 14px", color: "#e8f0f8", fontSize: 15, fontFamily: "inherit", outline: "none", boxSizing: "border-box", marginBottom: 16 }}
+                    style={{ width: "100%", background: "#f0f9ff", border: "2px solid rgba(255,100,100,0.4)", borderRadius: 10, padding: "12px 14px", color: "#082f49", fontSize: 15, fontFamily: "inherit", outline: "none", boxSizing: "border-box", marginBottom: 16 }}
                     placeholder="Ej: Jr. Lima 210, Of. 3, 2do piso — Referencia: frente al BCP"
                     value={newAddress}
                     onChange={e => setNewAddress(e.target.value)}
                     autoFocus
                   />
-                  <div style={{ background: "rgba(244,162,97,0.08)", border: "1px solid rgba(244,162,97,0.2)", borderRadius: 10, padding: 12, marginBottom: 16, fontSize: 12, color: "#F4A261" }}>
+                  <div style={{ background: "rgba(244,162,97,0.08)", border: "1px solid rgba(244,162,97,0.2)", borderRadius: 10, padding: 12, marginBottom: 16, fontSize: 12, color: "#c2410c" }}>
                     💡 El paciente recibirá este mensaje por WhatsApp inmediatamente.
                   </div>
                   <div style={{ display: "flex", gap: 10 }}>
@@ -891,7 +891,7 @@ Y cuéntanos brevemente tu experiencia. ¡Tu opinión ayuda a otros pacientes!
                     >
                       {sendingAddress ? "Enviando..." : "💬 Enviar WhatsApp ahora"}
                     </button>
-                    <button style={{ padding: "12px 20px", background: "transparent", border: "1px solid rgba(255,255,255,0.2)", color: "#bae6fd", borderRadius: 10, cursor: "pointer", fontFamily: "inherit", fontSize: 14 }} onClick={() => { setShowAddressChange(false); setNewAddress(""); setAddressChangeAppt(null); }}>
+                    <button style={{ padding: "12px 20px", background: "transparent", border: "1px solid #cbd5e1", color: "#475569", borderRadius: 10, cursor: "pointer", fontFamily: "inherit", fontSize: 14 }} onClick={() => { setShowAddressChange(false); setNewAddress(""); setAddressChangeAppt(null); }}>
                       Cancelar
                     </button>
                   </div>
@@ -905,25 +905,25 @@ Y cuéntanos brevemente tu experiencia. ¡Tu opinión ayuda a otros pacientes!
               ))}
             </div>
             <div style={s.card}>
-              {loadingAppts ? <p style={{ color: "#bae6fd" }}>Cargando desde Supabase...</p> : filtered.length === 0
-                ? <p style={{ color: "#bae6fd", fontSize: 14 }}>No hay citas con este filtro.</p>
+              {loadingAppts ? <p style={{ color: "#475569" }}>Cargando desde Supabase...</p> : filtered.length === 0
+                ? <p style={{ color: "#475569", fontSize: 14 }}>No hay citas con este filtro.</p>
                 : filtered.map(a => (
                   <div key={a.id} style={s.apptRow(a.status)}>
                     <div style={{ flex: 1 }}>
                       <div style={{ display:"flex", alignItems:"center", gap:8 }}>
-                        <span style={{ fontWeight: 700, color: "#e8f0f8" }}>{a.patient_name}</span>
+                        <span style={{ fontWeight: 700, color: "#082f49" }}>{a.patient_name}</span>
                         {a.modalidad === "virtual" && <span style={{ padding:"2px 8px", borderRadius:10, background:"rgba(37,211,102,0.15)", color:"#25D366", fontSize:11, fontWeight:700 }}>📱 VIRTUAL</span>}
                       </div>
-                      <span style={{ display: "block", fontSize: 12, color: "#bae6fd" }}>📅 {a.date} · 🕐 {a.time} · 📞 {a.patient_phone}</span>
+                      <span style={{ display: "block", fontSize: 12, color: "#475569" }}>📅 {a.date} · 🕐 {a.time} · 📞 {a.patient_phone}</span>
                     </div>
                     <div style={{ display: "flex", gap: 8, alignItems: "center", flexWrap: "wrap" }}>
                       <span style={s.statusPill(a.status)}>{a.status}</span>
                       {a.status === "pendiente" && <>
-                        <button style={{ ...s.selectBtn, color:"#7dd3fc", borderColor:"#7dd3fc" }} onClick={() => updateStatus(a.id,"confirmada")}>✓ Confirmar</button>
+                        <button style={{ ...s.selectBtn, color:"#0369a1", borderColor:"#0369a1" }} onClick={() => updateStatus(a.id,"confirmada")}>✓ Confirmar</button>
                         <button style={{ ...s.selectBtn, color:"#ff6b6b", borderColor:"#ff6b6b" }} onClick={() => cancelByDoctor(a)}>✗ Cancelar</button>
                       </>}
                       {a.status === "confirmada" && <>
-                        <button style={{ ...s.selectBtn, color:"#bae6fd" }} onClick={() => updateStatus(a.id,"completada")}>✓ Completar</button>
+                        <button style={{ ...s.selectBtn, color:"#475569" }} onClick={() => updateStatus(a.id,"completada")}>✓ Completar</button>
                         <button style={{ ...s.selectBtn, color:"#ff6b6b", borderColor:"#ff6b6b" }} onClick={() => cancelByDoctor(a)}>✗ Cancelar</button>
                       </>}
                       {(a.status === "pendiente" || a.status === "confirmada") && a.modalidad !== "virtual" && (
@@ -949,7 +949,7 @@ Y cuéntanos brevemente tu experiencia. ¡Tu opinión ayuda a otros pacientes!
           <>
             <h2 style={{ margin: "0 0 24px", fontSize: 26, fontWeight: 700 }}>📈 Estadísticas</h2>
             <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 20, marginBottom: 20 }}>
-              {[["📊 Citas por mes", MONTHLY_DATA, "citas", "#7dd3fc", maxCitas], ["💰 Ingresos (S/.)", MONTHLY_DATA, "ingresos", "#F4A261", 2100]].map(([title, data, key, color, max]) => (
+              {[["📊 Citas por mes", MONTHLY_DATA, "citas", "#0369a1", maxCitas], ["💰 Ingresos (S/.)", MONTHLY_DATA, "ingresos", "#F4A261", 2100]].map(([title, data, key, color, max]) => (
                 <div key={title} style={s.card}>
                   <p style={s.cardTitle}>{title}</p>
                   <div style={{ display: "flex", alignItems: "flex-end", gap: 10, height: 140, paddingTop: 16 }}>
@@ -957,7 +957,7 @@ Y cuéntanos brevemente tu experiencia. ¡Tu opinión ayuda a otros pacientes!
                       <div key={d.mes} style={{ flex: 1, display: "flex", flexDirection: "column", alignItems: "center", gap: 6 }}>
                         <span style={{ fontSize: 10, color, fontWeight: 700 }}>{d[key]}</span>
                         <div style={{ width: "100%", background: `linear-gradient(180deg,${color},${color}88)`, borderRadius: "4px 4px 0 0", height: `${(d[key]/max)*100}px` }} />
-                        <span style={{ fontSize: 10, color: "#bae6fd" }}>{d.mes}</span>
+                        <span style={{ fontSize: 10, color: "#475569" }}>{d.mes}</span>
                       </div>
                     ))}
                   </div>
@@ -966,7 +966,7 @@ Y cuéntanos brevemente tu experiencia. ¡Tu opinión ayuda a otros pacientes!
             </div>
             <div style={{ display: "grid", gridTemplateColumns: "repeat(3,1fr)", gap: 16 }}>
               {[
-                { label: "Total citas", value: appointments.length, color: "#7dd3fc" },
+                { label: "Total citas", value: appointments.length, color: "#0369a1" },
                 { label: "Tasa cancelación", value: `${appointments.length ? Math.round(cancelledCount/appointments.length*100) : 0}%`, color: "#ff6b6b" },
                 { label: "Ingreso/cita", value: doctor.price, color: "#F4A261" },
               ].map((item,i) => (
@@ -986,20 +986,20 @@ Y cuéntanos brevemente tu experiencia. ¡Tu opinión ayuda a otros pacientes!
               <div style={{ display: "flex", alignItems: "center", gap: 16, marginBottom: 24 }}>
                 <div style={{ position: "relative" }}>
                   {photoUrl
-                    ? <img src={photoUrl} alt={doctor.name} style={{ width: 72, height: 72, borderRadius: 18, objectFit: "cover", border: "2px solid rgba(59,130,196,0.4)" }} />
+                    ? <img src={photoUrl} alt={doctor.name} style={{ width: 72, height: 72, borderRadius: 18, objectFit: "cover", border: "2px solid #7dd3fc" }} />
                     : <div style={{ width: 72, height: 72, borderRadius: 18, background: doctor.color || "#0ea5e9", display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 700, fontSize: 24, color: "#fff" }}>{doctor.img || initials(doctor.name)}</div>
                   }
-                  <label style={{ position: "absolute", bottom: -6, right: -6, width: 26, height: 26, borderRadius: "50%", background: "#7dd3fc", display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", border: "2px solid #030d1a", fontSize: 13 }}>
+                  <label style={{ position: "absolute", bottom: -6, right: -6, width: 26, height: 26, borderRadius: "50%", background: "#0369a1", display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", border: "2px solid #ffffff", fontSize: 13 }}>
                     {uploadingPhoto ? "⏳" : "📷"}
                     <input type="file" accept="image/*" style={{ display: "none" }} onChange={handlePhotoUpload} />
                   </label>
                 </div>
                 <div>
                   <h3 style={{ margin: 0, fontSize: 20 }}>{profileData.name}</h3>
-                  <p style={{ margin: "4px 0 0", color: "#bae6fd" }}>{profileData.specialty} · {profileData.price}/consulta</p>
-                  {profileData.address && <p style={{ margin: "4px 0 0", fontSize: 13, color: "#7dd3fc" }}>📍 {profileData.address}</p>}
-                  <div style={{ marginTop: 6 }}>⭐ {doctor.rating} · {isAvailable ? <span style={{ color: "#7dd3fc" }}>🟢 Disponible</span> : <span style={{ color: "#ff6b6b" }}>🔴 No disponible</span>}</div>
-                  <p style={{ margin: "4px 0 0", fontSize: 11, color: "#bae6fd" }}>📷 Haz clic en la cámara para cambiar tu foto</p>
+                  <p style={{ margin: "4px 0 0", color: "#475569" }}>{profileData.specialty} · {profileData.price}/consulta</p>
+                  {profileData.address && <p style={{ margin: "4px 0 0", fontSize: 13, color: "#0369a1" }}>📍 {profileData.address}</p>}
+                  <div style={{ marginTop: 6 }}>⭐ {doctor.rating} · {isAvailable ? <span style={{ color: "#0369a1" }}>🟢 Disponible</span> : <span style={{ color: "#ff6b6b" }}>🔴 No disponible</span>}</div>
+                  <p style={{ margin: "4px 0 0", fontSize: 11, color: "#475569" }}>📷 Haz clic en la cámara para cambiar tu foto</p>
                 </div>
               </div>
               {editProfile ? (
@@ -1009,10 +1009,10 @@ Y cuéntanos brevemente tu experiencia. ¡Tu opinión ayuda a otros pacientes!
                   ))}
                   <label style={s.lbl}>DIRECCIÓN DEL CONSULTORIO</label>
                   <input style={s.inp} placeholder="Jr. Lima 210, Of. 3, Ayacucho" value={profileData.address} onChange={e=>setProfileData({...profileData,address:e.target.value})} />
-                  <p style={{ margin:"-6px 0 12px", fontSize: 11, color: "#bae6fd" }}>📍 Visible para los pacientes al reservar</p>
+                  <p style={{ margin:"-6px 0 12px", fontSize: 11, color: "#475569" }}>📍 Visible para los pacientes al reservar</p>
                   <div style={{ display: "flex", gap: 10 }}>
                     <button style={s.saveBtn} onClick={saveProfile} disabled={savingProfile}>{savingProfile ? "Guardando..." : "Guardar en Supabase ✓"}</button>
-                    <button style={{ ...s.saveBtn, background:"transparent", border:"1px solid rgba(59,130,196,0.3)", color:"#bae6fd" }} onClick={() => setEditProfile(false)}>Cancelar</button>
+                    <button style={{ ...s.saveBtn, background:"transparent", border:"1px solid #bae6fd", color:"#475569" }} onClick={() => setEditProfile(false)}>Cancelar</button>
                   </div>
                 </>
               ) : (
@@ -1022,7 +1022,7 @@ Y cuéntanos brevemente tu experiencia. ¡Tu opinión ayuda a otros pacientes!
             <div style={s.card}>
               <p style={s.cardTitle}>📋 Horarios disponibles</p>
               <div style={{ display: "flex", gap: 10, flexWrap: "wrap" }}>
-                {(doctor.schedule || []).map(h => <span key={h} style={{ padding: "8px 16px", borderRadius: 20, background: "rgba(59,130,196,0.15)", border: "1px solid rgba(59,130,196,0.3)", color: "#7dd3fc", fontSize: 14 }}>{h}</span>)}
+                {(doctor.schedule || []).map(h => <span key={h} style={{ padding: "8px 16px", borderRadius: 20, background: "#e0f2fe", border: "1px solid #bae6fd", color: "#0369a1", fontSize: 14 }}>{h}</span>)}
               </div>
             </div>
           </>
@@ -1031,21 +1031,21 @@ Y cuéntanos brevemente tu experiencia. ¡Tu opinión ayuda a otros pacientes!
         {tab === "ai" && (
           <>
             <h2 style={{ margin: "0 0 8px", fontSize: 26, fontWeight: 700 }}>🤖 Consejo IA</h2>
-            <p style={{ color: "#bae6fd", margin: "0 0 24px" }}>La IA analiza tus datos reales y te da recomendaciones personalizadas</p>
+            <p style={{ color: "#475569", margin: "0 0 24px" }}>La IA analiza tus datos reales y te da recomendaciones personalizadas</p>
             <div style={s.card}>
               <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(130px,1fr))", gap: 12, marginBottom: 20 }}>
                 {[["Citas hoy",todayAppts.length],["Pendientes",appointments.filter(a=>a.status==="pendiente").length],["Completadas",completedCount],["Canceladas",cancelledCount],["Rating",`⭐${doctor.rating}`]].map(([l,v],i)=>(
-                  <div key={i} style={{ background:"rgba(59,130,196,0.06)", borderRadius:10, padding:"10px 14px" }}>
-                    <div style={{ fontSize:11, color:"#bae6fd" }}>{l}</div>
-                    <div style={{ fontSize:20, fontWeight:700, color:"#7dd3fc" }}>{v}</div>
+                  <div key={i} style={{ background:"#f0f9ff", borderRadius:10, padding:"10px 14px" }}>
+                    <div style={{ fontSize:11, color:"#475569" }}>{l}</div>
+                    <div style={{ fontSize:20, fontWeight:700, color:"#0369a1" }}>{v}</div>
                   </div>
                 ))}
               </div>
-              <button style={{ padding:"12px 28px", background:"linear-gradient(135deg,#0ea5e9,#7dd3fc)", color:"#fff", border:"none", borderRadius:12, cursor:"pointer", fontSize:15, fontWeight:700, fontFamily:"inherit", opacity:aiLoading?0.7:1 }} onClick={getAiTip} disabled={aiLoading}>
+              <button style={{ padding:"12px 28px", background:"linear-gradient(135deg,#0ea5e9,#0369a1)", color:"#fff", border:"none", borderRadius:12, cursor:"pointer", fontSize:15, fontWeight:700, fontFamily:"inherit", opacity:aiLoading?0.7:1 }} onClick={getAiTip} disabled={aiLoading}>
                 {aiLoading ? "Analizando... ⏳" : "🤖 Obtener consejo personalizado"}
               </button>
-              {aiTip && <div style={{ background:"rgba(59,130,196,0.07)", border:"1px solid rgba(59,130,196,0.25)", borderRadius:12, padding:16, marginTop:16, fontSize:14, color:"#e0f2fe", lineHeight:1.7, whiteSpace:"pre-wrap" }}>
-                <div style={{ fontSize:12, color:"#7dd3fc", fontWeight:700, marginBottom:8 }}>💡 CONSEJO IA</div>{aiTip}
+              {aiTip && <div style={{ background:"#f0f9ff", border:"1px solid #bae6fd", borderRadius:12, padding:16, marginTop:16, fontSize:14, color:"#082f49", lineHeight:1.7, whiteSpace:"pre-wrap" }}>
+                <div style={{ fontSize:12, color:"#0369a1", fontWeight:700, marginBottom:8 }}>💡 CONSEJO IA</div>{aiTip}
               </div>}
             </div>
           </>
