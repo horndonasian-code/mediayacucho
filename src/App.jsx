@@ -1374,54 +1374,54 @@ function DoctorProfile({ doctor, onBook, onBack, allAppointments }) {
 
   const s = {
     wrap: { maxWidth: 720, margin: "0 auto", padding: "32px 24px", position: "relative", zIndex: 1 },
-    hero: { background: `linear-gradient(135deg, ${doctor.color || "#0ea5e9"}22, rgba(5,22,40,0.95))`, border: `1px solid ${doctor.color || "#0ea5e9"}44`, borderRadius: 20, padding: 32, marginBottom: 24, position: "relative", overflow: "hidden" },
+    hero: { background: `linear-gradient(135deg, ${doctor.color || "#0ea5e9"}10, #ffffff)`, border: `1px solid ${doctor.color || "#0ea5e9"}33`, borderRadius: 20, padding: 32, marginBottom: 24, position: "relative", overflow: "hidden", boxShadow:"0 8px 28px rgba(15,23,42,0.06)" },
     avatar: { width: 80, height: 80, borderRadius: 20, background: doctor.color || "#0ea5e9", display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 700, fontSize: 28, color: "#fff", marginBottom: 16 },
-    badge: (c) => ({ padding: "4px 12px", borderRadius: 20, background: `${c}22`, color: c, fontSize: 12, fontWeight: 700, border: `1px solid ${c}44` }),
-    tab: (a) => ({ flex: 1, padding: "10px 0", borderRadius: 10, border: `1px solid ${a ? "#7dd3fc" : "rgba(59,130,196,0.2)"}`, background: a ? "rgba(59,130,196,0.15)" : "transparent", color: a ? "#7dd3fc" : "#bae6fd", cursor: "pointer", fontFamily: "inherit", fontSize: 14 }),
-    card: { background: "rgba(255,255,255,0.04)", border: "1px solid rgba(59,130,196,0.12)", borderRadius: 14, padding: 20, marginBottom: 16 },
-    shareBtn: { padding: "10px 20px", background: "rgba(37,211,102,0.15)", border: "1px solid rgba(37,211,102,0.4)", color: "#25D366", borderRadius: 10, cursor: "pointer", fontFamily: "inherit", fontSize: 13, fontWeight: 700 },
+    badge: (c) => ({ padding: "4px 12px", borderRadius: 20, background: `${c}15`, color: c, fontSize: 12, fontWeight: 700, border: `1px solid ${c}44` }),
+    tab: (a) => ({ flex: 1, padding: "10px 0", borderRadius: 10, border: `1px solid ${a ? "#0ea5e9" : "#e2e8f0"}`, background: a ? "#e0f2fe" : "transparent", color: a ? "#0369a1" : "#64748b", cursor: "pointer", fontFamily: "inherit", fontSize: 14 }),
+    card: { background: "#ffffff", border: "1px solid #e0f2fe", borderRadius: 14, padding: 20, marginBottom: 16, boxShadow:"0 8px 28px rgba(15,23,42,0.05)" },
+    shareBtn: { padding: "10px 20px", background: "#f0fdf4", border: "1px solid #bbf7d0", color: "#15803d", borderRadius: 10, cursor: "pointer", fontFamily: "inherit", fontSize: 13, fontWeight: 700 },
   };
 
   return (
     <div style={s.wrap}>
-      <button onClick={onBack} style={{ background: "none", border: "none", color: "#7dd3fc", cursor: "pointer", fontSize: 15, marginBottom: 20, padding: 0, fontFamily: "inherit" }}>← Volver</button>
+      <button onClick={onBack} style={{ background: "none", border: "none", color: "#0369a1", cursor: "pointer", fontSize: 15, marginBottom: 20, padding: 0, fontFamily: "inherit" }}>← Volver</button>
 
       {/* HERO */}
       <div style={s.hero}>
         <div style={{ position: "absolute", top: 0, right: 0, width: 200, height: 200, borderRadius: "50%", background: `${doctor.color || "#0ea5e9"}15`, transform: "translate(50px,-50px)" }} />
         {doctor.photo_url
-          ? <img src={doctor.photo_url} alt={doctor.name} style={{ width:80, height:80, borderRadius:20, objectFit:"cover", marginBottom:16, border:"3px solid rgba(59,130,196,0.4)" }} />
+          ? <img src={doctor.photo_url} alt={doctor.name} style={{ width:80, height:80, borderRadius:20, objectFit:"cover", marginBottom:16, border:"3px solid #7dd3fc" }} />
           : <div style={s.avatar}>{doctor.img || initials(doctor.name)}</div>
         }
-        <h1 style={{ margin: "0 0 6px", fontSize: 26, fontWeight: 700, color: "#e8f0f8" }}>{doctor.name}</h1>
+        <h1 style={{ margin: "0 0 6px", fontSize: 26, fontWeight: 700, color: "#082f49" }}>{doctor.name}</h1>
         <div style={{ display: "flex", gap: 8, flexWrap: "wrap", marginBottom: 12 }}>
-          <span style={s.badge("#7dd3fc")}>{doctor.specialty}</span>
+          <span style={s.badge("#0369a1")}>{doctor.specialty}</span>
           <span style={s.badge("#25D366")}>✅ Verificado CMP</span>
           {doctor.available ? <span style={s.badge("#52B788")}>🟢 Disponible</span> : <span style={s.badge("#ff6b6b")}>🔴 No disponible</span>}
         </div>
-        <div style={{ color: "#F4A261", fontSize: 16, marginBottom: 12 }}>{"★".repeat(Math.floor(doctor.rating || 5))} <span style={{ color: "#e8f0f8", fontWeight: 700 }}>{doctor.rating}</span> <span style={{ color: "#bae6fd", fontSize: 13 }}>calificación</span></div>
+        <div style={{ color: "#F4A261", fontSize: 16, marginBottom: 12 }}>{"★".repeat(Math.floor(doctor.rating || 5))} <span style={{ color: "#082f49", fontWeight: 700 }}>{doctor.rating}</span> <span style={{ color: "#475569", fontSize: 13 }}>calificación</span></div>
         {(() => {
           const booked = getBookedSlotsForDoctor(allAppointments, doctor.id);
           const next = getNextAvailability(doctor.schedule, booked);
           if (!next) return null;
           const isSoon = next.daysAhead <= 1;
           return (
-            <div style={{ display:"inline-flex", alignItems:"center", gap:6, marginBottom:12, padding:"6px 14px", borderRadius:10, background: isSoon ? "rgba(37,211,102,0.12)" : "rgba(59,130,196,0.1)", border:`1px solid ${isSoon ? "rgba(37,211,102,0.3)" : "rgba(59,130,196,0.2)"}` }}>
-              <span style={{ width:7, height:7, borderRadius:"50%", background: isSoon ? "#25D366" : "#7dd3fc" }} />
-              <span style={{ fontSize:13, fontWeight:700, color: isSoon ? "#25D366" : "#7dd3fc" }}>Próxima cita disponible: {next.label}</span>
+            <div style={{ display:"inline-flex", alignItems:"center", gap:6, marginBottom:12, padding:"6px 14px", borderRadius:10, background: isSoon ? "rgba(37,211,102,0.12)" : "#e0f2fe", border:`1px solid ${isSoon ? "rgba(37,211,102,0.3)" : "#e0f2fe"}` }}>
+              <span style={{ width:7, height:7, borderRadius:"50%", background: isSoon ? "#25D366" : "#0369a1" }} />
+              <span style={{ fontSize:13, fontWeight:700, color: isSoon ? "#25D366" : "#0369a1" }}>Próxima cita disponible: {next.label}</span>
             </div>
           );
         })()}
         {doctor.address && (
           <div style={{ display: "flex", gap: 8, alignItems: "center", marginBottom: 16 }}>
             <span>📍</span>
-            <a href={doctor.maps_url || "#"} target="_blank" rel="noreferrer" style={{ color: "#7dd3fc", fontSize: 14, textDecoration: "none" }}>{doctor.address}</a>
+            <a href={doctor.maps_url || "#"} target="_blank" rel="noreferrer" style={{ color: "#0369a1", fontSize: 14, textDecoration: "none" }}>{doctor.address}</a>
           </div>
         )}
         <div style={{ display: "flex", gap: 10, flexWrap: "wrap" }}>
           {doctor.available && (
             <>
-              <button style={{ padding: "12px 24px", background: "linear-gradient(135deg,#0ea5e9,#7dd3fc)", color: "#fff", border: "none", borderRadius: 12, cursor: "pointer", fontSize: 15, fontWeight: 700, fontFamily: "inherit" }}
+              <button style={{ padding: "12px 24px", background: "linear-gradient(135deg,#0ea5e9,#0369a1)", color: "#fff", border: "none", borderRadius: 12, cursor: "pointer", fontSize: 15, fontWeight: 700, fontFamily: "inherit" }}
                 onClick={() => onBook(doctor, "presencial")}>🏥 Reservar presencial</button>
               <button style={{ padding: "12px 24px", background: "linear-gradient(135deg,#25D366,#128C7E)", color: "#fff", border: "none", borderRadius: 12, cursor: "pointer", fontSize: 15, fontWeight: 700, fontFamily: "inherit" }}
                 onClick={() => onBook(doctor, "virtual")}>📱 Reservar virtual</button>
@@ -1445,7 +1445,7 @@ function DoctorProfile({ doctor, onBook, onBack, allAppointments }) {
 
       {tab === "info" && (
         <div style={s.card}>
-          <h3 style={{ margin: "0 0 16px", color: "#7dd3fc", fontSize: 17 }}>👨‍⚕️ Sobre el médico</h3>
+          <h3 style={{ margin: "0 0 16px", color: "#0369a1", fontSize: 17 }}>👨‍⚕️ Sobre el médico</h3>
           <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 14 }}>
             {[
               { label: "Especialidad", value: doctor.specialty, icon: "🏥" },
@@ -1453,17 +1453,17 @@ function DoctorProfile({ doctor, onBook, onBack, allAppointments }) {
               { label: "Estado", value: doctor.available ? "Disponible" : "No disponible", icon: "🟢" },
               { label: "Verificación", value: "CMP Verificado", icon: "✅" },
             ].map((item, i) => (
-              <div key={i} style={{ background: "rgba(59,130,196,0.06)", borderRadius: 10, padding: "12px 14px" }}>
-                <div style={{ fontSize: 11, color: "#bae6fd", marginBottom: 4, textTransform: "uppercase", letterSpacing: 0.5 }}>{item.icon} {item.label}</div>
-                <div style={{ fontWeight: 700, color: "#e8f0f8", fontSize: 15 }}>{item.value}</div>
+              <div key={i} style={{ background: "#f0f9ff", borderRadius: 10, padding: "12px 14px" }}>
+                <div style={{ fontSize: 11, color: "#475569", marginBottom: 4, textTransform: "uppercase", letterSpacing: 0.5 }}>{item.icon} {item.label}</div>
+                <div style={{ fontWeight: 700, color: "#082f49", fontSize: 15 }}>{item.value}</div>
               </div>
             ))}
           </div>
           {doctor.address && (
-            <div style={{ marginTop: 16, padding: "12px 16px", background: "rgba(59,130,196,0.07)", borderRadius: 10 }}>
-              <div style={{ fontSize: 12, color: "#bae6fd", marginBottom: 4 }}>📍 DIRECCIÓN DEL CONSULTORIO</div>
-              <div style={{ color: "#e8f0f8", fontSize: 14 }}>{doctor.address}</div>
-              <a href={doctor.maps_url || "#"} target="_blank" rel="noreferrer" style={{ fontSize: 12, color: "#7dd3fc", display: "inline-block", marginTop: 8, textDecoration: "none", background: "rgba(59,130,196,0.15)", border: "1px solid rgba(59,130,196,0.3)", padding: "4px 12px", borderRadius: 20 }}>🗺️ Ver en Google Maps</a>
+            <div style={{ marginTop: 16, padding: "12px 16px", background: "#f0f9ff", borderRadius: 10 }}>
+              <div style={{ fontSize: 12, color: "#475569", marginBottom: 4 }}>📍 DIRECCIÓN DEL CONSULTORIO</div>
+              <div style={{ color: "#082f49", fontSize: 14 }}>{doctor.address}</div>
+              <a href={doctor.maps_url || "#"} target="_blank" rel="noreferrer" style={{ fontSize: 12, color: "#0369a1", display: "inline-block", marginTop: 8, textDecoration: "none", background: "#e0f2fe", border: "1px solid #bae6fd", padding: "4px 12px", borderRadius: 20 }}>🗺️ Ver en Google Maps</a>
             </div>
           )}
         </div>
@@ -1471,13 +1471,13 @@ function DoctorProfile({ doctor, onBook, onBack, allAppointments }) {
 
       {tab === "horarios" && (
         <div style={s.card}>
-          <h3 style={{ margin: "0 0 16px", color: "#7dd3fc", fontSize: 17 }}>📅 Horarios de atención</h3>
+          <h3 style={{ margin: "0 0 16px", color: "#0369a1", fontSize: 17 }}>📅 Horarios de atención</h3>
           {(doctor.schedule || []).length === 0
-            ? <p style={{ color: "#bae6fd" }}>Horarios por confirmar</p>
+            ? <p style={{ color: "#475569" }}>Horarios por confirmar</p>
             : (doctor.schedule || []).map((h, i) => (
-              <div key={i} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "10px 0", borderBottom: i < doctor.schedule.length - 1 ? "1px solid rgba(59,130,196,0.1)" : "none" }}>
-                <span style={{ color: "#e8f0f8", fontSize: 14 }}>🕐 {h}</span>
-                <span style={{ padding: "3px 10px", borderRadius: 20, background: "rgba(59,130,196,0.15)", color: "#7dd3fc", fontSize: 12 }}>Disponible</span>
+              <div key={i} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "10px 0", borderBottom: i < doctor.schedule.length - 1 ? "1px solid #e0f2fe" : "none" }}>
+                <span style={{ color: "#082f49", fontSize: 14 }}>🕐 {h}</span>
+                <span style={{ padding: "3px 10px", borderRadius: 20, background: "#e0f2fe", color: "#0369a1", fontSize: 12 }}>Disponible</span>
               </div>
             ))
           }
@@ -1489,17 +1489,17 @@ function DoctorProfile({ doctor, onBook, onBack, allAppointments }) {
 
       {tab === "precios" && (
         <div style={s.card}>
-          <h3 style={{ margin: "0 0 16px", color: "#7dd3fc", fontSize: 17 }}>💰 Precios</h3>
+          <h3 style={{ margin: "0 0 16px", color: "#0369a1", fontSize: 17 }}>💰 Precios</h3>
           {[
             { tipo: "🏥 Consulta presencial", precio: doctor.price, desc: "En consultorio" },
             { tipo: "📱 Consulta virtual", precio: doctor.price, desc: "Por WhatsApp Video" },
           ].map((item, i) => (
-            <div key={i} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "14px 0", borderBottom: i === 0 ? "1px solid rgba(59,130,196,0.1)" : "none" }}>
+            <div key={i} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "14px 0", borderBottom: i === 0 ? "1px solid #e0f2fe" : "none" }}>
               <div>
-                <div style={{ fontWeight: 700, color: "#e8f0f8", fontSize: 15 }}>{item.tipo}</div>
-                <div style={{ fontSize: 12, color: "#bae6fd" }}>{item.desc}</div>
+                <div style={{ fontWeight: 700, color: "#082f49", fontSize: 15 }}>{item.tipo}</div>
+                <div style={{ fontSize: 12, color: "#475569" }}>{item.desc}</div>
               </div>
-              <span style={{ fontSize: 22, fontWeight: 700, color: "#7dd3fc" }}>{item.precio}</span>
+              <span style={{ fontSize: 22, fontWeight: 700, color: "#0369a1" }}>{item.precio}</span>
             </div>
           ))}
           <div style={{ marginTop: 16, padding: "12px 14px", background: "rgba(244,162,97,0.08)", border: "1px solid rgba(244,162,97,0.2)", borderRadius: 10, fontSize: 12, color: "#F4A261" }}>
@@ -1510,21 +1510,21 @@ function DoctorProfile({ doctor, onBook, onBack, allAppointments }) {
 
       {tab === "resenas" && (
         <div style={s.card}>
-          <h3 style={{ margin: "0 0 16px", color: "#7dd3fc", fontSize: 17 }}>⭐ Reseñas de pacientes</h3>
+          <h3 style={{ margin: "0 0 16px", color: "#0369a1", fontSize: 17 }}>⭐ Reseñas de pacientes</h3>
 
           {/* Resumen de calificación */}
-          <div style={{ display: "flex", gap: 24, alignItems: "center", marginBottom: 20, padding: "16px 20px", background: "rgba(59,130,196,0.06)", borderRadius: 12 }}>
+          <div style={{ display: "flex", gap: 24, alignItems: "center", marginBottom: 20, padding: "16px 20px", background: "#f0f9ff", borderRadius: 12 }}>
             <div style={{ textAlign: "center" }}>
               <div style={{ fontSize: 48, fontWeight: 700, color: "#F4A261" }}>{doctor.rating}</div>
               <div style={{ color: "#F4A261", fontSize: 20 }}>{"★".repeat(Math.floor(doctor.rating || 5))}</div>
-              <div style={{ fontSize: 12, color: "#bae6fd", marginTop: 4 }}>Calificación promedio</div>
+              <div style={{ fontSize: 12, color: "#475569", marginTop: 4 }}>Calificación promedio</div>
             </div>
             <div style={{ flex: 1 }}>
               {[5,4,3,2,1].map(n => (
                 <div key={n} style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 6 }}>
-                  <span style={{ fontSize: 12, color: "#bae6fd", width: 8 }}>{n}</span>
+                  <span style={{ fontSize: 12, color: "#475569", width: 8 }}>{n}</span>
                   <span style={{ color: "#F4A261", fontSize: 12 }}>★</span>
-                  <div style={{ flex: 1, height: 6, background: "rgba(255,255,255,0.08)", borderRadius: 3, overflow: "hidden" }}>
+                  <div style={{ flex: 1, height: 6, background: "#f0f9ff", borderRadius: 3, overflow: "hidden" }}>
                     <div style={{ height: "100%", background: "#F4A261", borderRadius: 3, width: n === Math.floor(doctor.rating || 5) ? "70%" : n === Math.ceil(doctor.rating || 5) ? "40%" : "10%" }} />
                   </div>
                 </div>
@@ -1538,28 +1538,28 @@ function DoctorProfile({ doctor, onBook, onBack, allAppointments }) {
             { name: "Jorge H.", stars: 5, text: "Muy buena atención, me explicó todo detalladamente. Lo recomiendo.", date: "hace 1 semana" },
             { name: "Rosa P.", stars: 4, text: "Buen médico, la espera fue un poco larga pero la consulta excelente.", date: "hace 2 semanas" },
           ].map((r, i) => (
-            <div key={i} style={{ padding: "14px 0", borderBottom: i < 2 ? "1px solid rgba(59,130,196,0.1)" : "none" }}>
+            <div key={i} style={{ padding: "14px 0", borderBottom: i < 2 ? "1px solid #e0f2fe" : "none" }}>
               <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 6 }}>
                 <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-                  <div style={{ width: 32, height: 32, borderRadius: "50%", background: "rgba(59,130,196,0.2)", display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 700, color: "#7dd3fc", fontSize: 13 }}>{r.name[0]}</div>
-                  <span style={{ fontWeight: 700, color: "#e8f0f8", fontSize: 14 }}>{r.name}</span>
+                  <div style={{ width: 32, height: 32, borderRadius: "50%", background: "#e0f2fe", display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 700, color: "#0369a1", fontSize: 13 }}>{r.name[0]}</div>
+                  <span style={{ fontWeight: 700, color: "#082f49", fontSize: 14 }}>{r.name}</span>
                 </div>
-                <span style={{ fontSize: 12, color: "#bae6fd" }}>{r.date}</span>
+                <span style={{ fontSize: 12, color: "#475569" }}>{r.date}</span>
               </div>
               <div style={{ color: "#F4A261", fontSize: 14, marginBottom: 6 }}>{"★".repeat(r.stars)}</div>
-              <p style={{ margin: 0, color: "#e0f2fe", fontSize: 14, lineHeight: 1.5 }}>{r.text}</p>
+              <p style={{ margin: 0, color: "#334155", fontSize: 14, lineHeight: 1.5 }}>{r.text}</p>
             </div>
           ))}
 
-          <div style={{ marginTop: 16, background: "rgba(59,130,196,0.06)", borderRadius: 10, padding: 14, fontSize: 13, color: "#bae6fd", textAlign: "center" }}>
+          <div style={{ marginTop: 16, background: "#f0f9ff", borderRadius: 10, padding: 14, fontSize: 13, color: "#475569", textAlign: "center" }}>
             💡 Las reseñas son enviadas automáticamente por WhatsApp después de cada consulta completada.
           </div>
         </div>
       )}
 
       {/* SHARE SECTION */}
-      <div style={{ background: "rgba(59,130,196,0.06)", border: "1px solid rgba(59,130,196,0.15)", borderRadius: 14, padding: 20, textAlign: "center" }}>
-        <p style={{ margin: "0 0 12px", color: "#bae6fd", fontSize: 14 }}>¿Conoces a alguien que necesite este médico?</p>
+      <div style={{ background: "#f0f9ff", border: "1px solid #e0f2fe", borderRadius: 14, padding: 20, textAlign: "center" }}>
+        <p style={{ margin: "0 0 12px", color: "#475569", fontSize: 14 }}>¿Conoces a alguien que necesite este médico?</p>
         <button style={{ padding: "10px 24px", background: "linear-gradient(135deg,#25D366,#128C7E)", color: "#fff", border: "none", borderRadius: 10, cursor: "pointer", fontSize: 14, fontWeight: 700, fontFamily: "inherit" }}
           onClick={() => {
             const msg = `👨‍⚕️ Te recomiendo al *${doctor.name}* en MediAyacucho!\n\n🏥 ${doctor.specialty}\n⭐ ${doctor.rating} calificación\n📍 ${doctor.address || "Ayacucho"}\n\nReserva tu cita aquí: ${profileUrl}`;
@@ -1745,9 +1745,9 @@ export default function App() {
   if (showAdmin) return <AdminPanel onExit={() => setShowAdmin(false)} />;
   if (dashboardDoctor) return <DoctorDashboard doctor={dashboardDoctor} onExit={() => setDashboardDoctor(null)} />;
   if (selectedProfile && view === "profile") return (
-    <div style={{ fontFamily: "'Inter', sans-serif", minHeight: "100vh", background: "linear-gradient(135deg, #030d1a 0%, #051628 100%)", color: "#e8f0f8" }}>
+    <div style={{ fontFamily: "'Inter', sans-serif", minHeight: "100vh", background: "#ffffff", color: "#082f49" }}>
       <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
-      <header style={{ position: "sticky", top: 0, zIndex: 100, background: "rgba(10,22,40,0.92)", backdropFilter: "blur(20px)", borderBottom: "1px solid rgba(59,130,196,0.2)", padding: "0 24px", display: "flex", alignItems: "center", height: 64 }}>
+      <header style={{ position: "sticky", top: 0, zIndex: 100, background: "rgba(255,255,255,0.95)", backdropFilter: "blur(20px)", borderBottom: "1px solid #e0f2fe", padding: "0 24px", display: "flex", alignItems: "center", height: 64 }}>
         <div style={{ cursor: "pointer", display: "flex", alignItems: "center", gap: 10 }} onClick={() => { setView("home"); setSelectedProfile(null); }}>
           <svg width="32" height="32" viewBox="0 0 72 72" fill="none" xmlns="http://www.w3.org/2000/svg">
             <circle cx="36" cy="36" r="36" fill="url(#lg2)"/>
@@ -1761,7 +1761,7 @@ export default function App() {
               </linearGradient>
             </defs>
           </svg>
-          <span style={{ fontSize: 20, fontWeight: 700 }}><span style={{ color: "#7dd3fc" }}>Medi</span><span style={{ color: "#e0f2fe", fontWeight: 300 }}>Ayacucho</span></span>
+          <span style={{ fontSize: 20, fontWeight: 700 }}><span style={{ color: "#0ea5e9" }}>Medi</span><span style={{ color: "#0c4a6e", fontWeight: 300 }}>Ayacucho</span></span>
         </div>
       </header>
       <DoctorProfile
