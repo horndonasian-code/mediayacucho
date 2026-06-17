@@ -1786,12 +1786,12 @@ export default function App() {
     input: { width: "100%", background: "rgba(255,255,255,0.06)", border: "1px solid rgba(59,130,196,0.25)", borderRadius: 10, padding: "10px 14px", color: "#e8f0f8", fontSize: 15, fontFamily: "inherit", outline: "none", boxSizing: "border-box" },
     timePill: (sel) => ({ padding: "6px 14px", borderRadius: 20, border: `1px solid ${sel?"#7dd3fc":"rgba(59,130,196,0.3)"}`, background: sel?"rgba(59,130,196,0.2)":"transparent", color: sel?"#7dd3fc":"#bae6fd", cursor: "pointer", fontSize: 13, fontFamily: "inherit" }),
     label: { display: "block", fontSize: 13, color: "#bae6fd", marginBottom: 6 },
-    msgBubble: (r) => ({ maxWidth: "80%", padding: "12px 16px", borderRadius: r==="user"?"18px 18px 4px 18px":"18px 18px 18px 4px", background: r==="user"?"linear-gradient(135deg, #0ea5e9, #38bdf8)":"rgba(255,255,255,0.07)", alignSelf: r==="user"?"flex-end":"flex-start", fontSize: 15, lineHeight: 1.6, color: "#e8f0f8", whiteSpace: "pre-wrap", border: r==="user"?"none":"1px solid rgba(59,130,196,0.15)" }),
+    msgBubble: (r) => ({ maxWidth: "80%", padding: "12px 16px", borderRadius: r==="user"?"18px 18px 4px 18px":"18px 18px 18px 4px", background: r==="user"?"linear-gradient(135deg, #0ea5e9, #38bdf8)":"#f0f9ff", alignSelf: r==="user"?"flex-end":"flex-start", fontSize: 15, lineHeight: 1.6, color: r==="user"?"#fff":"#082f49", whiteSpace: "pre-wrap", border: r==="user"?"none":"1px solid #bae6fd" }),
     planFeature: { padding: "8px 0", borderBottom: "1px solid rgba(59,130,196,0.1)", color: "#e0f2fe", fontSize: 15, listStyle: "none" },
   };
 
   return (
-    <div style={{ ...T.app, background: (view==="home"||view==="doctors") ? "#ffffff" : T.app.background }}>
+    <div style={{ ...T.app, background: (view==="home"||view==="doctors"||view==="chat") ? "#ffffff" : T.app.background }}>
       <link href="https://fonts.googleapis.com/css2?family=Crimson+Pro:wght@400;600;700&display=swap" rel="stylesheet" />
       <style>{`
         * { box-sizing: border-box; }
@@ -1828,7 +1828,7 @@ export default function App() {
         }
       `}</style>
 
-      <header style={{ ...T.header, background: (view==="home"||view==="doctors") ? "rgba(255,255,255,0.95)" : T.header.background, borderBottom: (view==="home"||view==="doctors") ? "1px solid rgba(14,165,233,0.2)" : T.header.borderBottom }}>
+      <header style={{ ...T.header, background: (view==="home"||view==="doctors"||view==="chat") ? "rgba(255,255,255,0.95)" : T.header.background, borderBottom: (view==="home"||view==="doctors"||view==="chat") ? "1px solid rgba(14,165,233,0.2)" : T.header.borderBottom }}>
         <div style={{ cursor: "pointer", display: "flex", alignItems: "center", gap: 10 }} onClick={() => setView("home")}>
           <svg width="32" height="32" viewBox="0 0 72 72" fill="none" xmlns="http://www.w3.org/2000/svg">
             <circle cx="36" cy="36" r="36" fill="url(#lg1)"/>
@@ -1844,17 +1844,17 @@ export default function App() {
           </svg>
           <div>
             <div style={{ fontSize: 18, fontWeight: 700, lineHeight: 1.1 }}>
-              <span style={{ color: "#0ea5e9" }}>Medi</span><span style={{ color: (view==="home"||view==="doctors") ? "#0c4a6e" : "#e0f2fe", fontWeight: 300 }}>Ayacucho</span>
+              <span style={{ color: "#0ea5e9" }}>Medi</span><span style={{ color: (view==="home"||view==="doctors"||view==="chat") ? "#0c4a6e" : "#e0f2fe", fontWeight: 300 }}>Ayacucho</span>
             </div>
-            <span style={{ fontSize: 8, color: (view==="home"||view==="doctors") ? "#0284c7" : "#bae6fd", letterSpacing: 2, textTransform: "uppercase", display: "block", marginTop: 1 }}>Salud para todos</span>
+            <span style={{ fontSize: 8, color: (view==="home"||view==="doctors"||view==="chat") ? "#0284c7" : "#bae6fd", letterSpacing: 2, textTransform: "uppercase", display: "block", marginTop: 1 }}>Salud para todos</span>
           </div>
         </div>
 
         {/* Desktop nav */}
         <nav className="desktop-nav" style={{ display: "flex", gap: 8 }}>
-          <button style={T.navBtn(view==="home", view==="home"||view==="doctors")} onClick={() => setView("home")}>Inicio</button>
-          <button style={T.navBtn(view==="doctors", view==="home"||view==="doctors")} onClick={() => setView("doctors")}>Médicos</button>
-          <button style={T.navBtn(view==="chat", view==="home"||view==="doctors")} onClick={() => setView("chat")}>🤖 IA</button>
+          <button style={T.navBtn(view==="home", view==="home"||view==="doctors"||view==="chat")} onClick={() => setView("home")}>Inicio</button>
+          <button style={T.navBtn(view==="doctors", view==="home"||view==="doctors"||view==="chat")} onClick={() => setView("doctors")}>Médicos</button>
+          <button style={T.navBtn(view==="chat", view==="home"||view==="doctors"||view==="chat")} onClick={() => setView("chat")}>🤖 IA</button>
           {session ? (
             <div style={{ display: "flex", gap: 8 }}>
               {session.email === ADMIN_EMAIL && (
@@ -2424,25 +2424,25 @@ export default function App() {
       {/* CHAT */}
       {view === "chat" && (
         <div style={{ maxWidth:720, margin:"0 auto", padding:"40px 24px", position:"relative", zIndex:1 }}>
-          <h2 style={{ fontSize:32, fontWeight:700, margin:"0 0 8px", color:"#e8f0f8" }}>Asistente Médico IA</h2>
-          <p style={{ color:"#bae6fd", margin:"0 0 24px" }}>Cuéntame tus síntomas y te ayudo a encontrar el médico ideal</p>
-          <div style={{ background:"rgba(255,255,255,0.04)", border:"1px solid rgba(59,130,196,0.2)", borderRadius:20, overflow:"hidden", display:"flex", flexDirection:"column", height:"70vh" }}>
+          <h2 style={{ fontSize:32, fontWeight:700, margin:"0 0 8px", color:"#082f49" }}>Asistente Médico IA</h2>
+          <p style={{ color:"#475569", margin:"0 0 24px" }}>Cuéntame tus síntomas y te ayudo a encontrar el médico ideal</p>
+          <div style={{ background:"#ffffff", border:"1px solid #e0f2fe", borderRadius:20, overflow:"hidden", display:"flex", flexDirection:"column", height:"70vh", boxShadow:"0 8px 28px rgba(15,23,42,0.06)" }}>
             <div style={{ flex:1, overflowY:"auto", padding:24, display:"flex", flexDirection:"column", gap:16 }}>
               {messages.map((m,i)=>(
                 <div key={i} style={T.msgBubble(m.role)}>
-                  {m.role==="assistant" && <span style={{ fontSize:12, color:"#7dd3fc", display:"block", marginBottom:4, fontWeight:600 }}>🩺 Asistente IA</span>}
+                  {m.role==="assistant" && <span style={{ fontSize:12, color:"#0369a1", display:"block", marginBottom:4, fontWeight:600 }}>🩺 Asistente IA</span>}
                   {m.content}
                 </div>
               ))}
-              {loading && <div style={{ ...T.msgBubble("assistant"), color:"#7dd3fc" }}>Pensando... ⏳</div>}
+              {loading && <div style={{ ...T.msgBubble("assistant"), color:"#0369a1" }}>Pensando... ⏳</div>}
               <div ref={chatEndRef} />
             </div>
-            <div style={{ display:"flex", gap:12, padding:16, borderTop:"1px solid rgba(59,130,196,0.15)" }}>
-              <input style={{ flex:1, background:"rgba(255,255,255,0.06)", border:"1px solid rgba(59,130,196,0.25)", borderRadius:12, padding:"12px 16px", color:"#e8f0f8", fontSize:15, fontFamily:"inherit", outline:"none" }} placeholder="Escribe tu consulta aquí..." value={input} onChange={e=>setInput(e.target.value)} onKeyDown={e=>e.key==="Enter"&&sendMessage()} />
+            <div style={{ display:"flex", gap:12, padding:16, borderTop:"1px solid #e0f2fe" }}>
+              <input style={{ flex:1, background:"#f0f9ff", border:"1px solid #bae6fd", borderRadius:12, padding:"12px 16px", color:"#082f49", fontSize:15, fontFamily:"inherit", outline:"none" }} placeholder="Escribe tu consulta aquí..." value={input} onChange={e=>setInput(e.target.value)} onKeyDown={e=>e.key==="Enter"&&sendMessage()} />
               <button style={{ padding:"12px 20px", background:"linear-gradient(135deg,#0ea5e9,#7dd3fc)", color:"#fff", border:"none", borderRadius:12, cursor:"pointer", fontSize:20, fontFamily:"inherit" }} onClick={sendMessage} disabled={loading}>➤</button>
             </div>
           </div>
-          <button style={{ ...T.ctaSecondary, marginTop:20, width:"100%" }} onClick={() => setView("doctors")}>Ver médicos disponibles</button>
+          <button style={{ padding:"14px 32px", background:"transparent", color:"#0369a1", border:"1.5px solid #7dd3fc", borderRadius:12, fontSize:16, cursor:"pointer", fontFamily:"inherit", marginTop:20, width:"100%" }} onClick={() => setView("doctors")}>Ver médicos disponibles</button>
         </div>
       )}
 
