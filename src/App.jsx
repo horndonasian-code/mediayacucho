@@ -1862,9 +1862,9 @@ export default function App() {
                     <span style={{ fontSize:13, color:"#0369a1", letterSpacing:0.5, fontWeight:600 }}>🏥 Plataforma médica certificada — Ayacucho</span>
                   </div>
 
-                  <h1 style={{ fontSize:"clamp(32px,6vw,68px)", fontWeight:700, lineHeight:1.1, margin:"0 0 20px", letterSpacing:"-0.5px" }}>
+                  <h1 style={{ fontSize:"clamp(32px,6vw,68px)", fontWeight:700, lineHeight:1.1, margin:"0 0 20px", letterSpacing:"-0.5px", color:"#082f49" }}>
                     Tu salud,<br/>
-                    <span style={{ background:"linear-gradient(135deg,#7dd3fc,#64748b)", WebkitBackgroundClip:"text", WebkitTextFillColor:"transparent", backgroundClip:"text" }}>nuestra</span>
+                    <span style={{ background:"linear-gradient(135deg,#0ea5e9,#0369a1)", WebkitBackgroundClip:"text", WebkitTextFillColor:"transparent", backgroundClip:"text" }}>nuestra</span>
                     <span style={{ color:"#082f49" }}> prioridad</span>
                   </h1>
 
