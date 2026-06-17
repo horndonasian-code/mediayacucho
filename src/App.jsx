@@ -47,6 +47,9 @@ const db = {
     if (!res.ok) throw new Error("Error al subir la foto");
     return `${SUPABASE_URL}/storage/v1/object/public/doctor-photos/${fileName}`;
   },
+  getReviews: (doctorId) => sb(`reviews?doctor_id=eq.${doctorId}&order=created_at.desc`),
+  createReview: (data) => sb("reviews", { method: "POST", body: JSON.stringify(data) }),
+  checkReviewExists: (appointmentId) => sb(`reviews?appointment_id=eq.${appointmentId}`),
 };
 
 // ─── Politique d'avance ────────────────────────────────────────────────────
@@ -678,19 +681,16 @@ function DoctorDashboard({ doctor, onExit }) {
     if (newStatus === "completada") {
       const appt = appointments.find(a => a.id === id);
       if (appt) {
+        const reviewUrl = `${window.location.origin}?review=${appt.id}&doctor=${doctor.id}`;
         const reviewMsg = `⭐ *¿Cómo fue tu consulta? - MediAyacucho*
 
 Hola ${appt.patient_name}, gracias por confiar en ${doctor.name}.
 
-¿Podrías dejarnos tu opinión? Solo responde con una calificación del 1 al 5:
+¿Podrías dejarnos tu opinión? Solo toma 30 segundos:
 
-⭐ 1 - Muy malo
-⭐⭐ 2 - Malo
-⭐⭐⭐ 3 - Regular
-⭐⭐⭐⭐ 4 - Bueno
-⭐⭐⭐⭐⭐ 5 - Excelente
+👉 ${reviewUrl}
 
-Y cuéntanos brevemente tu experiencia. ¡Tu opinión ayuda a otros pacientes!
+¡Tu opinión ayuda a otros pacientes! 🙏
 
 📍 MediAyacucho 🌿`;
         setTimeout(() => {
@@ -1370,7 +1370,13 @@ function AdminPanel({ onExit }) {
 // ─── Doctor Public Profile ─────────────────────────────────────────────────
 function DoctorProfile({ doctor, onBook, onBack, allAppointments }) {
   const [tab, setTab] = useState("info");
+  const [reviews, setReviews] = useState([]);
+  const [loadingReviews, setLoadingReviews] = useState(true);
   const profileUrl = `${window.location.origin}?medico=${doctor.id}`;
+
+  useEffect(() => {
+    db.getReviews(doctor.id).then(data => { setReviews(data || []); setLoadingReviews(false); }).catch(() => setLoadingReviews(false));
+  }, [doctor.id]);
 
   const s = {
     wrap: { maxWidth: 720, margin: "0 auto", padding: "32px 24px", position: "relative", zIndex: 1 },
@@ -1517,42 +1523,49 @@ function DoctorProfile({ doctor, onBook, onBack, allAppointments }) {
             <div style={{ textAlign: "center" }}>
               <div style={{ fontSize: 48, fontWeight: 700, color: "#F4A261" }}>{doctor.rating}</div>
               <div style={{ color: "#F4A261", fontSize: 20 }}>{"★".repeat(Math.floor(doctor.rating || 5))}</div>
-              <div style={{ fontSize: 12, color: "#475569", marginTop: 4 }}>Calificación promedio</div>
+              <div style={{ fontSize: 12, color: "#475569", marginTop: 4 }}>{reviews.length > 0 ? `${reviews.length} reseña(s)` : "Calificación promedio"}</div>
             </div>
             <div style={{ flex: 1 }}>
-              {[5,4,3,2,1].map(n => (
-                <div key={n} style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 6 }}>
-                  <span style={{ fontSize: 12, color: "#475569", width: 8 }}>{n}</span>
-                  <span style={{ color: "#F4A261", fontSize: 12 }}>★</span>
-                  <div style={{ flex: 1, height: 6, background: "#f0f9ff", borderRadius: 3, overflow: "hidden" }}>
-                    <div style={{ height: "100%", background: "#F4A261", borderRadius: 3, width: n === Math.floor(doctor.rating || 5) ? "70%" : n === Math.ceil(doctor.rating || 5) ? "40%" : "10%" }} />
+              {[5,4,3,2,1].map(n => {
+                const countForStar = reviews.filter(r => r.stars === n).length;
+                const pct = reviews.length > 0 ? (countForStar / reviews.length) * 100 : (n === Math.floor(doctor.rating || 5) ? 70 : n === Math.ceil(doctor.rating || 5) ? 40 : 10);
+                return (
+                  <div key={n} style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 6 }}>
+                    <span style={{ fontSize: 12, color: "#475569", width: 8 }}>{n}</span>
+                    <span style={{ color: "#F4A261", fontSize: 12 }}>★</span>
+                    <div style={{ flex: 1, height: 6, background: "#f0f9ff", borderRadius: 3, overflow: "hidden" }}>
+                      <div style={{ height: "100%", background: "#F4A261", borderRadius: 3, width: `${pct}%` }} />
+                    </div>
                   </div>
-                </div>
-              ))}
+                );
+              })}
             </div>
           </div>
 
-          {/* Reseñas de ejemplo */}
-          {[
-            { name: "María C.", stars: 5, text: "Excelente médico, muy puntual y atento. La consulta fue muy clara.", date: "hace 2 días" },
-            { name: "Jorge H.", stars: 5, text: "Muy buena atención, me explicó todo detalladamente. Lo recomiendo.", date: "hace 1 semana" },
-            { name: "Rosa P.", stars: 4, text: "Buen médico, la espera fue un poco larga pero la consulta excelente.", date: "hace 2 semanas" },
-          ].map((r, i) => (
-            <div key={i} style={{ padding: "14px 0", borderBottom: i < 2 ? "1px solid #e0f2fe" : "none" }}>
+          {loadingReviews ? (
+            <p style={{ textAlign:"center", color:"#64748b", fontSize:14, padding:"20px 0" }}>Cargando reseñas...</p>
+          ) : reviews.length === 0 ? (
+            <div style={{ textAlign:"center", padding:"24px 0", color:"#64748b" }}>
+              <div style={{ fontSize:36, marginBottom:8 }}>💬</div>
+              <p style={{ margin:0, fontSize:14 }}>Aún no hay reseñas para este médico.</p>
+              <p style={{ margin:"4px 0 0", fontSize:13 }}>¡Sé el primero en dejar tu opinión después de tu cita!</p>
+            </div>
+          ) : reviews.map((r, i) => (
+            <div key={r.id || i} style={{ padding: "14px 0", borderBottom: i < reviews.length - 1 ? "1px solid #e0f2fe" : "none" }}>
               <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 6 }}>
                 <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-                  <div style={{ width: 32, height: 32, borderRadius: "50%", background: "#e0f2fe", display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 700, color: "#0369a1", fontSize: 13 }}>{r.name[0]}</div>
-                  <span style={{ fontWeight: 700, color: "#082f49", fontSize: 14 }}>{r.name}</span>
+                  <div style={{ width: 32, height: 32, borderRadius: "50%", background: "#e0f2fe", display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 700, color: "#0369a1", fontSize: 13 }}>{(r.patient_name||"P")[0]}</div>
+                  <span style={{ fontWeight: 700, color: "#082f49", fontSize: 14 }}>{r.patient_name || "Paciente"}</span>
                 </div>
-                <span style={{ fontSize: 12, color: "#475569" }}>{r.date}</span>
+                <span style={{ fontSize: 12, color: "#475569" }}>{r.created_at ? new Date(r.created_at).toLocaleDateString("es-PE") : ""}</span>
               </div>
               <div style={{ color: "#F4A261", fontSize: 14, marginBottom: 6 }}>{"★".repeat(r.stars)}</div>
-              <p style={{ margin: 0, color: "#334155", fontSize: 14, lineHeight: 1.5 }}>{r.text}</p>
+              {r.comment && <p style={{ margin: 0, color: "#334155", fontSize: 14, lineHeight: 1.5 }}>{r.comment}</p>}
             </div>
           ))}
 
           <div style={{ marginTop: 16, background: "#f0f9ff", borderRadius: 10, padding: 14, fontSize: 13, color: "#475569", textAlign: "center" }}>
-            💡 Las reseñas son enviadas automáticamente por WhatsApp después de cada consulta completada.
+            💡 Las reseñas son enviadas por los pacientes después de cada consulta completada.
           </div>
         </div>
       )}
@@ -1567,6 +1580,141 @@ function DoctorProfile({ doctor, onBook, onBack, allAppointments }) {
           }}>
           💬 Compartir perfil por WhatsApp
         </button>
+      </div>
+    </div>
+  );
+}
+
+// ─── Review Submission Page ────────────────────────────────────────────────
+function ReviewSubmit({ appointmentId, doctorId, onDone }) {
+  const [doctor, setDoctor] = useState(null);
+  const [stars, setStars] = useState(0);
+  const [hoverStar, setHoverStar] = useState(0);
+  const [comment, setComment] = useState("");
+  const [patientName, setPatientName] = useState("");
+  const [loading, setLoading] = useState(true);
+  const [submitting, setSubmitting] = useState(false);
+  const [submitted, setSubmitted] = useState(false);
+  const [alreadyReviewed, setAlreadyReviewed] = useState(false);
+  const [error, setError] = useState("");
+
+  useEffect(() => {
+    async function load() {
+      try {
+        const [docs, existing, appts] = await Promise.all([
+          sb(`doctors?id=eq.${doctorId}`),
+          db.checkReviewExists(appointmentId),
+          sb(`appointments?id=eq.${appointmentId}`),
+        ]);
+        setDoctor(docs?.[0] || null);
+        if (existing && existing.length > 0) setAlreadyReviewed(true);
+        if (appts && appts.length > 0) setPatientName(appts[0].patient_name || "");
+      } catch (e) { setError("No pudimos cargar la información."); }
+      setLoading(false);
+    }
+    load();
+  }, [appointmentId, doctorId]);
+
+  async function submitReview() {
+    if (stars === 0) return;
+    setSubmitting(true);
+    try {
+      await db.createReview({
+        doctor_id: doctorId,
+        appointment_id: appointmentId,
+        patient_name: patientName || "Paciente",
+        stars,
+        comment: comment.trim(),
+      });
+      // Recalculate doctor's average rating
+      const allReviews = await db.getReviews(doctorId);
+      const avg = allReviews.reduce((sum, r) => sum + r.stars, 0) / allReviews.length;
+      await db.updateDoctor(doctorId, { rating: Math.round(avg * 10) / 10 });
+      setSubmitted(true);
+    } catch (e) { setError("Error al enviar tu opinión: " + e.message); }
+    setSubmitting(false);
+  }
+
+  if (loading) return (
+    <div style={{ minHeight:"100vh", display:"flex", alignItems:"center", justifyContent:"center", background:"#ffffff", fontFamily:"'Inter', sans-serif" }}>
+      <div style={{ color:"#0369a1", fontSize:18 }}>⏳ Cargando...</div>
+    </div>
+  );
+
+  return (
+    <div style={{ minHeight:"100vh", background:"#ffffff", fontFamily:"'Inter', sans-serif", display:"flex", alignItems:"center", justifyContent:"center", padding:24 }}>
+      <div style={{ maxWidth:460, width:"100%" }}>
+        <div style={{ display:"flex", alignItems:"center", gap:10, marginBottom:28, justifyContent:"center" }}>
+          <svg width="36" height="36" viewBox="0 0 72 72" fill="none">
+            <circle cx="36" cy="36" r="36" fill="#0ea5e9"/>
+            <rect x="28" y="14" width="16" height="44" rx="4" fill="white"/>
+            <rect x="14" y="28" width="44" height="16" rx="4" fill="white"/>
+          </svg>
+          <span style={{ fontSize:20, fontWeight:700 }}><span style={{ color:"#0ea5e9" }}>Medi</span><span style={{ color:"#0c4a6e", fontWeight:300 }}>Ayacucho</span></span>
+        </div>
+
+        {error && <div style={{ background:"#fef2f2", border:"1px solid #fecaca", color:"#dc2626", borderRadius:12, padding:16, textAlign:"center", marginBottom:16 }}>{error}</div>}
+
+        {!error && alreadyReviewed ? (
+          <div style={{ background:"#f0fdf4", border:"1px solid #bbf7d0", borderRadius:16, padding:32, textAlign:"center" }}>
+            <div style={{ fontSize:48, marginBottom:12 }}>✅</div>
+            <h2 style={{ color:"#15803d", fontSize:20, margin:"0 0 8px" }}>¡Ya enviaste tu opinión!</h2>
+            <p style={{ color:"#475569", fontSize:14, margin:0 }}>Gracias por ayudar a otros pacientes.</p>
+          </div>
+        ) : !error && submitted ? (
+          <div style={{ background:"#f0fdf4", border:"1px solid #bbf7d0", borderRadius:16, padding:32, textAlign:"center" }}>
+            <div style={{ fontSize:48, marginBottom:12 }}>🎉</div>
+            <h2 style={{ color:"#15803d", fontSize:20, margin:"0 0 8px" }}>¡Gracias por tu opinión!</h2>
+            <p style={{ color:"#475569", fontSize:14, margin:0 }}>Tu reseña ayuda a otros pacientes a elegir el médico ideal.</p>
+          </div>
+        ) : !error && (
+          <div style={{ background:"#ffffff", border:"1px solid #e0f2fe", borderRadius:16, padding:28, boxShadow:"0 8px 28px rgba(15,23,42,0.06)" }}>
+            {doctor && (
+              <div style={{ display:"flex", alignItems:"center", gap:12, marginBottom:20 }}>
+                {doctor.photo_url
+                  ? <img src={doctor.photo_url} alt={doctor.name} style={{ width:48, height:48, borderRadius:12, objectFit:"cover" }} />
+                  : <div style={{ width:48, height:48, borderRadius:12, background:doctor.color||"#0ea5e9", display:"flex", alignItems:"center", justifyContent:"center", fontWeight:700, color:"#fff" }}>{doctor.img||initials(doctor.name)}</div>
+                }
+                <div>
+                  <div style={{ fontWeight:700, color:"#082f49", fontSize:16 }}>{doctor.name}</div>
+                  <div style={{ fontSize:13, color:"#64748b" }}>{doctor.specialty}</div>
+                </div>
+              </div>
+            )}
+
+            <p style={{ textAlign:"center", color:"#475569", fontSize:15, margin:"0 0 16px" }}>¿Cómo calificarías tu consulta?</p>
+
+            <div style={{ display:"flex", justifyContent:"center", gap:8, marginBottom:24 }}>
+              {[1,2,3,4,5].map(n => (
+                <button key={n}
+                  onClick={() => setStars(n)}
+                  onMouseEnter={() => setHoverStar(n)}
+                  onMouseLeave={() => setHoverStar(0)}
+                  style={{ background:"none", border:"none", cursor:"pointer", fontSize:36, padding:2, lineHeight:1, color: n <= (hoverStar||stars) ? "#F4A261" : "#e2e8f0", transition:"color 0.15s" }}>
+                  ★
+                </button>
+              ))}
+            </div>
+
+            <label style={{ display:"block", fontSize:12, color:"#0369a1", marginBottom:6, fontWeight:600, textTransform:"uppercase", letterSpacing:0.5 }}>Cuéntanos tu experiencia (opcional)</label>
+            <textarea
+              value={comment}
+              onChange={e => setComment(e.target.value)}
+              placeholder="¿Qué te gustó? ¿Algo que podríamos mejorar?"
+              rows={4}
+              style={{ width:"100%", background:"#f0f9ff", border:"1px solid #bae6fd", borderRadius:10, padding:"12px 14px", color:"#082f49", fontSize:14, fontFamily:"inherit", outline:"none", resize:"vertical", boxSizing:"border-box", marginBottom:20 }}
+            />
+
+            <button
+              onClick={submitReview}
+              disabled={stars === 0 || submitting}
+              style={{ width:"100%", padding:"14px 0", background: stars === 0 ? "#cbd5e1" : "linear-gradient(135deg,#0ea5e9,#7dd3fc)", color:"#fff", border:"none", borderRadius:12, fontSize:16, fontWeight:700, cursor: stars === 0 ? "default" : "pointer", fontFamily:"inherit" }}>
+              {submitting ? "Enviando..." : "✅ Enviar opinión"}
+            </button>
+          </div>
+        )}
+
+        <p style={{ textAlign:"center", color:"#94a3b8", fontSize:12, marginTop:20 }}>MediAyacucho · Salud para todos</p>
       </div>
     </div>
   );
@@ -1602,7 +1750,17 @@ export default function App() {
   const [regDone, setRegDone] = useState(false);
   const [pendingDoctorId, setPendingDoctorId] = useState(null);
   const [allAppointments, setAllAppointments] = useState([]);
+  const [reviewParams, setReviewParams] = useState(null);
   const chatEndRef = useRef(null);
+
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const reviewAppt = params.get("review");
+    const reviewDoctor = params.get("doctor");
+    if (reviewAppt && reviewDoctor) {
+      setReviewParams({ appointmentId: reviewAppt, doctorId: reviewDoctor });
+    }
+  }, []);
 
   useEffect(() => {
     db.getDoctors()
@@ -1745,6 +1903,14 @@ export default function App() {
 
   if (showAdmin) return <AdminPanel onExit={() => setShowAdmin(false)} />;
   if (dashboardDoctor) return <DoctorDashboard doctor={dashboardDoctor} onExit={() => setDashboardDoctor(null)} />;
+  if (reviewParams) return (
+    <ReviewSubmit
+      appointmentId={reviewParams.appointmentId}
+      doctorId={reviewParams.doctorId}
+      onDone={() => setReviewParams(null)}
+    />
+  );
+
   if (selectedProfile && view === "profile") return (
     <div style={{ fontFamily: "'Inter', sans-serif", minHeight: "100vh", background: "#ffffff", color: "#082f49" }}>
       <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
