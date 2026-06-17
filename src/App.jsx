@@ -1791,7 +1791,7 @@ export default function App() {
   };
 
   return (
-    <div style={{ ...T.app, background: view==="home" ? "#ffffff" : T.app.background }}>
+    <div style={{ ...T.app, background: (view==="home"||view==="doctors") ? "#ffffff" : T.app.background }}>
       <link href="https://fonts.googleapis.com/css2?family=Crimson+Pro:wght@400;600;700&display=swap" rel="stylesheet" />
       <style>{`
         * { box-sizing: border-box; }
@@ -1828,7 +1828,7 @@ export default function App() {
         }
       `}</style>
 
-      <header style={{ ...T.header, background: view==="home" ? "rgba(255,255,255,0.95)" : T.header.background, borderBottom: view==="home" ? "1px solid rgba(14,165,233,0.2)" : T.header.borderBottom }}>
+      <header style={{ ...T.header, background: (view==="home"||view==="doctors") ? "rgba(255,255,255,0.95)" : T.header.background, borderBottom: (view==="home"||view==="doctors") ? "1px solid rgba(14,165,233,0.2)" : T.header.borderBottom }}>
         <div style={{ cursor: "pointer", display: "flex", alignItems: "center", gap: 10 }} onClick={() => setView("home")}>
           <svg width="32" height="32" viewBox="0 0 72 72" fill="none" xmlns="http://www.w3.org/2000/svg">
             <circle cx="36" cy="36" r="36" fill="url(#lg1)"/>
@@ -1844,17 +1844,17 @@ export default function App() {
           </svg>
           <div>
             <div style={{ fontSize: 18, fontWeight: 700, lineHeight: 1.1 }}>
-              <span style={{ color: "#0ea5e9" }}>Medi</span><span style={{ color: view==="home" ? "#0c4a6e" : "#e0f2fe", fontWeight: 300 }}>Ayacucho</span>
+              <span style={{ color: "#0ea5e9" }}>Medi</span><span style={{ color: (view==="home"||view==="doctors") ? "#0c4a6e" : "#e0f2fe", fontWeight: 300 }}>Ayacucho</span>
             </div>
-            <span style={{ fontSize: 8, color: view==="home" ? "#0284c7" : "#bae6fd", letterSpacing: 2, textTransform: "uppercase", display: "block", marginTop: 1 }}>Salud para todos</span>
+            <span style={{ fontSize: 8, color: (view==="home"||view==="doctors") ? "#0284c7" : "#bae6fd", letterSpacing: 2, textTransform: "uppercase", display: "block", marginTop: 1 }}>Salud para todos</span>
           </div>
         </div>
 
         {/* Desktop nav */}
         <nav className="desktop-nav" style={{ display: "flex", gap: 8 }}>
-          <button style={T.navBtn(view==="home", view==="home")} onClick={() => setView("home")}>Inicio</button>
-          <button style={T.navBtn(view==="doctors", view==="home")} onClick={() => setView("doctors")}>Médicos</button>
-          <button style={T.navBtn(view==="chat", view==="home")} onClick={() => setView("chat")}>🤖 IA</button>
+          <button style={T.navBtn(view==="home", view==="home"||view==="doctors")} onClick={() => setView("home")}>Inicio</button>
+          <button style={T.navBtn(view==="doctors", view==="home"||view==="doctors")} onClick={() => setView("doctors")}>Médicos</button>
+          <button style={T.navBtn(view==="chat", view==="home"||view==="doctors")} onClick={() => setView("chat")}>🤖 IA</button>
           {session ? (
             <div style={{ display: "flex", gap: 8 }}>
               {session.email === ADMIN_EMAIL && (
@@ -2121,8 +2121,8 @@ export default function App() {
             {/* DOCTORS */}
       {view === "doctors" && (
         <div style={T.section}>
-          <h2 style={{ fontSize: 32, fontWeight: 700, margin: "0 0 8px" }}>Médicos en tu ciudad</h2>
-          <p style={{ color: "#60a5d8", margin: "0 0 24px" }}>
+          <h2 style={{ fontSize: 32, fontWeight: 700, margin: "0 0 8px", color:"#082f49" }}>Médicos en tu ciudad</h2>
+          <p style={{ color: "#475569", margin: "0 0 24px" }}>
             {loadingDoctors ? "Cargando desde Supabase..." : dbError ? `⚠️ Error: ${dbError}` : `${doctors.length} médico(s) certificado(s) y verificado(s)`}
           </p>
           {/* Scrollable filter row */}
@@ -2132,7 +2132,7 @@ export default function App() {
               const cfg = SPECIALTY_CONFIG[s];
               const isActive = filter === s;
               return (
-                <button key={s} style={{ padding:"8px 18px", borderRadius:20, border:`1px solid ${isActive ? (cfg?.color || "#7dd3fc") : "rgba(59,130,196,0.3)"}`, background: isActive ? (cfg?.bg || "rgba(59,130,196,0.2)") : "transparent", color: isActive ? (cfg?.color || "#7dd3fc") : "#60a5d8", cursor:"pointer", fontSize:13, fontFamily:"inherit", fontWeight: isActive ? 700 : 400, transition:"all 0.2s", whiteSpace:"nowrap", flexShrink:0 }} onClick={() => setFilter(s)}>
+                <button key={s} style={{ padding:"8px 18px", borderRadius:20, border:`1px solid ${isActive ? (cfg?.color || "#0369a1") : "#cbd5e1"}`, background: isActive ? (cfg?.bg || "#e0f2fe") : "#ffffff", color: isActive ? (cfg?.color || "#0369a1") : "#64748b", cursor:"pointer", fontSize:13, fontFamily:"inherit", fontWeight: isActive ? 700 : 400, transition:"all 0.2s", whiteSpace:"nowrap", flexShrink:0 }} onClick={() => setFilter(s)}>
                   {cfg?.icon || ""} {s}
                 </button>
               );
@@ -2140,18 +2140,18 @@ export default function App() {
             </div>
           </div>
           {loadingDoctors ? (
-            <div style={{ textAlign:"center", padding:60, color:"#7dd3fc", fontSize:18 }}>⏳ Conectando a Supabase...</div>
+            <div style={{ textAlign:"center", padding:60, color:"#0369a1", fontSize:18 }}>⏳ Conectando a Supabase...</div>
           ) : (
             <div className="doctor-grid" style={T.grid}>
               {filtered.map(doc => (
-                <div key={doc.id} style={{ ...T.card, position:"relative", overflow:"hidden" }}
-                  onMouseEnter={e=>{e.currentTarget.style.transform="translateY(-6px)";e.currentTarget.style.borderColor="rgba(59,130,196,0.4)";e.currentTarget.style.boxShadow="0 16px 48px rgba(59,130,196,0.15)";}}
-                  onMouseLeave={e=>{e.currentTarget.style.transform="";e.currentTarget.style.borderColor="rgba(59,130,196,0.15)";e.currentTarget.style.boxShadow="";}}>
+                <div key={doc.id} style={{ ...T.card, background:"#ffffff", border:"1px solid #e0f2fe", boxShadow:"0 8px 28px rgba(15,23,42,0.06)", position:"relative", overflow:"hidden" }}
+                  onMouseEnter={e=>{e.currentTarget.style.transform="translateY(-6px)";e.currentTarget.style.borderColor="#7dd3fc";e.currentTarget.style.boxShadow="0 16px 48px rgba(14,165,233,0.15)";}}
+                  onMouseLeave={e=>{e.currentTarget.style.transform="";e.currentTarget.style.borderColor="#e0f2fe";e.currentTarget.style.boxShadow="";}}>
                   {doc.photo_url
                     ? <img src={doc.photo_url} alt={doc.name} style={{ width:56, height:56, borderRadius:14, objectFit:"cover", marginBottom:16, border:`2px solid ${SPECIALTY_CONFIG[doc.specialty]?.color || "#7dd3fc"}66` }} />
                     : <div style={{ ...T.avatar(SPECIALTY_CONFIG[doc.specialty]?.color || doc.color), background:`linear-gradient(135deg, ${doc.color}, ${SPECIALTY_CONFIG[doc.specialty]?.color || doc.color})` }}>{doc.img || initials(doc.name)}</div>
                   }
-                  <h3 style={{ fontSize:18, fontWeight:700, margin:"0 0 8px", color:"#e8f0f8" }}>{doc.name}</h3>
+                  <h3 style={{ fontSize:18, fontWeight:700, margin:"0 0 8px", color:"#082f49" }}>{doc.name}</h3>
                   <div style={{ marginBottom:10 }}>
                     <span style={{ display:"inline-flex", alignItems:"center", gap:5, padding:"4px 12px", borderRadius:20, background: SPECIALTY_CONFIG[doc.specialty]?.bg || "rgba(59,130,196,0.15)", border:`1px solid ${SPECIALTY_CONFIG[doc.specialty]?.color || "#7dd3fc"}44`, color: SPECIALTY_CONFIG[doc.specialty]?.color || "#7dd3fc", fontSize:12, fontWeight:700 }}>
                       {SPECIALTY_CONFIG[doc.specialty]?.icon || "🏥"} {doc.specialty}
@@ -2170,7 +2170,7 @@ export default function App() {
                       </div>
                     );
                   })()}
-                  <div style={{ marginTop:6, color:"#60a5d8", fontSize:12 }}>{(doc.schedule||[]).join(" · ")}</div>
+                  <div style={{ marginTop:6, color:"#64748b", fontSize:12 }}>{(doc.schedule||[]).join(" · ")}</div>
                   {doc.address && (
                     <div style={{ marginTop:8, display:"flex", alignItems:"flex-start", gap:6 }}>
                       <span style={{ fontSize:12 }}>📍</span>
@@ -2192,10 +2192,10 @@ export default function App() {
                   </div>
                   {/* Demo: acceso al dashboard */}
                   <div style={{ display:"flex", gap:6, marginTop:10 }}>
-                    <button style={{ flex:1, padding:"7px 0", background:"rgba(59,130,196,0.08)", border:"1px solid rgba(14,165,233,0.25)", color:"#7dd3fc", borderRadius:8, cursor:"pointer", fontSize:11, fontFamily:"inherit", fontWeight:600 }} onClick={() => setDashboardDoctor(doc)}>
+                    <button style={{ flex:1, padding:"7px 0", background:"#f0f9ff", border:"1px solid #bae6fd", color:"#0369a1", borderRadius:8, cursor:"pointer", fontSize:11, fontFamily:"inherit", fontWeight:600 }} onClick={() => setDashboardDoctor(doc)}>
                       📊 Dashboard
                     </button>
-                    <button style={{ flex:1, padding:"7px 0", background:"rgba(59,130,196,0.08)", border:"1px solid rgba(14,165,233,0.25)", color:"#60a5d8", borderRadius:8, cursor:"pointer", fontSize:11, fontFamily:"inherit", fontWeight:600 }} onClick={() => { setSelectedProfile(doc); setView("profile"); }}>
+                    <button style={{ flex:1, padding:"7px 0", background:"#f0f9ff", border:"1px solid #bae6fd", color:"#0369a1", borderRadius:8, cursor:"pointer", fontSize:11, fontFamily:"inherit", fontWeight:600 }} onClick={() => { setSelectedProfile(doc); setView("profile"); }}>
                       👤 Ver perfil
                     </button>
                   </div>
