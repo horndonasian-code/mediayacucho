@@ -1578,7 +1578,7 @@ export default function App() {
   const [loadingDoctors, setLoadingDoctors] = useState(true);
   const [dbError, setDbError] = useState(null);
   const [selectedDoctor, setSelectedDoctor] = useState(null);
-  const [filter, setFilter] = useState("Todos");
+  const [specialtySearch, setSpecialtySearch] = useState("");
   const [messages, setMessages] = useState([{ role: "assistant", content: "¡Hola! Soy tu asistente médico IA de MediPerú. 🩺\n\nPuedo ayudarte a:\n• Encontrar el médico ideal para ti\n• Agendar una cita\n• Resolver dudas sobre síntomas\n\n¿En qué te puedo ayudar hoy?" }]);
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(false);
@@ -1612,7 +1612,10 @@ export default function App() {
 
   useEffect(() => { chatEndRef.current?.scrollIntoView({ behavior: "smooth" }); }, [messages]);
 
-  const filtered = filter === "Todos" ? doctors : doctors.filter(d => d.specialty === filter);
+  const filtered = !specialtySearch.trim() ? doctors : doctors.filter(d =>
+    d.specialty?.toLowerCase().includes(specialtySearch.toLowerCase()) ||
+    d.name?.toLowerCase().includes(specialtySearch.toLowerCase())
+  );
 
   async function sendMessage() {
     if (!input.trim() || loading) return;
@@ -2011,7 +2014,7 @@ export default function App() {
                     <div style={{ display:"flex", gap:6, flexWrap:"wrap" }}>
                       {["Medicina General","Pediatría","Cardiología","Ginecología","Traumatología","Dermatología"].map((sp,i)=>(
                         <button key={i} className="spec-card" style={{ padding:"5px 12px", borderRadius:20, background:"#f0f9ff", border:"1px solid #bae6fd", color:"#0369a1", fontSize:12, cursor:"pointer", fontFamily:"inherit", transition:"all 0.2s", boxShadow:"0 2px 8px rgba(14,165,233,0.08)" }}
-                          onClick={()=>{ setFilter(sp); setView("doctors"); }}>
+                          onClick={()=>{ setSpecialtySearch(sp); setView("doctors"); }}>
                           {sp}
                         </button>
                       ))}
@@ -2125,14 +2128,28 @@ export default function App() {
           <p style={{ color: "#475569", margin: "0 0 24px" }}>
             {loadingDoctors ? "Cargando desde Supabase..." : dbError ? `⚠️ Error: ${dbError}` : `${doctors.length} médico(s) certificado(s) y verificado(s)`}
           </p>
-          {/* Scrollable filter row */}
-          <div style={{ margin: "0 -24px", padding: "0 24px 12px", overflowX: "scroll", marginBottom: 32, WebkitOverflowScrolling: "touch", cursor: "grab" }}>
-            <div style={{ display: "flex", gap: 8, paddingBottom: 8, width: "max-content" }}>
-            {SPECIALTIES.map(s => {
+          {/* Search bar */}
+          <div style={{ position:"relative", marginBottom:28 }}>
+            <span style={{ position:"absolute", left:18, top:"50%", transform:"translateY(-50%)", fontSize:18, color:"#94a3b8" }}>🔍</span>
+            <input
+              type="text"
+              value={specialtySearch}
+              onChange={e => setSpecialtySearch(e.target.value)}
+              placeholder="Buscar por especialidad o nombre del médico..."
+              style={{ width:"100%", padding:"16px 18px 16px 48px", borderRadius:14, border:"1px solid #bae6fd", background:"#ffffff", color:"#082f49", fontSize:15, fontFamily:"inherit", outline:"none", boxShadow:"0 4px 16px rgba(15,23,42,0.06)", boxSizing:"border-box" }}
+            />
+            {specialtySearch && (
+              <button onClick={() => setSpecialtySearch("")} style={{ position:"absolute", right:14, top:"50%", transform:"translateY(-50%)", background:"none", border:"none", cursor:"pointer", fontSize:16, color:"#94a3b8" }}>✕</button>
+            )}
+          </div>
+          {/* Quick specialty suggestions */}
+          <div style={{ margin: "0 -24px", padding: "0 24px 4px", overflowX: "scroll", marginBottom: 28, WebkitOverflowScrolling: "touch", cursor: "grab", msOverflowStyle:"none", scrollbarWidth:"none" }}>
+            <div style={{ display: "flex", gap: 8, paddingBottom: 4, width: "max-content" }}>
+            {SPECIALTIES.filter(s => s !== "Todos").map(s => {
               const cfg = SPECIALTY_CONFIG[s];
-              const isActive = filter === s;
+              const isActive = specialtySearch === s;
               return (
-                <button key={s} style={{ padding:"8px 18px", borderRadius:20, border:`1px solid ${isActive ? (cfg?.color || "#0369a1") : "#cbd5e1"}`, background: isActive ? (cfg?.bg || "#e0f2fe") : "#ffffff", color: isActive ? (cfg?.color || "#0369a1") : "#64748b", cursor:"pointer", fontSize:13, fontFamily:"inherit", fontWeight: isActive ? 700 : 400, transition:"all 0.2s", whiteSpace:"nowrap", flexShrink:0 }} onClick={() => setFilter(s)}>
+                <button key={s} style={{ padding:"6px 14px", borderRadius:20, border:`1px solid ${isActive ? (cfg?.color || "#0369a1") : "#e2e8f0"}`, background: isActive ? (cfg?.bg || "#e0f2fe") : "#f8fafc", color: isActive ? (cfg?.color || "#0369a1") : "#64748b", cursor:"pointer", fontSize:12, fontFamily:"inherit", fontWeight: isActive ? 700 : 400, transition:"all 0.2s", whiteSpace:"nowrap", flexShrink:0 }} onClick={() => setSpecialtySearch(isActive ? "" : s)}>
                   {cfg?.icon || ""} {s}
                 </button>
               );
