@@ -681,7 +681,7 @@ Y cuéntanos brevemente tu experiencia. ¡Tu opinión ayuda a otros pacientes!
     setAiLoading(true); setAiTip("");
     try {
       const summary = `Médico: ${doctor.name}, especialidad: ${doctor.specialty}. Citas hoy: ${todayAppts.length}. Completadas: ${completedCount}. Canceladas: ${cancelledCount}. Rating: ${doctor.rating}. Ingresos: S/. ${totalIncome}.`;
-      const resp = await fetch("https://api.anthropic.com/v1/messages", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ model: "claude-sonnet-4-20250514", max_tokens: 300, system: "Eres un consultor médico de negocios experto en Perú. Da un consejo práctico, específico y breve en español.", messages: [{ role: "user", content: `Dame UN consejo para mejorar mi práctica esta semana: ${summary}` }] }) });
+      const resp = await fetch("/api/claude", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ max_tokens: 300, system: "Eres un consultor médico de negocios experto en Perú. Da un consejo práctico, específico y breve en español.", messages: [{ role: "user", content: `Dame UN consejo para mejorar mi práctica esta semana: ${summary}` }] }) });
       const data = await resp.json();
       setAiTip(data.content?.map(b => b.text || "").join("") || "No se pudo obtener el consejo.");
     } catch { setAiTip("Error de conexión."); }
@@ -1543,7 +1543,7 @@ export default function App() {
     setLoading(true);
     try {
       const doctorList = doctors.map(d => `${d.name} (${d.specialty}, ${d.price}, ${d.available?"disponible":"no disponible"}, ${d.address||""})`).join("; ");
-      const response = await fetch("https://api.anthropic.com/v1/messages", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ model: "claude-sonnet-4-20250514", max_tokens: 1000, system: `Eres un asistente médico IA amable para Perú, Perú. Médicos: ${doctorList}. Responde en español, cálido. Si el usuario describe síntomas, sugiere especialidad y médico. Nunca diagnostiques. Máximo 3 párrafos.`, messages: [...messages, { role: "user", content: userMsg }].map(m => ({ role: m.role, content: m.content })) }) });
+      const response = await fetch("/api/claude", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ max_tokens: 1000, system: `Eres un asistente médico IA amable para Ayacucho, Perú. Médicos disponibles: ${doctorList}. Especialidades disponibles: Medicina General, Pediatría, Cardiología, Ginecología, Traumatología, Dermatología, Odontología, Oftalmología, Psicología, Nutrición, Neurología, Urología, Endocrinología, Oncología, Medicina Interna, Cirugía General, Gastroenterología, Nefrología, Neumología. Responde en español, cálido. Si el usuario describe síntomas, sugiere la especialidad más adecuada. Nunca diagnostiques. Máximo 3 párrafos.`, messages: [...messages, { role: "user", content: userMsg }].map(m => ({ role: m.role, content: m.content })) }) });
       const data = await response.json();
       setMessages(prev => [...prev, { role: "assistant", content: data.content?.map(b => b.text||"").join("")||"Error." }]);
     } catch { setMessages(prev => [...prev, { role: "assistant", content: "Error de conexión." }]); }
@@ -1610,10 +1610,10 @@ export default function App() {
         { type: "text", text: `Analiza esta imagen de diploma/título médico. El médico dice llamarse "${regData.name}", especialidad "${regData.specialty}", número CMP "${regData.cmp}", universidad "${regData.universidad}". Verifica: 1) ¿La imagen parece un diploma médico legítimo del Perú? 2) ¿El nombre en el diploma coincide? 3) ¿Hay signos de falsificación? 4) ¿El formato es oficial? Responde SOLO en JSON: {"score": 0-100, "valido": true/false, "nombre_coincide": true/false, "es_diploma": true/false, "alertas": ["alerta1"], "recomendacion": "APROBAR|REVISAR|RECHAZAR", "resumen": "explicación breve"}` }
       ] : [{ type: "text", text: `Soy el administrador de MediAyacucho, plataforma médica en Perú. Un médico quiere registrarse con estos datos: Nombre: "${regData.name}", Especialidad: "${regData.specialty}", Número CMP: "${regData.cmp}", Universidad: "${regData.universidad}". Basándote en tu conocimiento del sistema médico peruano: 1) ¿El formato del CMP es válido? (normalmente 5-6 dígitos) 2) ¿La especialidad existe en Perú? 3) ¿Hay inconsistencias sospechosas? 4) ¿Qué verificaciones manuales recomiendas? Responde SOLO en JSON sin markdown: {"score": 0-100, "valido": true/false, "formato_cmp_ok": true/false, "alertas": ["alerta1"], "recomendacion": "APROBAR|REVISAR|RECHAZAR", "verificar_en": "https://www.cmp.org.pe", "resumen": "explicación breve"}` }] }];
 
-      const resp = await fetch("https://api.anthropic.com/v1/messages", {
+      const resp = await fetch("/api/claude", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ model: "claude-sonnet-4-20250514", max_tokens: 500, system: "Eres un sistema de verificación de credenciales médicas para Perú. Responde SIEMPRE en JSON válido sin markdown ni backticks.", messages })
+        body: JSON.stringify({ max_tokens: 500, system: "Eres un sistema de verificación de credenciales médicas para Perú. Responde SIEMPRE en JSON válido sin markdown ni backticks.", messages })
       });
       const data = await resp.json();
       const text = data.content?.map(b => b.text || "").join("") || "{}";
