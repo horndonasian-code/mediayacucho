@@ -1579,6 +1579,7 @@ export default function App() {
   const [dbError, setDbError] = useState(null);
   const [selectedDoctor, setSelectedDoctor] = useState(null);
   const [specialtySearch, setSpecialtySearch] = useState("");
+  const [doctorsViewMode, setDoctorsViewMode] = useState("list");
   const [messages, setMessages] = useState([{ role: "assistant", content: "¡Hola! Soy tu asistente médico IA de MediPerú. 🩺\n\nPuedo ayudarte a:\n• Encontrar el médico ideal para ti\n• Agendar una cita\n• Resolver dudas sobre síntomas\n\n¿En qué te puedo ayudar hoy?" }]);
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(false);
@@ -2127,10 +2128,19 @@ export default function App() {
             {/* DOCTORS */}
       {view === "doctors" && (
         <div style={T.section}>
-          <h2 style={{ fontSize: 32, fontWeight: 700, margin: "0 0 8px", color:"#082f49" }}>Médicos en tu ciudad</h2>
-          <p style={{ color: "#475569", margin: "0 0 24px" }}>
-            {loadingDoctors ? "Cargando desde Supabase..." : dbError ? `⚠️ Error: ${dbError}` : `${doctors.length} médico(s) certificado(s) y verificado(s)`}
-          </p>
+          <div style={{ display:"flex", justifyContent:"space-between", alignItems:"flex-start", flexWrap:"wrap", gap:12, marginBottom:8 }}>
+            <div>
+              <h2 style={{ fontSize: 32, fontWeight: 700, margin: "0 0 8px", color:"#082f49" }}>Médicos en tu ciudad</h2>
+              <p style={{ color: "#475569", margin: 0 }}>
+                {loadingDoctors ? "Cargando desde Supabase..." : dbError ? `⚠️ Error: ${dbError}` : `${doctors.length} médico(s) certificado(s) y verificado(s)`}
+              </p>
+            </div>
+            <div style={{ display:"flex", gap:6, background:"#f0f9ff", border:"1px solid #bae6fd", borderRadius:12, padding:4 }}>
+              <button onClick={() => setDoctorsViewMode("list")} style={{ padding:"8px 16px", borderRadius:9, border:"none", background: doctorsViewMode==="list" ? "#ffffff" : "transparent", color: doctorsViewMode==="list" ? "#0369a1" : "#64748b", fontWeight: doctorsViewMode==="list" ? 700 : 400, cursor:"pointer", fontFamily:"inherit", fontSize:13, boxShadow: doctorsViewMode==="list" ? "0 2px 8px rgba(15,23,42,0.08)" : "none" }}>📋 Lista</button>
+              <button onClick={() => setDoctorsViewMode("map")} style={{ padding:"8px 16px", borderRadius:9, border:"none", background: doctorsViewMode==="map" ? "#ffffff" : "transparent", color: doctorsViewMode==="map" ? "#0369a1" : "#64748b", fontWeight: doctorsViewMode==="map" ? 700 : 400, cursor:"pointer", fontFamily:"inherit", fontSize:13, boxShadow: doctorsViewMode==="map" ? "0 2px 8px rgba(15,23,42,0.08)" : "none" }}>🗺️ Mapa</button>
+            </div>
+          </div>
+          <div style={{ marginBottom:24 }} />
           {/* Search bar */}
           <div style={{ position:"relative", marginBottom:28 }}>
             <span style={{ position:"absolute", left:18, top:"50%", transform:"translateY(-50%)", fontSize:18, color:"#94a3b8" }}>🔍</span>
@@ -2161,6 +2171,42 @@ export default function App() {
           </div>
           {loadingDoctors ? (
             <div style={{ textAlign:"center", padding:60, color:"#0369a1", fontSize:18 }}>⏳ Conectando a Supabase...</div>
+          ) : doctorsViewMode === "map" ? (
+            <div style={{ display:"grid", gridTemplateColumns:"repeat(auto-fit, minmax(320px, 1fr))", gap:20 }}>
+              {filtered.filter(doc => doc.address).map(doc => (
+                <div key={doc.id} style={{ background:"#ffffff", border:"1px solid #e0f2fe", borderRadius:16, overflow:"hidden", boxShadow:"0 8px 28px rgba(15,23,42,0.06)" }}>
+                  <iframe
+                    title={`Mapa ${doc.name}`}
+                    width="100%"
+                    height="220"
+                    style={{ border:0, display:"block" }}
+                    loading="lazy"
+                    referrerPolicy="no-referrer-when-downgrade"
+                    src={`https://maps.google.com/maps?q=${encodeURIComponent(doc.address + ", Ayacucho, Perú")}&output=embed`}
+                  />
+                  <div style={{ padding:"14px 16px" }}>
+                    <div style={{ display:"flex", alignItems:"center", gap:10, marginBottom:6 }}>
+                      {doc.photo_url
+                        ? <img src={doc.photo_url} alt={doc.name} style={{ width:36, height:36, borderRadius:10, objectFit:"cover" }} />
+                        : <div style={{ width:36, height:36, borderRadius:10, background:doc.color||"#0ea5e9", display:"flex", alignItems:"center", justifyContent:"center", fontSize:13, fontWeight:700, color:"#fff" }}>{doc.img||initials(doc.name)}</div>
+                      }
+                      <div>
+                        <div style={{ fontWeight:700, color:"#082f49", fontSize:14 }}>{doc.name}</div>
+                        <div style={{ fontSize:12, color:"#64748b" }}>{doc.specialty}</div>
+                      </div>
+                    </div>
+                    <p style={{ margin:"0 0 10px", fontSize:13, color:"#475569" }}>📍 {doc.address}</p>
+                    <div style={{ display:"flex", gap:8 }}>
+                      <button style={{ flex:1, padding:"7px 0", background:"#f0f9ff", border:"1px solid #bae6fd", color:"#0369a1", borderRadius:8, cursor:"pointer", fontSize:12, fontFamily:"inherit", fontWeight:600 }} onClick={() => { setSelectedProfile(doc); setView("profile"); }}>👤 Ver perfil</button>
+                      <a href={doc.maps_url || `https://maps.google.com/maps?q=${encodeURIComponent(doc.address + ", Ayacucho, Perú")}`} target="_blank" rel="noreferrer" style={{ flex:1, padding:"7px 0", background:"#e0f2fe", border:"1px solid #bae6fd", color:"#0369a1", borderRadius:8, cursor:"pointer", fontSize:12, fontFamily:"inherit", fontWeight:600, textAlign:"center", textDecoration:"none" }}>🗺️ Ir a Maps</a>
+                    </div>
+                  </div>
+                </div>
+              ))}
+              {filtered.filter(doc => doc.address).length === 0 && (
+                <div style={{ gridColumn:"1/-1", textAlign:"center", padding:40, color:"#64748b" }}>No hay médicos con dirección registrada que coincidan con tu búsqueda.</div>
+              )}
+            </div>
           ) : (
             <div className="doctor-grid" style={T.grid}>
               {filtered.map(doc => (
