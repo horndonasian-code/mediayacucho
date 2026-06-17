@@ -1843,12 +1843,10 @@ export default function App() {
 
           {/* HERO */}
           <div style={{ position:"relative", overflow:"hidden", minHeight:"90vh", display:"flex", alignItems:"center" }}>
-            {/* Background image */}
-            <div style={{ position:"absolute", inset:0, backgroundImage:"url(https://images.unsplash.com/photo-1576091160550-2173dba999ef?w=1600&q=80)", backgroundSize:"cover", backgroundPosition:"center", opacity:0.08 }} />
             {/* Gradient overlay */}
-            <div style={{ position:"absolute", inset:0, background:"linear-gradient(135deg, rgba(3,13,26,0.95) 0%, rgba(5,22,40,0.8) 50%, rgba(26,79,138,0.3) 100%)" }} />
+            <div style={{ position:"absolute", inset:0, background:"linear-gradient(135deg, #ffffff 0%, #f0f9ff 60%, #e0f2fe 100%)" }} />
             {/* Animated circles */}
-            <div style={{ position:"absolute", top:"10%", right:"5%", width:400, height:400, borderRadius:"50%", background:"radial-gradient(circle, rgba(59,130,196,0.08) 0%, transparent 70%)", animation:"float 6s ease-in-out infinite" }} />
+            <div style={{ position:"absolute", top:"10%", right:"5%", width:400, height:400, borderRadius:"50%", background:"radial-gradient(circle, rgba(14,165,233,0.08) 0%, transparent 70%)", animation:"float 6s ease-in-out infinite" }} />
             <div style={{ position:"absolute", bottom:"10%", left:"5%", width:300, height:300, borderRadius:"50%", background:"radial-gradient(circle, rgba(37,211,102,0.05) 0%, transparent 70%)", animation:"float 8s ease-in-out infinite reverse" }} />
 
             <div className="hero-section" style={{ maxWidth:1100, margin:"0 auto", padding:"80px 24px", width:"100%", position:"relative", zIndex:1 }}>
