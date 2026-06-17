@@ -142,6 +142,44 @@ function buildReminderMessage(data, doctor) {
 }
 function initials(name) { return name.split(" ").filter(w => w[0] === w[0]?.toUpperCase()).slice(0, 2).map(w => w[0]).join(""); }
 
+const DAY_MAP = { "Dom":0, "Lun":1, "Mar":2, "Mié":3, "Jue":4, "Vie":5, "Sáb":6 };
+
+function getNextAvailability(schedule) {
+  if (!schedule || schedule.length === 0) return null;
+  const now = new Date();
+  const todayDow = now.getDay();
+  const todayMinutes = now.getHours() * 60 + now.getMinutes();
+
+  let best = null; // { daysAhead, label }
+
+  for (const slot of schedule) {
+    const match = slot.match(/^(\p{L}{3})\s+(\d{1,2}):(\d{2})/u);
+    if (!match) continue;
+    const [, dayAbbr, hh, mm] = match;
+    const dow = DAY_MAP[dayAbbr];
+    if (dow === undefined) continue;
+    const slotMinutes = parseInt(hh) * 60 + parseInt(mm);
+
+    let daysAhead = (dow - todayDow + 7) % 7;
+    if (daysAhead === 0 && slotMinutes <= todayMinutes) daysAhead = 7; // today's slot already passed
+
+    if (best === null || daysAhead < best.daysAhead || (daysAhead === best.daysAhead && slotMinutes < best.slotMinutes)) {
+      best = { daysAhead, slotMinutes, dayAbbr, hh, mm };
+    }
+  }
+
+  if (!best) return null;
+
+  let label;
+  if (best.daysAhead === 0) label = `Hoy ${best.hh}:${best.mm}`;
+  else if (best.daysAhead === 1) label = `Mañana ${best.hh}:${best.mm}`;
+  else {
+    const fullDayNames = { "Dom":"Domingo", "Lun":"Lunes", "Mar":"Martes", "Mié":"Miércoles", "Jue":"Jueves", "Vie":"Viernes", "Sáb":"Sábado" };
+    label = `${fullDayNames[best.dayAbbr] || best.dayAbbr} ${best.hh}:${best.mm}`;
+  }
+  return { label, daysAhead: best.daysAhead };
+}
+
 // ─── Login Modal ───────────────────────────────────────────────────────────
 function LoginModal({ onLogin, onClose }) {
   const [mode, setMode] = useState("login"); // login | signup | forgot
@@ -1336,6 +1374,17 @@ function DoctorProfile({ doctor, onBook, onBack }) {
           {doctor.available ? <span style={s.badge("#52B788")}>🟢 Disponible</span> : <span style={s.badge("#ff6b6b")}>🔴 No disponible</span>}
         </div>
         <div style={{ color: "#F4A261", fontSize: 16, marginBottom: 12 }}>{"★".repeat(Math.floor(doctor.rating || 5))} <span style={{ color: "#e8f0f8", fontWeight: 700 }}>{doctor.rating}</span> <span style={{ color: "#bae6fd", fontSize: 13 }}>calificación</span></div>
+        {(() => {
+          const next = getNextAvailability(doctor.schedule);
+          if (!next) return null;
+          const isSoon = next.daysAhead <= 1;
+          return (
+            <div style={{ display:"inline-flex", alignItems:"center", gap:6, marginBottom:12, padding:"6px 14px", borderRadius:10, background: isSoon ? "rgba(37,211,102,0.12)" : "rgba(59,130,196,0.1)", border:`1px solid ${isSoon ? "rgba(37,211,102,0.3)" : "rgba(59,130,196,0.2)"}` }}>
+              <span style={{ width:7, height:7, borderRadius:"50%", background: isSoon ? "#25D366" : "#7dd3fc" }} />
+              <span style={{ fontSize:13, fontWeight:700, color: isSoon ? "#25D366" : "#7dd3fc" }}>Próxima cita disponible: {next.label}</span>
+            </div>
+          );
+        })()}
         {doctor.address && (
           <div style={{ display: "flex", gap: 8, alignItems: "center", marginBottom: 16 }}>
             <span>📍</span>
@@ -2075,6 +2124,17 @@ export default function App() {
                     </span>
                   </div>
                   <div style={{ color:"#F4A261", fontSize:13 }}>{"★".repeat(Math.floor(doc.rating||5))} {doc.rating}</div>
+                  {(() => {
+                    const next = getNextAvailability(doc.schedule);
+                    if (!next) return null;
+                    const isSoon = next.daysAhead <= 1;
+                    return (
+                      <div style={{ display:"inline-flex", alignItems:"center", gap:5, marginTop:8, padding:"4px 10px", borderRadius:8, background: isSoon ? "rgba(37,211,102,0.12)" : "rgba(59,130,196,0.1)", border:`1px solid ${isSoon ? "rgba(37,211,102,0.3)" : "rgba(59,130,196,0.2)"}` }}>
+                        <span style={{ width:6, height:6, borderRadius:"50%", background: isSoon ? "#25D366" : "#7dd3fc" }} />
+                        <span style={{ fontSize:11, fontWeight:700, color: isSoon ? "#25D366" : "#7dd3fc" }}>Próxima cita: {next.label}</span>
+                      </div>
+                    );
+                  })()}
                   <div style={{ marginTop:6, color:"#60a5d8", fontSize:12 }}>{(doc.schedule||[]).join(" · ")}</div>
                   {doc.address && (
                     <div style={{ marginTop:8, display:"flex", alignItems:"flex-start", gap:6 }}>
