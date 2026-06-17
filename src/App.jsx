@@ -1120,19 +1120,19 @@ function AdminPanel({ onExit }) {
   const totalIngresos = payments.filter(p => p.status === "verificado").reduce((sum, p) => sum + (p.amount || 0), 0);
 
   const s = {
-    wrap: { minHeight: "100vh", background: "linear-gradient(135deg, #0a0f1e 0%, #0d1529 100%)", fontFamily: "'Inter', sans-serif", color: "#e8f0f8" },
-    topbar: { background: "rgba(10,15,30,0.98)", borderBottom: "1px solid rgba(255,100,100,0.2)", padding: "0 24px", display: "flex", alignItems: "center", justifyContent: "space-between", height: 64, position: "sticky", top: 0, zIndex: 50 },
+    wrap: { minHeight: "100vh", background: "#ffffff", fontFamily: "'Inter', sans-serif", color: "#082f49" },
+    topbar: { background: "rgba(255,255,255,0.97)", borderBottom: "1px solid #fecaca", padding: "0 24px", display: "flex", alignItems: "center", justifyContent: "space-between", height: 64, position: "sticky", top: 0, zIndex: 50 },
     main: { maxWidth: 1100, margin: "0 auto", padding: "32px 24px" },
     kpiGrid: { display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(180px, 1fr))", gap: 16, marginBottom: 32 },
-    kpiCard: (c) => ({ background: "rgba(255,255,255,0.04)", border: `1px solid ${c}33`, borderRadius: 16, padding: "20px 24px" }),
+    kpiCard: (c) => ({ background: "#ffffff", border: `1px solid ${c}33`, borderRadius: 16, padding: "20px 24px", boxShadow:"0 8px 24px rgba(15,23,42,0.05)" }),
     kpiNum: (c) => ({ fontSize: 36, fontWeight: 700, color: c, display: "block", margin: "4px 0" }),
-    kpiLabel: { fontSize: 11, color: "#bae6fd", letterSpacing: 0.5, textTransform: "uppercase" },
+    kpiLabel: { fontSize: 11, color: "#64748b", letterSpacing: 0.5, textTransform: "uppercase" },
     tabs: { display: "flex", gap: 8, marginBottom: 24, flexWrap: "wrap" },
-    tab: (a) => ({ padding: "10px 20px", borderRadius: 10, border: `1px solid ${a ? "#ff6b6b" : "rgba(255,100,100,0.2)"}`, background: a ? "rgba(255,107,107,0.15)" : "transparent", color: a ? "#ff6b6b" : "#bae6fd", cursor: "pointer", fontFamily: "inherit", fontSize: 14, fontWeight: a ? 700 : 400 }),
-    card: { background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,100,100,0.1)", borderRadius: 14, padding: 20, marginBottom: 12 },
-    badge: (c) => ({ padding: "3px 10px", borderRadius: 20, background: `${c}22`, color: c, fontSize: 11, fontWeight: 700, textTransform: "uppercase" }),
-    btn: (c) => ({ padding: "7px 14px", background: `${c}22`, border: `1px solid ${c}44`, color: c, borderRadius: 8, cursor: "pointer", fontSize: 12, fontWeight: 700, fontFamily: "inherit" }),
-    actionMsg: { position: "fixed", bottom: 24, right: 24, background: "#0ea5e9", border: "1px solid #7dd3fc", borderRadius: 12, padding: "12px 20px", color: "#e8f0f8", fontSize: 14, fontWeight: 700, zIndex: 200 },
+    tab: (a) => ({ padding: "10px 20px", borderRadius: 10, border: `1px solid ${a ? "#dc2626" : "#fecaca"}`, background: a ? "#fef2f2" : "transparent", color: a ? "#dc2626" : "#64748b", cursor: "pointer", fontFamily: "inherit", fontSize: 14, fontWeight: a ? 700 : 400 }),
+    card: { background: "#ffffff", border: "1px solid #fee2e2", borderRadius: 14, padding: 20, marginBottom: 12, boxShadow:"0 8px 24px rgba(15,23,42,0.05)" },
+    badge: (c) => ({ padding: "3px 10px", borderRadius: 20, background: `${c}1a`, color: c, fontSize: 11, fontWeight: 700, textTransform: "uppercase" }),
+    btn: (c) => ({ padding: "7px 14px", background: `${c}15`, border: `1px solid ${c}44`, color: c, borderRadius: 8, cursor: "pointer", fontSize: 12, fontWeight: 700, fontFamily: "inherit" }),
+    actionMsg: { position: "fixed", bottom: 24, right: 24, background: "#0ea5e9", border: "1px solid #7dd3fc", borderRadius: 12, padding: "12px 20px", color: "#fff", fontSize: 14, fontWeight: 700, zIndex: 200 },
   };
 
   // Citas de mañana para recordatorios
@@ -1156,26 +1156,26 @@ function AdminPanel({ onExit }) {
 
       <div style={s.topbar}>
         <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
-          <div style={{ width: 36, height: 36, borderRadius: 8, background: "rgba(255,100,100,0.2)", border: "1px solid rgba(255,100,100,0.4)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 18 }}>🛡️</div>
+          <div style={{ width: 36, height: 36, borderRadius: 8, background: "#fee2e2", border: "1px solid #fca5a5", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 18 }}>🛡️</div>
           <div>
-            <div style={{ fontWeight: 700, color: "#e8f0f8", fontSize: 15 }}>Panel Admin — MediAyacucho</div>
+            <div style={{ fontWeight: 700, color: "#082f49", fontSize: 15 }}>Panel Admin — MediAyacucho</div>
             <div style={{ fontSize: 11, color: "#ff6b6b" }}>Acceso restringido · Solo administrador</div>
           </div>
         </div>
         <div style={{ display: "flex", gap: 10 }}>
-          <button onClick={loadAll} style={{ padding: "8px 16px", background: "transparent", border: "1px solid rgba(59,130,196,0.3)", color: "#7dd3fc", borderRadius: 8, cursor: "pointer", fontFamily: "inherit", fontSize: 13 }}>🔄 Actualizar</button>
-          <button onClick={onExit} style={{ padding: "8px 16px", background: "transparent", border: "1px solid rgba(255,100,100,0.3)", color: "#ff6b6b", borderRadius: 8, cursor: "pointer", fontFamily: "inherit", fontSize: 13 }}>← Salir</button>
+          <button onClick={loadAll} style={{ padding: "8px 16px", background: "transparent", border: "1px solid #bae6fd", color: "#0369a1", borderRadius: 8, cursor: "pointer", fontFamily: "inherit", fontSize: 13 }}>🔄 Actualizar</button>
+          <button onClick={onExit} style={{ padding: "8px 16px", background: "transparent", border: "1px solid #fecaca", color: "#ff6b6b", borderRadius: 8, cursor: "pointer", fontFamily: "inherit", fontSize: 13 }}>← Salir</button>
         </div>
       </div>
 
       <div style={s.main}>
         {/* KPIs */}
         <div style={s.kpiGrid}>
-          <div style={s.kpiCard("#ff6b6b")}><span style={s.kpiLabel}>En espera</span><span style={s.kpiNum("#ff6b6b")}>{pendingDoctors.length}</span><span style={{ fontSize: 12, color: "#bae6fd" }}>Médicos por verificar</span></div>
-          <div style={s.kpiCard("#52B788")}><span style={s.kpiLabel}>Médicos activos</span><span style={s.kpiNum("#52B788")}>{activeDoctors.length}</span><span style={{ fontSize: 12, color: "#bae6fd" }}>En la plataforma</span></div>
-          <div style={s.kpiCard("#7dd3fc")}><span style={s.kpiLabel}>Total citas</span><span style={s.kpiNum("#7dd3fc")}>{appointments.length}</span><span style={{ fontSize: 12, color: "#bae6fd" }}>Registradas</span></div>
-          <div style={s.kpiCard("#F4A261")}><span style={s.kpiLabel}>Ingresos verificados</span><span style={s.kpiNum("#F4A261")}>S/. {totalIngresos}</span><span style={{ fontSize: 12, color: "#bae6fd" }}>Membresías cobradas</span></div>
-          <div style={s.kpiCard("#a78bfa")}><span style={s.kpiLabel}>Pagos pendientes</span><span style={s.kpiNum("#a78bfa")}>{payments.filter(p => p.status === "pendiente").length}</span><span style={{ fontSize: 12, color: "#bae6fd" }}>Por verificar</span></div>
+          <div style={s.kpiCard("#ff6b6b")}><span style={s.kpiLabel}>En espera</span><span style={s.kpiNum("#ff6b6b")}>{pendingDoctors.length}</span><span style={{ fontSize: 12, color: "#475569" }}>Médicos por verificar</span></div>
+          <div style={s.kpiCard("#52B788")}><span style={s.kpiLabel}>Médicos activos</span><span style={s.kpiNum("#52B788")}>{activeDoctors.length}</span><span style={{ fontSize: 12, color: "#475569" }}>En la plataforma</span></div>
+          <div style={s.kpiCard("#0369a1")}><span style={s.kpiLabel}>Total citas</span><span style={s.kpiNum("#0369a1")}>{appointments.length}</span><span style={{ fontSize: 12, color: "#475569" }}>Registradas</span></div>
+          <div style={s.kpiCard("#F4A261")}><span style={s.kpiLabel}>Ingresos verificados</span><span style={s.kpiNum("#F4A261")}>S/. {totalIngresos}</span><span style={{ fontSize: 12, color: "#475569" }}>Membresías cobradas</span></div>
+          <div style={s.kpiCard("#a78bfa")}><span style={s.kpiLabel}>Pagos pendientes</span><span style={s.kpiNum("#a78bfa")}>{payments.filter(p => p.status === "pendiente").length}</span><span style={{ fontSize: 12, color: "#475569" }}>Por verificar</span></div>
         </div>
 
         {/* Tabs */}
@@ -1183,14 +1183,14 @@ function AdminPanel({ onExit }) {
           {navTabs.map(t => <button key={t.id} style={s.tab(tab === t.id)} onClick={() => setTab(t.id)}>{t.label}</button>)}
         </div>
 
-        {loading && <div style={{ textAlign: "center", padding: 40, color: "#bae6fd" }}>⏳ Cargando datos...</div>}
+        {loading && <div style={{ textAlign: "center", padding: 40, color: "#475569" }}>⏳ Cargando datos...</div>}
 
         {/* MÉDICOS EN ESPERA */}
         {!loading && tab === "pending" && (
           <>
             <h3 style={{ margin: "0 0 16px", color: "#ff6b6b" }}>⏳ Médicos pendientes de verificación</h3>
             {pendingDoctors.length === 0
-              ? <div style={{ ...s.card, textAlign: "center", color: "#bae6fd" }}>✅ No hay médicos en espera</div>
+              ? <div style={{ ...s.card, textAlign: "center", color: "#475569" }}>✅ No hay médicos en espera</div>
               : pendingDoctors.map(doc => (
                 <div key={doc.id} style={s.card}>
                   <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", flexWrap: "wrap", gap: 12 }}>
@@ -1198,12 +1198,12 @@ function AdminPanel({ onExit }) {
                       <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 8 }}>
                         <div style={{ width: 40, height: 40, borderRadius: 10, background: doc.color || "#0ea5e9", display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 700, color: "#fff" }}>{doc.img || "?"}</div>
                         <div>
-                          <div style={{ fontWeight: 700, color: "#e8f0f8", fontSize: 16 }}>{doc.name}</div>
-                          <div style={{ fontSize: 13, color: "#bae6fd" }}>{doc.specialty} · 📞 {doc.phone}</div>
+                          <div style={{ fontWeight: 700, color: "#082f49", fontSize: 16 }}>{doc.name}</div>
+                          <div style={{ fontSize: 13, color: "#475569" }}>{doc.specialty} · 📞 {doc.phone}</div>
                         </div>
                       </div>
-                      {doc.address && <div style={{ fontSize: 12, color: "#bae6fd", marginBottom: 4 }}>📍 {doc.address}</div>}
-                      <div style={{ fontSize: 11, color: "#bae6fd" }}>Registrado: {new Date(doc.created_at).toLocaleDateString("es-PE")}</div>
+                      {doc.address && <div style={{ fontSize: 12, color: "#475569", marginBottom: 4 }}>📍 {doc.address}</div>}
+                      <div style={{ fontSize: 11, color: "#475569" }}>Registrado: {new Date(doc.created_at).toLocaleDateString("es-PE")}</div>
                     </div>
                     <div style={{ display: "flex", gap: 8, flexWrap: "wrap", alignItems: "center" }}>
                       <a href="https://www.cmp.org.pe" target="_blank" rel="noreferrer" style={{ ...s.btn("#a78bfa"), textDecoration: "none", display: "inline-block" }}>🔍 Verificar CMP</a>
@@ -1228,9 +1228,9 @@ function AdminPanel({ onExit }) {
                   <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
                     <div style={{ width: 40, height: 40, borderRadius: 10, background: doc.color || "#0ea5e9", display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 700, color: "#fff" }}>{doc.img || "?"}</div>
                     <div>
-                      <div style={{ fontWeight: 700, color: "#e8f0f8" }}>{doc.name}</div>
-                      <div style={{ fontSize: 13, color: "#bae6fd" }}>{doc.specialty} · {doc.price} · ⭐ {doc.rating}</div>
-                      {doc.address && <div style={{ fontSize: 12, color: "#bae6fd" }}>📍 {doc.address}</div>}
+                      <div style={{ fontWeight: 700, color: "#082f49" }}>{doc.name}</div>
+                      <div style={{ fontSize: 13, color: "#475569" }}>{doc.specialty} · {doc.price} · ⭐ {doc.rating}</div>
+                      {doc.address && <div style={{ fontSize: 12, color: "#475569" }}>📍 {doc.address}</div>}
                     </div>
                   </div>
                   <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
@@ -1247,19 +1247,19 @@ function AdminPanel({ onExit }) {
         {/* CITAS */}
         {!loading && tab === "appointments" && (
           <>
-            <h3 style={{ margin: "0 0 16px", color: "#7dd3fc" }}>📅 Últimas citas registradas</h3>
+            <h3 style={{ margin: "0 0 16px", color: "#0369a1" }}>📅 Últimas citas registradas</h3>
             {appointments.length === 0
-              ? <div style={{ ...s.card, textAlign: "center", color: "#bae6fd" }}>No hay citas registradas</div>
+              ? <div style={{ ...s.card, textAlign: "center", color: "#475569" }}>No hay citas registradas</div>
               : appointments.map(a => (
                 <div key={a.id} style={s.card}>
                   <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: 8 }}>
                     <div>
-                      <div style={{ fontWeight: 700, color: "#e8f0f8" }}>{a.patient_name}</div>
-                      <div style={{ fontSize: 13, color: "#bae6fd" }}>📅 {a.date} · 🕐 {a.time} · 📞 {a.patient_phone}</div>
-                      <div style={{ fontSize: 12, color: "#bae6fd" }}>Pago: {a.payment_method || "No especificado"} · {a.payment_status}</div>
+                      <div style={{ fontWeight: 700, color: "#082f49" }}>{a.patient_name}</div>
+                      <div style={{ fontSize: 13, color: "#475569" }}>📅 {a.date} · 🕐 {a.time} · 📞 {a.patient_phone}</div>
+                      <div style={{ fontSize: 12, color: "#475569" }}>Pago: {a.payment_method || "No especificado"} · {a.payment_status}</div>
                     </div>
                     <div style={{ display: "flex", gap: 8 }}>
-                      <span style={s.badge(a.status === "confirmada" ? "#52B788" : a.status === "cancelada" ? "#ff6b6b" : a.status === "completada" ? "#7dd3fc" : "#F4A261")}>{a.status}</span>
+                      <span style={s.badge(a.status === "confirmada" ? "#52B788" : a.status === "cancelada" ? "#ff6b6b" : a.status === "completada" ? "#0369a1" : "#F4A261")}>{a.status}</span>
                       <button style={s.btn("#25D366")} onClick={() => window.open(`https://wa.me/${a.patient_phone}`, "_blank")}>💬 WA</button>
                     </div>
                   </div>
@@ -1274,13 +1274,13 @@ function AdminPanel({ onExit }) {
           <>
             <h3 style={{ margin: "0 0 16px", color: "#F4A261" }}>💰 Pagos de membresías</h3>
             {payments.length === 0
-              ? <div style={{ ...s.card, textAlign: "center", color: "#bae6fd" }}>No hay pagos registrados</div>
+              ? <div style={{ ...s.card, textAlign: "center", color: "#475569" }}>No hay pagos registrados</div>
               : payments.map(p => (
                 <div key={p.id} style={s.card}>
                   <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: 8 }}>
                     <div>
-                      <div style={{ fontWeight: 700, color: "#e8f0f8" }}>S/. {p.amount} · {p.method?.toUpperCase()}</div>
-                      <div style={{ fontSize: 12, color: "#bae6fd" }}>{new Date(p.created_at).toLocaleDateString("es-PE")} · {new Date(p.created_at).toLocaleTimeString("es-PE")}</div>
+                      <div style={{ fontWeight: 700, color: "#082f49" }}>S/. {p.amount} · {p.method?.toUpperCase()}</div>
+                      <div style={{ fontSize: 12, color: "#475569" }}>{new Date(p.created_at).toLocaleDateString("es-PE")} · {new Date(p.created_at).toLocaleTimeString("es-PE")}</div>
                     </div>
                     <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
                       <span style={s.badge(p.status === "verificado" ? "#52B788" : p.status === "rechazado" ? "#ff6b6b" : "#F4A261")}>{p.status}</span>
@@ -1299,7 +1299,7 @@ function AdminPanel({ onExit }) {
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 20, flexWrap: "wrap", gap: 12 }}>
               <div>
                 <h3 style={{ margin: "0 0 4px", color: "#F4A261" }}>⏰ Recordatorios del día siguiente</h3>
-                <p style={{ margin: 0, fontSize: 13, color: "#bae6fd" }}>Citas programadas para mañana <strong style={{ color: "#e8f0f8" }}>{tomorrowStr}</strong> — {tomorrowAppts.length} paciente(s)</p>
+                <p style={{ margin: 0, fontSize: 13, color: "#475569" }}>Citas programadas para mañana <strong style={{ color: "#082f49" }}>{tomorrowStr}</strong> — {tomorrowAppts.length} paciente(s)</p>
               </div>
               {tomorrowAppts.length > 0 && (
                 <button style={{ padding: "10px 20px", background: "linear-gradient(135deg,#25D366,#128C7E)", color: "#fff", border: "none", borderRadius: 10, cursor: "pointer", fontFamily: "inherit", fontSize: 14, fontWeight: 700 }}
@@ -1323,8 +1323,8 @@ function AdminPanel({ onExit }) {
             {tomorrowAppts.length === 0 ? (
               <div style={{ ...s.card, textAlign: "center", padding: 40 }}>
                 <div style={{ fontSize: 48, marginBottom: 16 }}>✅</div>
-                <div style={{ color: "#bae6fd", fontSize: 16 }}>No hay citas programadas para mañana</div>
-                <div style={{ color: "#bae6fd", fontSize: 13, marginTop: 8 }}>Vuelve a revisar más tarde</div>
+                <div style={{ color: "#475569", fontSize: 16 }}>No hay citas programadas para mañana</div>
+                <div style={{ color: "#475569", fontSize: 13, marginTop: 8 }}>Vuelve a revisar más tarde</div>
               </div>
             ) : (
               <>
@@ -1338,9 +1338,9 @@ function AdminPanel({ onExit }) {
                     <div key={a.id} style={s.card}>
                       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: 12 }}>
                         <div style={{ flex: 1 }}>
-                          <div style={{ fontWeight: 700, color: "#e8f0f8", fontSize: 15 }}>{a.patient_name}</div>
-                          <div style={{ fontSize: 13, color: "#bae6fd", marginTop: 2 }}>🕐 {a.time} · 📞 {a.patient_phone}</div>
-                          {doc && <div style={{ fontSize: 12, color: "#bae6fd", marginTop: 2 }}>👨‍⚕️ {doc.name} · 📍 {doc.address || "Sin dirección"}</div>}
+                          <div style={{ fontWeight: 700, color: "#082f49", fontSize: 15 }}>{a.patient_name}</div>
+                          <div style={{ fontSize: 13, color: "#475569", marginTop: 2 }}>🕐 {a.time} · 📞 {a.patient_phone}</div>
+                          {doc && <div style={{ fontSize: 12, color: "#475569", marginTop: 2 }}>👨‍⚕️ {doc.name} · 📍 {doc.address || "Sin dirección"}</div>}
                           <div style={{ fontSize: 11, color: a.status === "confirmada" ? "#52B788" : "#F4A261", marginTop: 4, fontWeight: 700 }}>
                             {a.status === "confirmada" ? "✅ Confirmada" : "⏳ Pendiente de confirmar"}
                           </div>
@@ -1349,7 +1349,7 @@ function AdminPanel({ onExit }) {
                           <button style={s.btn("#25D366")} onClick={() => window.open(`https://wa.me/${a.patient_phone.replace(/\D/g,"")}?text=${encodeURIComponent(msg)}`, "_blank")}>
                             💬 Recordatorio
                           </button>
-                          <button style={s.btn("#7dd3fc")} onClick={() => window.open(`https://wa.me/${a.patient_phone.replace(/\D/g,"")}`, "_blank")}>
+                          <button style={s.btn("#0369a1")} onClick={() => window.open(`https://wa.me/${a.patient_phone.replace(/\D/g,"")}`, "_blank")}>
                             📞 WA
                           </button>
                         </div>
