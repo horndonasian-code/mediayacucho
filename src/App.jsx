@@ -1873,13 +1873,13 @@ export default function App() {
                   </p>
 
                   <div style={{ display:"flex", gap:12, flexWrap:"wrap", marginBottom:40 }}>
-                    <button style={{ padding:"15px 32px", background:"linear-gradient(135deg,#0ea5e9,#7dd3fc)", color:"#fff", border:"none", borderRadius:14, fontSize:16, cursor:"pointer", fontWeight:700, fontFamily:"inherit", boxShadow:"0 8px 32px rgba(59,130,196,0.4)", transition:"all 0.2s" }}
+                    <button style={{ padding:"15px 32px", background:"linear-gradient(135deg,#0ea5e9,#7dd3fc)", color:"#fff", border:"none", borderRadius:14, fontSize:16, cursor:"pointer", fontWeight:700, fontFamily:"inherit", boxShadow:"0 12px 32px rgba(14,165,233,0.35)", transition:"all 0.2s" }}
                       onMouseEnter={e=>e.target.style.transform="translateY(-2px)"}
                       onMouseLeave={e=>e.target.style.transform=""}
                       onClick={() => setView("doctors")}>
                       🏥 Buscar Médico
                     </button>
-                    <button style={{ padding:"15px 32px", background:"transparent", color:"#0369a1", border:"2px solid #7dd3fc", borderRadius:14, fontSize:16, cursor:"pointer", fontFamily:"inherit", transition:"all 0.2s" }}
+                    <button style={{ padding:"15px 32px", background:"#fff", color:"#0369a1", border:"2px solid #7dd3fc", borderRadius:14, fontSize:16, cursor:"pointer", fontFamily:"inherit", transition:"all 0.2s", boxShadow:"0 4px 16px rgba(15,23,42,0.06)" }}
                       onMouseEnter={e=>{e.target.style.background="#f0f9ff";e.target.style.transform="translateY(-2px)"}}
                       onMouseLeave={e=>{e.target.style.background="transparent";e.target.style.transform=""}}
                       onClick={() => setView("chat")}>
@@ -1890,7 +1890,7 @@ export default function App() {
                   {/* Trust badges */}
                   <div style={{ display:"flex", gap:10, flexWrap:"wrap" }}>
                     {[["🔒","Pago seguro","Yape & Plin"],["✅","CMP Verificado","Médicos certificados"],["24/7","Disponible","Asistente IA"]].map(([icon,title,sub],i)=>(
-                      <div key={i} style={{ display:"flex", alignItems:"center", gap:8, padding:"8px 14px", background:"rgba(255,255,255,0.92)", border:"1px solid rgba(14,165,233,0.2)", borderRadius:10 }}>
+                      <div key={i} style={{ display:"flex", alignItems:"center", gap:8, padding:"8px 14px", background:"#ffffff", border:"1px solid #f1f5f9", borderRadius:10, boxShadow:"0 4px 16px rgba(15,23,42,0.06)" }}>
                         <span style={{ fontSize:18 }}>{icon}</span>
                         <div>
                           <div style={{ fontSize:12, fontWeight:700, color:"#082f49" }}>{title}</div>
@@ -1908,10 +1908,10 @@ export default function App() {
                     <div style={{ width:200, height:200, borderRadius:"50%", background:"linear-gradient(135deg, #e0f2fe, #64748b)", overflow:"hidden", position:"relative" }}>
                       <img src="https://images.unsplash.com/photo-1622253692010-333f2da6031d?w=400&q=80" alt="Médico" style={{ width:"100%", height:"100%", objectFit:"cover" }} onError={e=>{e.target.style.display="none"}} />
                     </div>
-                    <div style={{ position:"absolute", top:10, left:-10, background:"#fff", border:"1px solid #e0f2fe", borderRadius:16, padding:"8px 14px", boxShadow:"0 8px 24px rgba(14,165,233,0.15)", fontSize:13, fontWeight:700, color:"#0369a1" }}>
+                    <div style={{ position:"absolute", top:10, left:-10, background:"#fff", border:"1px solid #e0f2fe", borderRadius:16, padding:"8px 14px", boxShadow:"0 10px 30px rgba(15,23,42,0.12)", fontSize:13, fontWeight:700, color:"#0369a1" }}>
                       ✅ CMP Verificado
                     </div>
-                    <div style={{ position:"absolute", bottom:10, right:-10, background:"#fff", border:"1px solid #e0f2fe", borderRadius:16, padding:"8px 14px", boxShadow:"0 8px 24px rgba(14,165,233,0.15)", fontSize:13, fontWeight:700, color:"#0369a1" }}>
+                    <div style={{ position:"absolute", bottom:10, right:-10, background:"#fff", border:"1px solid #e0f2fe", borderRadius:16, padding:"8px 14px", boxShadow:"0 10px 30px rgba(15,23,42,0.12)", fontSize:13, fontWeight:700, color:"#0369a1" }}>
                       ⭐ 4.8 Rating
                     </div>
                   </div>
@@ -1932,7 +1932,7 @@ export default function App() {
                     <p style={{ margin:"0 0 12px", fontSize:13, color:"#64748b" }}>Especialidades disponibles:</p>
                     <div style={{ display:"flex", gap:6, flexWrap:"wrap" }}>
                       {["Medicina General","Pediatría","Cardiología","Ginecología","Traumatología","Dermatología"].map((sp,i)=>(
-                        <button key={i} className="spec-card" style={{ padding:"5px 12px", borderRadius:20, background:"rgba(14,165,233,0.08)", border:"1px solid rgba(14,165,233,0.25)", color:"#0369a1", fontSize:12, cursor:"pointer", fontFamily:"inherit", transition:"all 0.2s" }}
+                        <button key={i} className="spec-card" style={{ padding:"5px 12px", borderRadius:20, background:"#f0f9ff", border:"1px solid #bae6fd", color:"#0369a1", fontSize:12, cursor:"pointer", fontFamily:"inherit", transition:"all 0.2s", boxShadow:"0 2px 8px rgba(14,165,233,0.08)" }}
                           onClick={()=>{ setFilter(sp); setView("doctors"); }}>
                           {sp}
                         </button>
@@ -1957,9 +1957,9 @@ export default function App() {
                   { n:"02", icon:"📅", title:"Elige tu cita", desc:"Selecciona el médico, fecha, horario y modalidad (presencial o virtual).", color:"#a78bfa" },
                   { n:"03", icon:"📲", title:"Confirmación WhatsApp", desc:"Recibe confirmación instantánea con dirección, precio y política de cancelación.", color:"#25D366" },
                 ].map((step,i)=>(
-                  <div key={i} className="hero-card" style={{ background:"rgba(255,255,255,0.92)", border:`1px solid ${step.color}22`, borderRadius:20, padding:28, position:"relative", transition:"all 0.3s", cursor:"default" }}>
+                  <div key={i} className="hero-card" style={{ background:"#ffffff", border:`1px solid ${step.color}22`, borderRadius:20, padding:28, position:"relative", transition:"all 0.3s", cursor:"default", boxShadow:"0 8px 28px rgba(15,23,42,0.07)" }}>
                     <div style={{ position:"absolute", top:20, right:20, fontSize:48, fontWeight:900, color:`${step.color}15`, lineHeight:1 }}>{step.n}</div>
-                    <div style={{ width:56, height:56, borderRadius:16, background:`${step.color}18`, border:`1px solid ${step.color}33`, display:"flex", alignItems:"center", justifyContent:"center", fontSize:26, marginBottom:16 }}>{step.icon}</div>
+                    <div style={{ width:56, height:56, borderRadius:16, background:`${step.color}18`, border:`1px solid ${step.color}33`, display:"flex", alignItems:"center", justifyContent:"center", fontSize:26, marginBottom:16, boxShadow:`0 6px 16px ${step.color}20` }}>{step.icon}</div>
                     <h3 style={{ margin:"0 0 10px", fontSize:19, fontWeight:700, color:"#082f49" }}>{step.title}</h3>
                     <p style={{ margin:0, color:"#64748b", fontSize:14, lineHeight:1.6 }}>{step.desc}</p>
                   </div>
@@ -1980,7 +1980,7 @@ export default function App() {
                 { url:"https://images.unsplash.com/photo-1666214280557-f1b5022eb634?w=600&q=80", label:"Atención personalizada", desc:"Consultas presenciales y virtuales disponibles" },
                 { url:"https://images.unsplash.com/photo-1584820927498-cfe5211fd8bf?w=600&q=80", label:"Reserva en minutos", desc:"Paga con Yape o Plin, sin complicaciones" },
               ].map((item,i)=>(
-                <div key={i} style={{ borderRadius:20, overflow:"hidden", border:"1px solid rgba(14,165,233,0.2)", transition:"all 0.3s" }}
+                <div key={i} style={{ borderRadius:20, overflow:"hidden", border:"1px solid #f1f5f9", transition:"all 0.3s", boxShadow:"0 8px 28px rgba(15,23,42,0.08)" }}
                   className="hero-card">
                   <img src={item.url} alt={item.label} style={{ width:"100%", height:200, objectFit:"cover", display:"block" }} onError={e=>{e.target.style.display="none"}} />
                   <div style={{ padding:"18px 20px", background:"rgba(5,22,40,0.98)" }}>
@@ -2003,7 +2003,7 @@ export default function App() {
                 { name:"Jorge Quispe", city:"Ayacucho", text:"La consulta virtual fue excelente. El doctor muy atento y puntual.", stars:5, sp:"Cardiología" },
                 { name:"Rosa Palomino", city:"Ayacucho", text:"Me enviaron la confirmación con la dirección exacta. Muy profesional.", stars:5, sp:"Pediatría" },
               ].map((t,i)=>(
-                <div key={i} className="hero-card" style={{ background:"rgba(255,255,255,0.92)", border:"1px solid rgba(14,165,233,0.2)", borderRadius:16, padding:22, transition:"all 0.3s" }}>
+                <div key={i} className="hero-card" style={{ background:"#ffffff", border:"1px solid #f1f5f9", borderRadius:16, padding:22, transition:"all 0.3s", boxShadow:"0 8px 28px rgba(15,23,42,0.07)" }}>
                   <div style={{ display:"flex", justifyContent:"space-between", alignItems:"flex-start", marginBottom:12 }}>
                     <div style={{ display:"flex", gap:10, alignItems:"center" }}>
                       <div style={{ width:40, height:40, borderRadius:"50%", background:"linear-gradient(135deg,#0ea5e9,#7dd3fc)", display:"flex", alignItems:"center", justifyContent:"center", fontWeight:700, color:"#fff", fontSize:16 }}>{t.name[0]}</div>
@@ -2026,7 +2026,7 @@ export default function App() {
             <h2 style={{ fontSize:32, fontWeight:700, margin:"0 0 12px", color:"#fff" }}>¿Listo para cuidar tu salud?</h2>
             <p style={{ color:"rgba(255,255,255,0.9)", fontSize:16, margin:"0 0 32px" }}>Únete a los cientos de pacientes que ya confían en MediAyacucho</p>
             <div style={{ display:"flex", gap:12, justifyContent:"center", flexWrap:"wrap" }}>
-              <button style={{ padding:"16px 40px", background:"#fff", color:"#0369a1", border:"none", borderRadius:14, fontSize:17, cursor:"pointer", fontWeight:700, fontFamily:"inherit", boxShadow:"0 8px 32px rgba(0,0,0,0.15)" }} onClick={()=>setView("doctors")}>
+              <button style={{ padding:"16px 40px", background:"#fff", color:"#0369a1", border:"none", borderRadius:14, fontSize:17, cursor:"pointer", fontWeight:700, fontFamily:"inherit", boxShadow:"0 12px 36px rgba(2,8,23,0.2)" }} onClick={()=>setView("doctors")}>
                 🏥 Buscar mi médico ahora
               </button>
               <button style={{ padding:"16px 40px", background:"linear-gradient(135deg,#25D366,#128C7E)", color:"#fff", border:"none", borderRadius:14, fontSize:17, cursor:"pointer", fontWeight:700, fontFamily:"inherit" }} onClick={()=>setView("chat")}>
