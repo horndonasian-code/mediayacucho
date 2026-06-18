@@ -231,6 +231,55 @@ function getMembershipStatus(membershipPaidAt) {
   return { daysLeft, status, dueDate: dueDate.toISOString().slice(0,10) };
 }
 
+function formatDateISO2(d) {
+  return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,"0")}-${String(d.getDate()).padStart(2,"0")}`;
+}
+
+// Build calendar days for current month, marking which days the doctor works and have free slots
+function buildAvailabilityCalendar(schedule, bookedSlots) {
+  if (!schedule || schedule.length === 0) return [];
+  bookedSlots = bookedSlots || new Set();
+
+  const weeklySlots = [];
+  for (const slot of schedule) {
+    const match = slot.match(/^(\p{L}{3})\s+(\d{1,2}):(\d{2})/u);
+    if (!match) continue;
+    const [, dayAbbr, hh, mm] = match;
+    const dow = DAY_MAP[dayAbbr];
+    if (dow === undefined) continue;
+    weeklySlots.push({ dow, time: `${hh}:${mm}` });
+  }
+  if (weeklySlots.length === 0) return [];
+
+  const now = new Date();
+  const year = now.getFullYear();
+  const month = now.getMonth();
+  const daysInMonth = new Date(year, month + 1, 0).getDate();
+  const todayMinutes = now.getHours() * 60 + now.getMinutes();
+  const todayISO = formatDateISO2(now);
+
+  const days = [];
+  for (let d = 1; d <= daysInMonth; d++) {
+    const date = new Date(year, month, d);
+    const dateISO = formatDateISO2(date);
+    if (dateISO < todayISO) continue; // skip past days
+    const dow = date.getDay();
+    const slotsForDay = weeklySlots.filter(s => s.dow === dow);
+    if (slotsForDay.length === 0) continue; // doctor doesn't work this day
+
+    const times = slotsForDay.map(s => {
+      const [hh, mm] = s.time.split(":").map(Number);
+      const slotMinutes = hh * 60 + mm;
+      const isPast = dateISO === todayISO && slotMinutes <= todayMinutes;
+      const isBooked = bookedSlots.has(`${dateISO} ${s.time}`);
+      return { time: s.time, available: !isPast && !isBooked };
+    });
+
+    days.push({ dateISO, dayNum: d, dow, times, hasAvailable: times.some(t => t.available) });
+  }
+  return days;
+}
+
 // ─── Login Modal ───────────────────────────────────────────────────────────
 function LoginModal({ onLogin, onClose }) {
   const [mode, setMode] = useState("login"); // login | signup | forgot
@@ -2764,23 +2813,73 @@ export default function App() {
                 )}
               </div>
               <h2 style={{ fontSize:26, fontWeight:700, margin:"0 0 20px", color:"#082f49" }}>Datos de la cita</h2>
-              {[["NOMBRE COMPLETO","patient_name","Tu nombre completo","text"],["TELÉFONO / WHATSAPP","patient_phone","+51 9XX XXX XXX","text"],["FECHA","date","","date"]].map(([lbl,key,ph,type])=>(
+              {[["NOMBRE COMPLETO","patient_name","Tu nombre completo","text"],["TELÉFONO / WHATSAPP","patient_phone","+51 9XX XXX XXX","text"]].map(([lbl,key,ph,type])=>(
                 <div key={key} style={{ marginBottom:16 }}>
                   <label style={T.labelLight}>{lbl}</label>
                   <input style={T.inputLight} placeholder={ph} type={type} value={bookingData[key]} onChange={e=>{setBookingData({...bookingData,[key]:e.target.value}); setWaitlistDone(false);}} />
                 </div>
               ))}
+
+              {/* CALENDARIO VISUAL */}
               <div style={{ marginBottom:16 }}>
-                <label style={T.labelLight}>HORARIO DISPONIBLE</label>
-                <div style={{ display:"flex", gap:8, flexWrap:"wrap", marginTop:8 }}>
-                  {(selectedDoctor.schedule||[]).map(t=><button key={t} style={T.timePillLight(bookingData.time===t)} onClick={()=>{setBookingData({...bookingData,time:t}); setWaitlistDone(false);}}>{t}</button>)}
-                </div>
+                <label style={T.labelLight}>ELIGE UNA FECHA Y HORA DISPONIBLE</label>
+                {(() => {
+                  const booked = getBookedSlotsForDoctor(allAppointments, selectedDoctor.id);
+                  const calDays = buildAvailabilityCalendar(selectedDoctor.schedule, booked);
+                  const monthName = new Date().toLocaleDateString("es-PE", { month: "long", year: "numeric" });
+
+                  if (calDays.length === 0) {
+                    return <p style={{ color:"#64748b", fontSize:13, marginTop:8 }}>Este médico no tiene horarios configurados este mes.</p>;
+                  }
+
+                  return (
+                    <div style={{ marginTop:8 }}>
+                      <p style={{ margin:"0 0 10px", fontSize:13, color:"#0369a1", fontWeight:700, textTransform:"capitalize" }}>📅 {monthName}</p>
+                      <div style={{ display:"flex", flexDirection:"column", gap:8, maxHeight:340, overflowY:"auto", paddingRight:4 }}>
+                        {calDays.map(day => {
+                          const dayNames = ["Domingo","Lunes","Martes","Miércoles","Jueves","Viernes","Sábado"];
+                          const isSelectedDay = bookingData.date === day.dateISO;
+                          return (
+                            <div key={day.dateISO} style={{ border:`1px solid ${isSelectedDay ? "#0ea5e9" : "#e2e8f0"}`, borderRadius:12, padding:"10px 12px", background: isSelectedDay ? "#f0f9ff" : "#ffffff" }}>
+                              <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", marginBottom: day.hasAvailable ? 8 : 0 }}>
+                                <span style={{ fontSize:13, fontWeight:700, color: day.hasAvailable ? "#082f49" : "#94a3b8" }}>{dayNames[day.dow]} {day.dayNum}</span>
+                                {!day.hasAvailable && <span style={{ fontSize:11, color:"#dc2626", fontWeight:600 }}>Sin cupos</span>}
+                              </div>
+                              {day.hasAvailable && (
+                                <div style={{ display:"flex", gap:6, flexWrap:"wrap" }}>
+                                  {day.times.map(t => {
+                                    const isSelected = bookingData.date === day.dateISO && bookingData.time === t.time;
+                                    return (
+                                      <button
+                                        key={t.time}
+                                        disabled={!t.available}
+                                        onClick={() => { setBookingData({...bookingData, date: day.dateISO, time: t.time}); setWaitlistDone(false); }}
+                                        style={{
+                                          padding:"6px 12px", borderRadius:20, fontSize:12, fontFamily:"inherit", cursor: t.available ? "pointer" : "not-allowed",
+                                          border: `1px solid ${isSelected ? "#0ea5e9" : t.available ? "#bae6fd" : "#f1f5f9"}`,
+                                          background: isSelected ? "#0ea5e9" : t.available ? "#f0f9ff" : "#f8fafc",
+                                          color: isSelected ? "#fff" : t.available ? "#0369a1" : "#cbd5e1",
+                                          textDecoration: t.available ? "none" : "line-through",
+                                        }}>
+                                        {t.time}
+                                      </button>
+                                    );
+                                  })}
+                                </div>
+                              )}
+                            </div>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  );
+                })()}
               </div>
 
               {(() => {
                 if (!bookingData.date || !bookingData.time) return null;
                 const booked = getBookedSlotsForDoctor(allAppointments, selectedDoctor.id);
-                const slotKey = `${bookingData.date} ${bookingData.time.match(/(\d{1,2}:\d{2})/)?.[1] || ""}`;
+                const slotKey = `${bookingData.date} ${bookingData.time}`;
                 const isOccupied = booked.has(slotKey);
                 if (!isOccupied) return null;
                 return (
@@ -2793,7 +2892,7 @@ export default function App() {
                     ) : (
                       <>
                         <p style={{ margin:"0 0 10px", color:"#c2410c", fontSize:14, fontWeight:700 }}>⏰ Ese horario ya está reservado por otro paciente</p>
-                        <p style={{ margin:"0 0 12px", color:"#475569", fontSize:13 }}>Puedes elegir otro horario arriba, o anotarte en la lista de espera. Si se cancela esa cita, te avisaremos por WhatsApp de inmediato.</p>
+                        <p style={{ margin:"0 0 12px", color:"#475569", fontSize:13 }}>Elige otro horario disponible arriba, o anótate en la lista de espera. Si se cancela esa cita, te avisaremos por WhatsApp de inmediato.</p>
                         <button
                           style={{ width:"100%", padding:"10px 0", background:"linear-gradient(135deg,#F4A261,#ea9550)", color:"#fff", border:"none", borderRadius:10, fontSize:14, fontWeight:700, cursor:"pointer", fontFamily:"inherit", opacity: (!bookingData.patient_name||!bookingData.patient_phone)?0.5:1 }}
                           onClick={joinWaitlist}
@@ -2832,7 +2931,7 @@ export default function App() {
 
               {(() => {
                 const booked = getBookedSlotsForDoctor(allAppointments, selectedDoctor.id);
-                const slotKey = bookingData.date && bookingData.time ? `${bookingData.date} ${bookingData.time.match(/(\d{1,2}:\d{2})/)?.[1] || ""}` : "";
+                const slotKey = bookingData.date && bookingData.time ? `${bookingData.date} ${bookingData.time}` : "";
                 const isOccupied = slotKey && booked.has(slotKey);
                 const disabled = !bookingData.patient_name||!bookingData.patient_phone||!bookingData.date||!bookingData.time||isOccupied;
                 return (
