@@ -618,7 +618,7 @@ function DoctorDashboard({ doctor, onExit }) {
   const [filterStatus, setFilterStatus] = useState("todas");
   const [isAvailable, setIsAvailable] = useState(doctor.available);
   const [editProfile, setEditProfile] = useState(false);
-  const [profileData, setProfileData] = useState({ name: doctor.name, specialty: doctor.specialty, price: doctor.price, address: doctor.address || "" });
+  const [profileData, setProfileData] = useState({ name: doctor.name, specialty: doctor.specialty, price: doctor.price, address: doctor.address || "", yape_plin_phone: doctor.yape_plin_phone || doctor.phone || "" });
   const [savingProfile, setSavingProfile] = useState(false);
   const [uploadingPhoto, setUploadingPhoto] = useState(false);
   const [photoUrl, setPhotoUrl] = useState(doctor.photo_url || null);
@@ -1084,6 +1084,9 @@ Hola ${appt.patient_name}, gracias por confiar en ${doctor.name}.
                   <label style={s.lbl}>DIRECCIÓN DEL CONSULTORIO</label>
                   <input style={s.inp} placeholder="Jr. Lima 210, Of. 3, Ayacucho" value={profileData.address} onChange={e=>setProfileData({...profileData,address:e.target.value})} />
                   <p style={{ margin:"-6px 0 12px", fontSize: 11, color: "#475569" }}>📍 Visible para los pacientes al reservar</p>
+                  <label style={s.lbl}>NÚMERO YAPE/PLIN (para recibir tus pagos)</label>
+                  <input style={s.inp} placeholder="+51 9XX XXX XXX" value={profileData.yape_plin_phone} onChange={e=>setProfileData({...profileData,yape_plin_phone:e.target.value})} />
+                  <p style={{ margin:"-6px 0 12px", fontSize: 11, color: "#475569" }}>💰 MediAyacucho te transferirá aquí el adelanto de cada cita confirmada</p>
                   <div style={{ display: "flex", gap: 10 }}>
                     <button style={s.saveBtn} onClick={saveProfile} disabled={savingProfile}>{savingProfile ? "Guardando..." : "Guardar en Supabase ✓"}</button>
                     <button style={{ ...s.saveBtn, background:"transparent", border:"1px solid #bae6fd", color:"#475569" }} onClick={() => setEditProfile(false)}>Cancelar</button>
@@ -1452,7 +1455,7 @@ function AdminPanel({ onExit }) {
                         <div style={{ width: 40, height: 40, borderRadius: 10, background: doc?.color || "#0ea5e9", display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 700, color: "#fff" }}>{doc?.img || "?"}</div>
                         <div>
                           <div style={{ fontWeight: 700, color: "#082f49" }}>{doc?.name || "Médico desconocido"}</div>
-                          <div style={{ fontSize: 13, color: "#475569" }}>📱 Yape/Plin: {doc?.phone || "No registrado"}</div>
+                          <div style={{ fontSize: 13, color: "#475569" }}>📱 Yape/Plin: {doc?.yape_plin_phone || doc?.phone || "No registrado"}</div>
                         </div>
                       </div>
                       <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
@@ -1925,7 +1928,7 @@ export default function App() {
   const [session, setSession] = useState(() => auth.getSession());
   const [showAdmin, setShowAdmin] = useState(false);
   const [selectedProfile, setSelectedProfile] = useState(null);
-  const [regData, setRegData] = useState({ name: "", specialty: "", email: "", phone: "", address: "", reference: "", cmp: "", universidad: "" });
+  const [regData, setRegData] = useState({ name: "", specialty: "", email: "", phone: "", yape_plin_phone: "", address: "", reference: "", cmp: "", universidad: "" });
   const [cmpVerification, setCmpVerification] = useState(null); // null | loading | result
   const [diplomaFile, setDiplomaFile] = useState(null);
   const [diplomaBase64, setDiplomaBase64] = useState(null);
@@ -2092,7 +2095,7 @@ export default function App() {
       const color = colors[Math.floor(Math.random()*colors.length)];
       const cmpScore = cmpVerification?.result?.score || 0;
       const cmpStatus = cmpVerification?.result?.recomendacion || "SIN_VERIFICAR";
-      const result = await db.registerDoctor({ name: regData.name, specialty: regData.specialty, phone: regData.phone, address: regData.address, img, color, available: true, active: false, price: "S/. 60", rating: 5.0, email: regData.email });
+      const result = await db.registerDoctor({ name: regData.name, specialty: regData.specialty, phone: regData.phone, yape_plin_phone: regData.yape_plin_phone || regData.phone, address: regData.address, img, color, available: true, active: false, price: "S/. 60", rating: 5.0, email: regData.email });
       const docId = Array.isArray(result) ? result[0]?.id : result?.id;
       const adminMsg = `🏥 *NUEVO MÉDICO - MediAyacucho*\n\n👤 ${regData.name}\n🏥 ${regData.specialty}\n📋 CMP: ${regData.cmp}\n🎓 ${regData.universidad || "No indicada"}\n📞 ${regData.phone}\n\n🤖 *Verificación IA:*\n• Score: ${cmpScore}/100\n• Estado: ${cmpStatus}\n\n✅ Verificar en: https://www.cmp.org.pe\n\nResponde para activar o rechazar.`;
       window.open(`https://wa.me/51913330712?text=${encodeURIComponent(adminMsg)}`, "_blank");
@@ -3048,6 +3051,16 @@ export default function App() {
                   <input style={T.input} placeholder={ph} type={type} value={regData[key]} onChange={e=>setRegData({...regData,[key]:e.target.value})} />
                 </div>
               ))}
+
+              <div style={{ marginBottom:14 }}>
+                <label style={T.label}>NÚMERO YAPE/PLIN (para recibir tus pagos) *</label>
+                <input style={T.input} placeholder="+51 9XX XXX XXX" value={regData.yape_plin_phone} onChange={e=>setRegData({...regData,yape_plin_phone:e.target.value})} />
+                <label style={{ display:"flex", alignItems:"center", gap:8, marginTop:8, fontSize:12, color:"#60a5d8", cursor:"pointer" }}>
+                  <input type="checkbox" checked={regData.yape_plin_phone === regData.phone && !!regData.phone} onChange={e=>setRegData({...regData, yape_plin_phone: e.target.checked ? regData.phone : ""})} />
+                  Es el mismo número que mi WhatsApp
+                </label>
+                <p style={{ fontSize:11, color:"#60a5d8", margin:"6px 0 0" }}>Aquí te transferiremos el adelanto de cada cita confirmada (S/. 20).</p>
+              </div>
 
               {/* CMP SECTION */}
               <div style={{ background:"rgba(59,130,196,0.06)", border:"1px solid rgba(14,165,233,0.25)", borderRadius:14, padding:20, marginBottom:16 }}>
