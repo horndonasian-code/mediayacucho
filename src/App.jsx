@@ -209,6 +209,25 @@ function getBookedSlotsForDoctor(allAppointments, doctorId) {
   return set;
 }
 
+// Calculate membership status: days until next monthly due date, and whether reminder/overdue
+function getMembershipStatus(membershipPaidAt) {
+  if (!membershipPaidAt) return { daysLeft: null, status: "sin_pago", dueDate: null };
+  const paidDate = new Date(membershipPaidAt);
+  const dueDate = new Date(paidDate);
+  dueDate.setDate(dueDate.getDate() + 30);
+  const now = new Date();
+  const msLeft = dueDate.getTime() - now.getTime();
+  const daysLeft = Math.ceil(msLeft / (1000 * 60 * 60 * 24));
+
+  let status;
+  if (daysLeft < 0) status = "vencido";
+  else if (daysLeft <= 3) status = "urgente";
+  else if (daysLeft <= 7) status = "proximo";
+  else status = "ok";
+
+  return { daysLeft, status, dueDate: dueDate.toISOString().slice(0,10) };
+}
+
 // ─── Login Modal ───────────────────────────────────────────────────────────
 function LoginModal({ onLogin, onClose }) {
   const [mode, setMode] = useState("login"); // login | signup | forgot
@@ -808,7 +827,19 @@ Hola ${appt.patient_name}, gracias por confiar en ${doctor.name}.
         <div style={{ padding: "24px 24px 0", borderTop: "1px solid #e0f2fe", marginTop: 24 }}>
           <div style={{ fontSize: 11, color: "#475569", marginBottom: 4 }}>MEMBRESÍA ACTIVA</div>
           <div style={{ fontSize: 13, color: "#0369a1", fontWeight: 700 }}>Plan Profesional</div>
-          <div style={{ fontSize: 12, color: "#475569" }}>S/. 99/mes</div>
+          <div style={{ fontSize: 12, color: "#475569", marginBottom: 6 }}>S/. 99/mes</div>
+          {(() => {
+            const ms = getMembershipStatus(doctor.membership_paid_at);
+            const msColors = { vencido: "#dc2626", urgente: "#c2410c", proximo: "#ca8a04", ok: "#15803d", sin_pago: "#64748b" };
+            const msLabels = {
+              vencido: `🔴 Vencida hace ${Math.abs(ms.daysLeft)} día(s)`,
+              urgente: `🟠 Vence en ${ms.daysLeft} día(s)`,
+              proximo: `🟡 Vence en ${ms.daysLeft} día(s)`,
+              ok: `🟢 Vigente (${ms.daysLeft}d restantes)`,
+              sin_pago: "⚪ Sin registro de pago",
+            };
+            return <div style={{ fontSize: 11, fontWeight: 700, color: msColors[ms.status] }}>{msLabels[ms.status]}</div>;
+          })()}
         </div>
       </div>
 
@@ -1089,8 +1120,15 @@ function AdminPanel({ onExit }) {
   }
 
   async function activateDoctor(id, name) {
-    await sb(`doctors?id=eq.${id}`, { method: "PATCH", body: JSON.stringify({ active: true }) });
+    await sb(`doctors?id=eq.${id}`, { method: "PATCH", body: JSON.stringify({ active: true, membership_paid_at: new Date().toISOString() }) });
     setActionMsg(`✅ ${name} activado`);
+    loadAll();
+    setTimeout(() => setActionMsg(""), 3000);
+  }
+
+  async function registerMembershipPayment(id, name) {
+    await sb(`doctors?id=eq.${id}`, { method: "PATCH", body: JSON.stringify({ membership_paid_at: new Date().toISOString() }) });
+    setActionMsg(`💰 Pago de membresía registrado para ${name}`);
     loadAll();
     setTimeout(() => setActionMsg(""), 3000);
   }
@@ -1100,6 +1138,17 @@ function AdminPanel({ onExit }) {
     setActionMsg(`🔴 ${name} desactivado`);
     loadAll();
     setTimeout(() => setActionMsg(""), 3000);
+  }
+
+  function sendMembershipReminder(doctor) {
+    const ms = getMembershipStatus(doctor.membership_paid_at);
+    let msg;
+    if (ms.status === "vencido") {
+      msg = `🔴 *MediAyacucho - Membresía vencida*\n\nHola Dr(a). ${doctor.name},\n\nTu membresía mensual (S/. 99) venció hace ${Math.abs(ms.daysLeft)} día(s).\n\nPara seguir recibiendo citas de pacientes, realiza tu pago por Yape o Plin al 913 330 712 y envíanos el comprobante.\n\n¡Gracias por confiar en MediAyacucho! 🌿`;
+    } else {
+      msg = `💳 *MediAyacucho - Recordatorio de pago*\n\nHola Dr(a). ${doctor.name},\n\nTu membresía mensual (S/. 99) vence en ${ms.daysLeft} día(s) (${ms.dueDate}).\n\nPara evitar interrupciones, realiza tu pago por Yape o Plin al 913 330 712 y envíanos el comprobante.\n\n¡Gracias por confiar en MediAyacucho! 🌿`;
+    }
+    window.open(`https://wa.me/?text=${encodeURIComponent(msg)}`, "_blank");
   }
 
   async function deleteDoctor(id, name) {
@@ -1176,6 +1225,7 @@ function AdminPanel({ onExit }) {
           <div style={s.kpiCard("#0369a1")}><span style={s.kpiLabel}>Total citas</span><span style={s.kpiNum("#0369a1")}>{appointments.length}</span><span style={{ fontSize: 12, color: "#475569" }}>Registradas</span></div>
           <div style={s.kpiCard("#F4A261")}><span style={s.kpiLabel}>Ingresos verificados</span><span style={s.kpiNum("#F4A261")}>S/. {totalIngresos}</span><span style={{ fontSize: 12, color: "#475569" }}>Membresías cobradas</span></div>
           <div style={s.kpiCard("#a78bfa")}><span style={s.kpiLabel}>Pagos pendientes</span><span style={s.kpiNum("#a78bfa")}>{payments.filter(p => p.status === "pendiente").length}</span><span style={{ fontSize: 12, color: "#475569" }}>Por verificar</span></div>
+          <div style={s.kpiCard("#dc2626")}><span style={s.kpiLabel}>Membresías por vencer</span><span style={s.kpiNum("#dc2626")}>{activeDoctors.filter(d => ["vencido","urgente","proximo"].includes(getMembershipStatus(d.membership_paid_at).status)).length}</span><span style={{ fontSize: 12, color: "#475569" }}>Necesitan recordatorio</span></div>
         </div>
 
         {/* Tabs */}
@@ -1222,25 +1272,43 @@ function AdminPanel({ onExit }) {
         {!loading && tab === "active" && (
           <>
             <h3 style={{ margin: "0 0 16px", color: "#52B788" }}>✅ Médicos activos en la plataforma</h3>
-            {activeDoctors.map(doc => (
-              <div key={doc.id} style={s.card}>
-                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: 12 }}>
-                  <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
-                    <div style={{ width: 40, height: 40, borderRadius: 10, background: doc.color || "#0ea5e9", display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 700, color: "#fff" }}>{doc.img || "?"}</div>
-                    <div>
-                      <div style={{ fontWeight: 700, color: "#082f49" }}>{doc.name}</div>
-                      <div style={{ fontSize: 13, color: "#475569" }}>{doc.specialty} · {doc.price} · ⭐ {doc.rating}</div>
-                      {doc.address && <div style={{ fontSize: 12, color: "#475569" }}>📍 {doc.address}</div>}
+            {activeDoctors.map(doc => {
+              const ms = getMembershipStatus(doc.membership_paid_at);
+              const msColors = { vencido: "#dc2626", urgente: "#c2410c", proximo: "#ca8a04", ok: "#15803d", sin_pago: "#64748b" };
+              const msLabels = {
+                vencido: `🔴 Vencido hace ${Math.abs(ms.daysLeft)}d`,
+                urgente: `🟠 Vence en ${ms.daysLeft}d`,
+                proximo: `🟡 Vence en ${ms.daysLeft}d`,
+                ok: `🟢 Al día (${ms.daysLeft}d)`,
+                sin_pago: "⚪ Sin registro de pago",
+              };
+              return (
+                <div key={doc.id} style={s.card}>
+                  <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: 12 }}>
+                    <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+                      <div style={{ width: 40, height: 40, borderRadius: 10, background: doc.color || "#0ea5e9", display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 700, color: "#fff" }}>{doc.img || "?"}</div>
+                      <div>
+                        <div style={{ fontWeight: 700, color: "#082f49" }}>{doc.name}</div>
+                        <div style={{ fontSize: 13, color: "#475569" }}>{doc.specialty} · {doc.price} · ⭐ {doc.rating}</div>
+                        {doc.address && <div style={{ fontSize: 12, color: "#475569" }}>📍 {doc.address}</div>}
+                        <div style={{ marginTop: 4 }}>
+                          <span style={{ fontSize: 11, fontWeight: 700, color: msColors[ms.status] }}>{msLabels[ms.status]} · Plan Profesional S/. 99</span>
+                        </div>
+                      </div>
+                    </div>
+                    <div style={{ display: "flex", gap: 8, alignItems: "center", flexWrap: "wrap" }}>
+                      <span style={s.badge(doc.available ? "#52B788" : "#ff6b6b")}>{doc.available ? "Disponible" : "No disponible"}</span>
+                      {(ms.status === "urgente" || ms.status === "vencido" || ms.status === "proximo") && (
+                        <button style={s.btn("#F4A261")} onClick={() => sendMembershipReminder(doc)}>🔔 Recordar pago</button>
+                      )}
+                      <button style={s.btn("#0ea5e9")} onClick={() => registerMembershipPayment(doc.id, doc.name)}>💰 Registrar pago</button>
+                      <button style={s.btn("#25D366")} onClick={() => window.open(`https://wa.me/${doc.phone}`, "_blank")}>💬 WA</button>
+                      <button style={s.btn("#ff6b6b")} onClick={() => deactivateDoctor(doc.id, doc.name)}>🔴 Suspender</button>
                     </div>
                   </div>
-                  <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
-                    <span style={s.badge(doc.available ? "#52B788" : "#ff6b6b")}>{doc.available ? "Disponible" : "No disponible"}</span>
-                    <button style={s.btn("#25D366")} onClick={() => window.open(`https://wa.me/${doc.phone}`, "_blank")}>💬 WA</button>
-                    <button style={s.btn("#ff6b6b")} onClick={() => deactivateDoctor(doc.id, doc.name)}>🔴 Suspender</button>
-                  </div>
                 </div>
-              </div>
-            ))}
+              );
+            })}
           </>
         )}
 
