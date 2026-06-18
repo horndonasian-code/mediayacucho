@@ -237,11 +237,10 @@ function formatDateISO2(d) {
 
 // Build calendar days for current month, marking which days the doctor works and have free slots
 function buildAvailabilityCalendar(schedule, bookedSlots) {
-  if (!schedule || schedule.length === 0) return [];
   bookedSlots = bookedSlots || new Set();
 
   const weeklySlots = [];
-  for (const slot of schedule) {
+  for (const slot of (schedule || [])) {
     const match = slot.match(/^(\p{L}{3})\s+(\d{1,2}):(\d{2})/u);
     if (!match) continue;
     const [, dayAbbr, hh, mm] = match;
@@ -249,7 +248,6 @@ function buildAvailabilityCalendar(schedule, bookedSlots) {
     if (dow === undefined) continue;
     weeklySlots.push({ dow, time: `${hh}:${mm}` });
   }
-  if (weeklySlots.length === 0) return [];
 
   const now = new Date();
   const year = now.getFullYear();
@@ -262,12 +260,11 @@ function buildAvailabilityCalendar(schedule, bookedSlots) {
   for (let d = 1; d <= daysInMonth; d++) {
     const date = new Date(year, month, d);
     const dateISO = formatDateISO2(date);
-    if (dateISO < todayISO) continue; // skip past days
     const dow = date.getDay();
+    const isPastDay = dateISO < todayISO;
     const slotsForDay = weeklySlots.filter(s => s.dow === dow);
-    if (slotsForDay.length === 0) continue; // doctor doesn't work this day
 
-    const times = slotsForDay.map(s => {
+    const times = isPastDay ? [] : slotsForDay.map(s => {
       const [hh, mm] = s.time.split(":").map(Number);
       const slotMinutes = hh * 60 + mm;
       const isPast = dateISO === todayISO && slotMinutes <= todayMinutes;
@@ -275,7 +272,7 @@ function buildAvailabilityCalendar(schedule, bookedSlots) {
       return { time: s.time, available: !isPast && !isBooked };
     });
 
-    days.push({ dateISO, dayNum: d, dow, times, hasAvailable: times.some(t => t.available) });
+    days.push({ dateISO, dayNum: d, dow, times, isPastDay, hasAvailable: times.some(t => t.available), worksThisDay: slotsForDay.length > 0 });
   }
   return days;
 }
@@ -1939,6 +1936,7 @@ export default function App() {
   const [allAppointments, setAllAppointments] = useState([]);
   const [reviewParams, setReviewParams] = useState(null);
   const [showWaitlistModal, setShowWaitlistModal] = useState(false);
+  const [selectedCalDay, setSelectedCalDay] = useState(null);
   const [waitlistSubmitting, setWaitlistSubmitting] = useState(false);
   const [waitlistDone, setWaitlistDone] = useState(false);
   const chatEndRef = useRef(null);
@@ -2047,6 +2045,7 @@ export default function App() {
     setBookingData({ patient_name: "", patient_phone: "", date: "", time: "" });
     setView("home");
     setShowNotifPanel(false);
+    setSelectedCalDay(null);
   }
 
   async function verifyCMP() {
@@ -2140,7 +2139,7 @@ export default function App() {
       <DoctorProfile
         doctor={selectedProfile}
         onBack={() => { setView("doctors"); setSelectedProfile(null); }}
-        onBook={(doc, modalidad) => { setSelectedDoctor(doc); setBookingData(p => ({...p, modalidad})); setSelectedProfile(null); setView("booking"); }}
+        onBook={(doc, modalidad) => { setSelectedDoctor(doc); setBookingData(p => ({...p, modalidad})); setSelectedProfile(null); setSelectedCalDay(null); setView("booking"); }}
         allAppointments={allAppointments}
       />
     </div>
@@ -2622,8 +2621,8 @@ export default function App() {
                     </div>
                     {doc.available
                       ? <div style={{ display: "flex", gap: 6, flexDirection: "column" }}>
-                          <button style={{ padding:"8px 16px", background:"linear-gradient(135deg,#0ea5e9,#7dd3fc)", color:"#fff", border:"none", borderRadius:10, cursor:"pointer", fontSize:13, fontWeight:600, fontFamily:"inherit" }} onClick={() => { setSelectedDoctor(doc); setBookingData(p => ({...p, modalidad:"presencial"})); setView("booking"); }}>🏥 Presencial</button>
-                          <button style={{ padding:"8px 16px", background:"linear-gradient(135deg,#25D366,#128C7E)", color:"#fff", border:"none", borderRadius:10, cursor:"pointer", fontSize:13, fontWeight:600, fontFamily:"inherit" }} onClick={() => { setSelectedDoctor(doc); setBookingData(p => ({...p, modalidad:"virtual"})); setView("booking"); }}>📱 Virtual</button>
+                          <button style={{ padding:"8px 16px", background:"linear-gradient(135deg,#0ea5e9,#7dd3fc)", color:"#fff", border:"none", borderRadius:10, cursor:"pointer", fontSize:13, fontWeight:600, fontFamily:"inherit" }} onClick={() => { setSelectedDoctor(doc); setBookingData(p => ({...p, modalidad:"presencial"})); setSelectedCalDay(null); setView("booking"); }}>🏥 Presencial</button>
+                          <button style={{ padding:"8px 16px", background:"linear-gradient(135deg,#25D366,#128C7E)", color:"#fff", border:"none", borderRadius:10, cursor:"pointer", fontSize:13, fontWeight:600, fontFamily:"inherit" }} onClick={() => { setSelectedDoctor(doc); setBookingData(p => ({...p, modalidad:"virtual"})); setSelectedCalDay(null); setView("booking"); }}>📱 Virtual</button>
                         </div>
                       : <span style={{ padding:"4px 10px", borderRadius:20, background:"rgba(255,100,100,0.1)", color:"#ff6b6b", fontSize:12 }}>No disponible</span>
                     }
@@ -2820,7 +2819,7 @@ export default function App() {
                 </div>
               ))}
 
-              {/* CALENDARIO VISUAL */}
+              {/* CALENDARIO VISUAL - GRILLA MENSUAL */}
               <div style={{ marginBottom:16 }}>
                 <label style={T.labelLight}>ELIGE UNA FECHA Y HORA DISPONIBLE</label>
                 {(() => {
@@ -2832,45 +2831,91 @@ export default function App() {
                     return <p style={{ color:"#64748b", fontSize:13, marginTop:8 }}>Este médico no tiene horarios configurados este mes.</p>;
                   }
 
+                  const firstDow = calDays[0].dow;
+                  const leadingBlanks = Array.from({ length: firstDow }, (_, i) => `blank-${i}`);
+                  const dayLetters = ["D","L","M","M","J","V","S"];
+                  const dayNamesFull = ["Domingo","Lunes","Martes","Miércoles","Jueves","Viernes","Sábado"];
+                  const activeDay = calDays.find(d => d.dateISO === selectedCalDay);
+
                   return (
                     <div style={{ marginTop:8 }}>
                       <p style={{ margin:"0 0 10px", fontSize:13, color:"#0369a1", fontWeight:700, textTransform:"capitalize" }}>📅 {monthName}</p>
-                      <div style={{ display:"flex", flexDirection:"column", gap:8, maxHeight:340, overflowY:"auto", paddingRight:4 }}>
+
+                      {/* Grid header */}
+                      <div style={{ display:"grid", gridTemplateColumns:"repeat(7, 1fr)", gap:4, marginBottom:6 }}>
+                        {dayLetters.map((l,i) => (
+                          <div key={i} style={{ textAlign:"center", fontSize:11, fontWeight:700, color:"#94a3b8" }}>{l}</div>
+                        ))}
+                      </div>
+
+                      {/* Grid days */}
+                      <div style={{ display:"grid", gridTemplateColumns:"repeat(7, 1fr)", gap:4, marginBottom:14 }}>
+                        {leadingBlanks.map(k => <div key={k} />)}
                         {calDays.map(day => {
-                          const dayNames = ["Domingo","Lunes","Martes","Miércoles","Jueves","Viernes","Sábado"];
-                          const isSelectedDay = bookingData.date === day.dateISO;
+                          const isClickable = !day.isPastDay && day.hasAvailable;
+                          const isSelectedDay = selectedCalDay === day.dateISO;
+                          const hasBookingHere = bookingData.date === day.dateISO;
+                          let bg = "transparent", color = "#cbd5e1", border = "1px solid transparent";
+                          if (day.isPastDay) { color = "#e2e8f0"; }
+                          else if (!day.worksThisDay) { color = "#cbd5e1"; }
+                          else if (!day.hasAvailable) { color = "#fca5a5"; }
+                          else { color = "#082f49"; }
+                          if (hasBookingHere) { bg = "#0ea5e9"; color = "#fff"; border = "1px solid #0ea5e9"; }
+                          else if (isSelectedDay) { bg = "#e0f2fe"; border = "1px solid #7dd3fc"; }
+                          else if (day.hasAvailable) { border = "1px solid #bae6fd"; }
+
                           return (
-                            <div key={day.dateISO} style={{ border:`1px solid ${isSelectedDay ? "#0ea5e9" : "#e2e8f0"}`, borderRadius:12, padding:"10px 12px", background: isSelectedDay ? "#f0f9ff" : "#ffffff" }}>
-                              <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", marginBottom: day.hasAvailable ? 8 : 0 }}>
-                                <span style={{ fontSize:13, fontWeight:700, color: day.hasAvailable ? "#082f49" : "#94a3b8" }}>{dayNames[day.dow]} {day.dayNum}</span>
-                                {!day.hasAvailable && <span style={{ fontSize:11, color:"#dc2626", fontWeight:600 }}>Sin cupos</span>}
-                              </div>
-                              {day.hasAvailable && (
-                                <div style={{ display:"flex", gap:6, flexWrap:"wrap" }}>
-                                  {day.times.map(t => {
-                                    const isSelected = bookingData.date === day.dateISO && bookingData.time === t.time;
-                                    return (
-                                      <button
-                                        key={t.time}
-                                        disabled={!t.available}
-                                        onClick={() => { setBookingData({...bookingData, date: day.dateISO, time: t.time}); setWaitlistDone(false); }}
-                                        style={{
-                                          padding:"6px 12px", borderRadius:20, fontSize:12, fontFamily:"inherit", cursor: t.available ? "pointer" : "not-allowed",
-                                          border: `1px solid ${isSelected ? "#0ea5e9" : t.available ? "#bae6fd" : "#f1f5f9"}`,
-                                          background: isSelected ? "#0ea5e9" : t.available ? "#f0f9ff" : "#f8fafc",
-                                          color: isSelected ? "#fff" : t.available ? "#0369a1" : "#cbd5e1",
-                                          textDecoration: t.available ? "none" : "line-through",
-                                        }}>
-                                        {t.time}
-                                      </button>
-                                    );
-                                  })}
-                                </div>
+                            <button
+                              key={day.dateISO}
+                              disabled={!isClickable}
+                              onClick={() => setSelectedCalDay(day.dateISO)}
+                              title={dayNamesFull[day.dow]}
+                              style={{
+                                aspectRatio:"1", borderRadius:10, fontSize:13, fontWeight: hasBookingHere ? 800 : 600, fontFamily:"inherit",
+                                cursor: isClickable ? "pointer" : "default", background: bg, color, border,
+                                display:"flex", alignItems:"center", justifyContent:"center", position:"relative",
+                              }}>
+                              {day.dayNum}
+                              {day.hasAvailable && !hasBookingHere && (
+                                <span style={{ position:"absolute", bottom:3, width:4, height:4, borderRadius:"50%", background: isSelectedDay ? "#0369a1" : "#7dd3fc" }} />
                               )}
-                            </div>
+                            </button>
                           );
                         })}
                       </div>
+
+                      {/* Selected day's time slots */}
+                      {activeDay ? (
+                        activeDay.hasAvailable ? (
+                          <div style={{ background:"#f8fafc", borderRadius:12, padding:"12px 14px" }}>
+                            <p style={{ margin:"0 0 10px", fontSize:13, fontWeight:700, color:"#082f49" }}>{dayNamesFull[activeDay.dow]} {activeDay.dayNum} — horarios disponibles</p>
+                            <div style={{ display:"flex", gap:6, flexWrap:"wrap" }}>
+                              {activeDay.times.map(t => {
+                                const isSelected = bookingData.date === activeDay.dateISO && bookingData.time === t.time;
+                                return (
+                                  <button
+                                    key={t.time}
+                                    disabled={!t.available}
+                                    onClick={() => { setBookingData({...bookingData, date: activeDay.dateISO, time: t.time}); setWaitlistDone(false); }}
+                                    style={{
+                                      padding:"6px 12px", borderRadius:20, fontSize:12, fontFamily:"inherit", cursor: t.available ? "pointer" : "not-allowed",
+                                      border: `1px solid ${isSelected ? "#0ea5e9" : t.available ? "#bae6fd" : "#f1f5f9"}`,
+                                      background: isSelected ? "#0ea5e9" : t.available ? "#ffffff" : "#f1f5f9",
+                                      color: isSelected ? "#fff" : t.available ? "#0369a1" : "#cbd5e1",
+                                      textDecoration: t.available ? "none" : "line-through",
+                                    }}>
+                                    {t.time}
+                                  </button>
+                                );
+                              })}
+                            </div>
+                          </div>
+                        ) : (
+                          <p style={{ fontSize:13, color:"#64748b", margin:0 }}>Este día no tiene horarios disponibles.</p>
+                        )
+                      ) : (
+                        <p style={{ fontSize:13, color:"#94a3b8", margin:0 }}>👆 Toca un día con punto azul para ver sus horarios.</p>
+                      )}
                     </div>
                   );
                 })()}
