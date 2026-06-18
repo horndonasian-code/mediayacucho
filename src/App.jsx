@@ -1176,6 +1176,21 @@ function AdminPanel({ onExit }) {
     setTimeout(() => setActionMsg(""), 3000);
   }
 
+  async function markAdvanceSettled(apptId) {
+    await sb(`appointments?id=eq.${apptId}`, { method: "PATCH", body: JSON.stringify({ advance_settled: true }) });
+    setActionMsg(`✅ Adelanto marcado como reversado`);
+    loadAll();
+    setTimeout(() => setActionMsg(""), 3000);
+  }
+
+  async function markAllSettledForDoctor(doctorId, apptIds, doctorName) {
+    if (!window.confirm(`¿Confirmas que ya reversaste S/. ${apptIds.length * AVANCE.monto} a ${doctorName}?`)) return;
+    await Promise.all(apptIds.map(id => sb(`appointments?id=eq.${id}`, { method: "PATCH", body: JSON.stringify({ advance_settled: true }) })));
+    setActionMsg(`✅ Reversado completo para ${doctorName}`);
+    loadAll();
+    setTimeout(() => setActionMsg(""), 3000);
+  }
+
   async function deactivateDoctor(id, name) {
     await sb(`doctors?id=eq.${id}`, { method: "PATCH", body: JSON.stringify({ active: false }) });
     setActionMsg(`🔴 ${name} desactivado`);
@@ -1238,6 +1253,7 @@ function AdminPanel({ onExit }) {
     { id: "active", label: `✅ Activos (${activeDoctors.length})` },
     { id: "appointments", label: `📅 Citas (${appointments.length})` },
     { id: "payments", label: `💰 Pagos (${payments.length})` },
+    { id: "settlements", label: `💸 Reversar a médicos` },
     { id: "recordatorios", label: `⏰ Recordatorios (${tomorrowAppts.length})` },
   ];
 
@@ -1269,6 +1285,7 @@ function AdminPanel({ onExit }) {
           <div style={s.kpiCard("#F4A261")}><span style={s.kpiLabel}>Ingresos verificados</span><span style={s.kpiNum("#F4A261")}>S/. {totalIngresos}</span><span style={{ fontSize: 12, color: "#475569" }}>Membresías cobradas</span></div>
           <div style={s.kpiCard("#a78bfa")}><span style={s.kpiLabel}>Pagos pendientes</span><span style={s.kpiNum("#a78bfa")}>{payments.filter(p => p.status === "pendiente").length}</span><span style={{ fontSize: 12, color: "#475569" }}>Por verificar</span></div>
           <div style={s.kpiCard("#dc2626")}><span style={s.kpiLabel}>Membresías por vencer</span><span style={s.kpiNum("#dc2626")}>{activeDoctors.filter(d => ["vencido","urgente","proximo"].includes(getMembershipStatus(d.membership_paid_at).status)).length}</span><span style={{ fontSize: 12, color: "#475569" }}>Necesitan recordatorio</span></div>
+          <div style={s.kpiCard("#c2410c")}><span style={s.kpiLabel}>Por reversar a médicos</span><span style={s.kpiNum("#c2410c")}>S/. {appointments.filter(a => (a.status === "confirmada" || a.status === "completada") && a.payment_status === "pagado" && !a.advance_settled).length * AVANCE.monto}</span><span style={{ fontSize: 12, color: "#475569" }}>Adelantos pendientes</span></div>
         </div>
 
         {/* Tabs */}
@@ -1403,6 +1420,61 @@ function AdminPanel({ onExit }) {
             }
           </>
         )}
+
+        {/* REVERSAR A MÉDICOS */}
+        {!loading && tab === "settlements" && (() => {
+          const owedAppts = appointments.filter(a =>
+            (a.status === "confirmada" || a.status === "completada") &&
+            a.payment_status === "pagado" &&
+            !a.advance_settled
+          );
+          const byDoctor = {};
+          for (const a of owedAppts) {
+            if (!byDoctor[a.doctor_id]) byDoctor[a.doctor_id] = [];
+            byDoctor[a.doctor_id].push(a);
+          }
+          const doctorIds = Object.keys(byDoctor);
+
+          return (
+            <>
+              <h3 style={{ margin: "0 0 8px", color: "#0369a1" }}>💸 Adelantos por reversar a médicos</h3>
+              <p style={{ margin: "0 0 16px", fontSize: 13, color: "#475569" }}>Cuando una cita se confirma o completa (sin cancelación), el adelanto de S/. {AVANCE.monto} que pagó el paciente debe ser transferido al médico por Yape/Plin. Marca cada uno como reversado una vez hecho el envío.</p>
+              {doctorIds.length === 0 ? (
+                <div style={{ ...s.card, textAlign: "center", color: "#475569" }}>✅ No hay adelantos pendientes de reversar</div>
+              ) : doctorIds.map(docId => {
+                const doc = activeDoctors.find(d => d.id === docId) || pendingDoctors.find(d => d.id === docId);
+                const appts = byDoctor[docId];
+                const total = appts.length * AVANCE.monto;
+                return (
+                  <div key={docId} style={s.card}>
+                    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: 12, marginBottom: 12 }}>
+                      <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+                        <div style={{ width: 40, height: 40, borderRadius: 10, background: doc?.color || "#0ea5e9", display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 700, color: "#fff" }}>{doc?.img || "?"}</div>
+                        <div>
+                          <div style={{ fontWeight: 700, color: "#082f49" }}>{doc?.name || "Médico desconocido"}</div>
+                          <div style={{ fontSize: 13, color: "#475569" }}>📱 Yape/Plin: {doc?.phone || "No registrado"}</div>
+                        </div>
+                      </div>
+                      <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
+                        <span style={{ fontSize: 20, fontWeight: 800, color: "#c2410c" }}>S/. {total}</span>
+                        <button style={s.btn("#0ea5e9")} onClick={() => window.open(`https://wa.me/${(doc?.phone||"").replace(/\D/g,"")}`, "_blank")}>💬 WA</button>
+                        <button style={s.btn("#15803d")} onClick={() => markAllSettledForDoctor(docId, appts.map(a=>a.id), doc?.name || "el médico")}>✅ Marcar todo reversado</button>
+                      </div>
+                    </div>
+                    <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
+                      {appts.map(a => (
+                        <div key={a.id} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "8px 12px", background: "#f8fafc", borderRadius: 8, fontSize: 13 }}>
+                          <span style={{ color: "#334155" }}>👤 {a.patient_name} · 📅 {a.date} · 🕐 {a.time}</span>
+                          <button style={{ padding: "4px 10px", background: "#f0fdf4", border: "1px solid #bbf7d0", color: "#15803d", borderRadius: 6, cursor: "pointer", fontSize: 11, fontWeight: 700, fontFamily: "inherit" }} onClick={() => markAdvanceSettled(a.id)}>✓ Reversado</button>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                );
+              })}
+            </>
+          );
+        })()}
 
         {/* RECORDATORIOS */}
         {!loading && tab === "recordatorios" && (
