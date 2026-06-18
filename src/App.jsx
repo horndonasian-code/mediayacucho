@@ -50,6 +50,9 @@ const db = {
   getReviews: (doctorId) => sb(`reviews?doctor_id=eq.${doctorId}&order=created_at.desc`),
   createReview: (data) => sb("reviews", { method: "POST", body: JSON.stringify(data) }),
   checkReviewExists: (appointmentId) => sb(`reviews?appointment_id=eq.${appointmentId}`),
+  getWaitlist: (doctorId) => doctorId ? sb(`waitlist?doctor_id=eq.${doctorId}&status=eq.esperando&order=created_at`) : sb(`waitlist?status=eq.esperando&order=created_at`),
+  addToWaitlist: (data) => sb("waitlist", { method: "POST", body: JSON.stringify(data) }),
+  updateWaitlistEntry: (id, data) => sb(`waitlist?id=eq.${id}`, { method: "PATCH", body: JSON.stringify(data) }),
 };
 
 // ─── Politique d'avance ────────────────────────────────────────────────────
@@ -646,6 +649,24 @@ function DoctorDashboard({ doctor, onExit }) {
   const [savingProfile, setSavingProfile] = useState(false);
   const [uploadingPhoto, setUploadingPhoto] = useState(false);
   const [photoUrl, setPhotoUrl] = useState(doctor.photo_url || null);
+  const [waitlist, setWaitlist] = useState([]);
+  const [loadingWaitlist, setLoadingWaitlist] = useState(true);
+
+  useEffect(() => {
+    db.getWaitlist(doctor.id).then(data => { setWaitlist(data || []); setLoadingWaitlist(false); }).catch(() => setLoadingWaitlist(false));
+  }, [doctor.id]);
+
+  async function notifyWaitlistManually(entry) {
+    const waitMsg = `🎉 *¡Hay un cupo disponible! - MediAyacucho*\n\nHola ${entry.patient_name}, te escribimos porque pediste el horario del ${entry.desired_date} a las ${entry.desired_time} con ${doctor.name}.\n\n👉 Reserva ahora: ${window.location.origin}\n\n📍 MediAyacucho 🌿`;
+    window.open(`https://wa.me/${entry.patient_phone.replace(/\D/g,"")}?text=${encodeURIComponent(waitMsg)}`, "_blank");
+    await db.updateWaitlistEntry(entry.id, { status: "notificado", notified_at: new Date().toISOString() });
+    setWaitlist(prev => prev.filter(w => w.id !== entry.id));
+  }
+
+  async function removeFromWaitlist(entry) {
+    await db.updateWaitlistEntry(entry.id, { status: "cancelado" });
+    setWaitlist(prev => prev.filter(w => w.id !== entry.id));
+  }
 
   async function handlePhotoUpload(e) {
     const file = e.target.files[0];
@@ -715,6 +736,25 @@ Hola ${appt.patient_name}, gracias por confiar en ${doctor.name}.
         setTimeout(() => {
           window.open(`https://wa.me/${appt.patient_phone.replace(/\D/g,"")}?text=${encodeURIComponent(reviewMsg)}`, "_blank");
         }, 800);
+      }
+    }
+
+    // Si una cita se cancela (por médico o admin) → liberar el horario y avisar al primero en lista de espera
+    if (newStatus === "cancelada") {
+      const appt = appointments.find(a => a.id === id);
+      if (appt) {
+        try {
+          const waitlistEntries = await db.getWaitlist(doctor.id);
+          const timeOnly = (appt.time || "").match(/(\d{1,2}:\d{2})/)?.[1] || appt.time;
+          const match = (waitlistEntries || []).find(w => w.desired_date === appt.date && (w.desired_time || "").includes(timeOnly));
+          if (match) {
+            const waitMsg = `🎉 *¡Se liberó un horario! - MediAyacucho*\n\nHola ${match.patient_name}, el horario que esperabas con ${doctor.name} (${match.desired_date} · ${match.desired_time}) acaba de quedar disponible.\n\n👉 Reserva ahora antes que otro paciente lo tome: ${window.location.origin}\n\n📍 MediAyacucho 🌿`;
+            setTimeout(() => {
+              window.open(`https://wa.me/${match.patient_phone.replace(/\D/g,"")}?text=${encodeURIComponent(waitMsg)}`, "_blank");
+            }, 2200);
+            await db.updateWaitlistEntry(match.id, { status: "notificado", notified_at: new Date().toISOString() });
+          }
+        } catch (e) { console.error("Error checking waitlist:", e); }
       }
     }
 
@@ -797,6 +837,7 @@ Hola ${appt.patient_name}, gracias por confiar en ${doctor.name}.
   const navItems = [
     { id: "overview", icon: "📊", label: "Resumen" },
     { id: "appointments", icon: "📅", label: "Citas" },
+    { id: "waitlist", icon: "⏰", label: "Lista de espera" },
     { id: "analytics", icon: "📈", label: "Estadísticas" },
     { id: "profile", icon: "👤", label: "Mi Perfil" },
     { id: "ai", icon: "🤖", label: "Consejo IA" },
@@ -973,6 +1014,35 @@ Hola ${appt.patient_name}, gracias por confiar en ${doctor.name}.
                 ))
               }
             </div>
+          </>
+        )}
+
+        {tab === "waitlist" && (
+          <>
+            <h2 style={{ margin: "0 0 8px", fontSize: 26, fontWeight: 700 }}>⏰ Lista de espera</h2>
+            <p style={{ color:"#475569", margin:"0 0 24px", fontSize:14 }}>Pacientes esperando un horario que ya está reservado. Si cancelas una cita, el primero de la lista es notificado automáticamente por WhatsApp.</p>
+            {loadingWaitlist ? (
+              <div style={{ textAlign:"center", padding:40, color:"#0369a1" }}>Cargando...</div>
+            ) : waitlist.length === 0 ? (
+              <div style={{ ...s.card, textAlign:"center", color:"#64748b" }}>
+                <div style={{ fontSize:36, marginBottom:8 }}>📭</div>
+                No hay pacientes en lista de espera actualmente.
+              </div>
+            ) : waitlist.map(w => (
+              <div key={w.id} style={s.card}>
+                <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", flexWrap:"wrap", gap:12 }}>
+                  <div>
+                    <div style={{ fontWeight:700, color:"#082f49" }}>{w.patient_name}</div>
+                    <div style={{ fontSize:13, color:"#475569" }}>📅 Quiere: {w.desired_date} · 🕐 {w.desired_time} · 📞 {w.patient_phone}</div>
+                    <div style={{ fontSize:12, color:"#94a3b8", marginTop:2 }}>Anotado el {new Date(w.created_at).toLocaleDateString("es-PE")}</div>
+                  </div>
+                  <div style={{ display:"flex", gap:8 }}>
+                    <button style={{ padding:"7px 14px", background:"#f0fdf4", border:"1px solid #bbf7d0", color:"#15803d", borderRadius:8, cursor:"pointer", fontSize:12, fontWeight:700, fontFamily:"inherit" }} onClick={() => notifyWaitlistManually(w)}>🔔 Avisar cupo libre</button>
+                    <button style={{ padding:"7px 14px", background:"#fef2f2", border:"1px solid #fecaca", color:"#dc2626", borderRadius:8, cursor:"pointer", fontSize:12, fontWeight:700, fontFamily:"inherit" }} onClick={() => removeFromWaitlist(w)}>✕ Quitar</button>
+                  </div>
+                </div>
+              </div>
+            ))}
           </>
         )}
 
@@ -1819,6 +1889,9 @@ export default function App() {
   const [pendingDoctorId, setPendingDoctorId] = useState(null);
   const [allAppointments, setAllAppointments] = useState([]);
   const [reviewParams, setReviewParams] = useState(null);
+  const [showWaitlistModal, setShowWaitlistModal] = useState(false);
+  const [waitlistSubmitting, setWaitlistSubmitting] = useState(false);
+  const [waitlistDone, setWaitlistDone] = useState(false);
   const chatEndRef = useRef(null);
 
   useEffect(() => {
@@ -1868,6 +1941,22 @@ export default function App() {
       setShowPayment(true);
       db.getAppointments().then(data => setAllAppointments(data || [])).catch(() => {});
     } catch (e) { alert("Error al guardar la cita: " + e.message); }
+  }
+  async function joinWaitlist() {
+    if (!bookingData.patient_name || !bookingData.patient_phone || !bookingData.date || !bookingData.time) return;
+    setWaitlistSubmitting(true);
+    try {
+      await db.addToWaitlist({
+        doctor_id: selectedDoctor.id,
+        patient_name: bookingData.patient_name,
+        patient_phone: bookingData.patient_phone,
+        desired_date: bookingData.date,
+        desired_time: bookingData.time,
+        status: "esperando",
+      });
+      setWaitlistDone(true);
+    } catch (e) { alert("Error al anotarte en la lista de espera: " + e.message); }
+    setWaitlistSubmitting(false);
   }
   function onPaymentSuccess() {
     setShowPayment(false);
@@ -2678,15 +2767,44 @@ export default function App() {
               {[["NOMBRE COMPLETO","patient_name","Tu nombre completo","text"],["TELÉFONO / WHATSAPP","patient_phone","+51 9XX XXX XXX","text"],["FECHA","date","","date"]].map(([lbl,key,ph,type])=>(
                 <div key={key} style={{ marginBottom:16 }}>
                   <label style={T.labelLight}>{lbl}</label>
-                  <input style={T.inputLight} placeholder={ph} type={type} value={bookingData[key]} onChange={e=>setBookingData({...bookingData,[key]:e.target.value})} />
+                  <input style={T.inputLight} placeholder={ph} type={type} value={bookingData[key]} onChange={e=>{setBookingData({...bookingData,[key]:e.target.value}); setWaitlistDone(false);}} />
                 </div>
               ))}
               <div style={{ marginBottom:16 }}>
                 <label style={T.labelLight}>HORARIO DISPONIBLE</label>
                 <div style={{ display:"flex", gap:8, flexWrap:"wrap", marginTop:8 }}>
-                  {(selectedDoctor.schedule||[]).map(t=><button key={t} style={T.timePillLight(bookingData.time===t)} onClick={()=>setBookingData({...bookingData,time:t})}>{t}</button>)}
+                  {(selectedDoctor.schedule||[]).map(t=><button key={t} style={T.timePillLight(bookingData.time===t)} onClick={()=>{setBookingData({...bookingData,time:t}); setWaitlistDone(false);}}>{t}</button>)}
                 </div>
               </div>
+
+              {(() => {
+                if (!bookingData.date || !bookingData.time) return null;
+                const booked = getBookedSlotsForDoctor(allAppointments, selectedDoctor.id);
+                const slotKey = `${bookingData.date} ${bookingData.time.match(/(\d{1,2}:\d{2})/)?.[1] || ""}`;
+                const isOccupied = booked.has(slotKey);
+                if (!isOccupied) return null;
+                return (
+                  <div style={{ background:"#fff7ed", border:"1px solid #fed7aa", borderRadius:12, padding:16, marginBottom:16 }}>
+                    {waitlistDone ? (
+                      <div style={{ textAlign:"center" }}>
+                        <div style={{ fontSize:28, marginBottom:6 }}>✅</div>
+                        <p style={{ margin:0, color:"#15803d", fontWeight:700, fontSize:14 }}>¡Listo! Te avisaremos por WhatsApp si se libera este horario.</p>
+                      </div>
+                    ) : (
+                      <>
+                        <p style={{ margin:"0 0 10px", color:"#c2410c", fontSize:14, fontWeight:700 }}>⏰ Ese horario ya está reservado por otro paciente</p>
+                        <p style={{ margin:"0 0 12px", color:"#475569", fontSize:13 }}>Puedes elegir otro horario arriba, o anotarte en la lista de espera. Si se cancela esa cita, te avisaremos por WhatsApp de inmediato.</p>
+                        <button
+                          style={{ width:"100%", padding:"10px 0", background:"linear-gradient(135deg,#F4A261,#ea9550)", color:"#fff", border:"none", borderRadius:10, fontSize:14, fontWeight:700, cursor:"pointer", fontFamily:"inherit", opacity: (!bookingData.patient_name||!bookingData.patient_phone)?0.5:1 }}
+                          onClick={joinWaitlist}
+                          disabled={!bookingData.patient_name||!bookingData.patient_phone||waitlistSubmitting}>
+                          {waitlistSubmitting ? "Anotando..." : "⏰ Anotarme en lista de espera"}
+                        </button>
+                      </>
+                    )}
+                  </div>
+                );
+              })()}
 
               {/* AVANCE BOX */}
               <div style={{ background:"#fff7ed", border:"2px solid #fed7aa", borderRadius:14, padding:"16px 18px", marginBottom:16 }}>
@@ -2712,9 +2830,17 @@ export default function App() {
                 </div>
               </div>
 
-              <button style={{ ...T.ctaPrimary, width:"100%", marginTop:4, opacity:(!bookingData.patient_name||!bookingData.patient_phone||!bookingData.date||!bookingData.time)?0.5:1 }} onClick={confirmBooking} disabled={!bookingData.patient_name||!bookingData.patient_phone||!bookingData.date||!bookingData.time}>
-                💳 Pagar adelanto S/. {AVANCE.monto} y reservar
-              </button>
+              {(() => {
+                const booked = getBookedSlotsForDoctor(allAppointments, selectedDoctor.id);
+                const slotKey = bookingData.date && bookingData.time ? `${bookingData.date} ${bookingData.time.match(/(\d{1,2}:\d{2})/)?.[1] || ""}` : "";
+                const isOccupied = slotKey && booked.has(slotKey);
+                const disabled = !bookingData.patient_name||!bookingData.patient_phone||!bookingData.date||!bookingData.time||isOccupied;
+                return (
+                  <button style={{ ...T.ctaPrimary, width:"100%", marginTop:4, opacity:disabled?0.5:1 }} onClick={confirmBooking} disabled={disabled}>
+                    💳 Pagar adelanto S/. {AVANCE.monto} y reservar
+                  </button>
+                );
+              })()}
               <p style={{ textAlign:"center", fontSize:12, color:"#64748b", margin:"8px 0 0" }}>El resto (S/. {parseInt((selectedDoctor.price||"S/. 0").replace(/\D/g,"")) - AVANCE.monto}) se paga directamente al médico</p>
             </div>
           )}
