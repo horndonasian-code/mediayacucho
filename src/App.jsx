@@ -513,10 +513,9 @@ function PaymentModal({ doctor, bookingData, onSuccess, onClose, isMembership })
                 <span style={{ color: "#bae6fd" }}>Concepto:</span><strong style={{ color: "#e8f0f8" }}>{concept}</strong>
               </div>
             </div>
-            <button style={s.waBtn} onClick={() => { const msg = `🟣 *COMPROBANTE YAPE - MediPerú*\n\n💰 Monto: S/. ${amount}\n📋 Concepto: ${concept}\n\n📎 Adjunto captura de Yape.`; window.open(`https://wa.me/51913330712?text=${encodeURIComponent(msg)}`, "_blank"); }}>
-              💬 Enviar comprobante por WhatsApp
+            <button style={s.payBtn} onClick={() => { const msg = `🟣 *COMPROBANTE YAPE - MediPerú*\n\n💰 Monto: S/. ${amount}\n📋 Concepto: ${concept}\n\n📎 Adjunto captura de Yape.`; window.open(`https://wa.me/51913330712?text=${encodeURIComponent(msg)}`, "_blank"); processPayment(); }}>
+              💬 Enviar comprobante y confirmar pago
             </button>
-            <button style={s.ghostBtn("#6C3FC5")} onClick={processPayment}>✓ Ya yapé y envié el comprobante</button>
           </>
         )}
 
@@ -549,10 +548,9 @@ function PaymentModal({ doctor, bookingData, onSuccess, onClose, isMembership })
                 ))}
               </div>
             </div>
-            <button style={s.waBtn} onClick={() => { const msg = `🟢 *COMPROBANTE PLIN - MediPerú*\n\n💰 Monto: S/. ${amount}\n📋 Concepto: ${concept}\n\n📎 Adjunto captura de Plin.`; window.open(`https://wa.me/51913330712?text=${encodeURIComponent(msg)}`, "_blank"); }}>
-              💬 Enviar comprobante por WhatsApp
+            <button style={s.payBtn} onClick={() => { const msg = `🟢 *COMPROBANTE PLIN - MediPerú*\n\n💰 Monto: S/. ${amount}\n📋 Concepto: ${concept}\n\n📎 Adjunto captura de Plin.`; window.open(`https://wa.me/51913330712?text=${encodeURIComponent(msg)}`, "_blank"); processPayment(); }}>
+              💬 Enviar comprobante y confirmar pago
             </button>
-            <button style={s.ghostBtn("#00B14F")} onClick={processPayment}>✓ Ya plininé y envié el comprobante</button>
           </>
         )}
 
