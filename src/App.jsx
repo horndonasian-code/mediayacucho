@@ -383,31 +383,14 @@ function LoginModal({ onLogin, onClose }) {
 function PaymentModal({ doctor, bookingData, onSuccess, onClose, isMembership }) {
   const [method, setMethod] = useState(null);
   const [step, setStep] = useState("choose");
-  const [cardData, setCardData] = useState({ number: "", name: "", expiry: "", cvv: "" });
-  const [errors, setErrors] = useState({});
   const amount = isMembership ? 99 : AVANCE.monto;
 
   const METHODS = [
     { id: "yape", label: "Yape", icon: "🟣", sub: "Pago instantáneo — 0% comisión", color: "#6C3FC5" },
     { id: "plin", label: "Plin", icon: "🟢", sub: "BCP, Scotiabank, BBVA, Interbank", color: "#00B14F" },
-    { id: "culqi", label: "Tarjeta débito/crédito", icon: "💳", sub: "Visa, Mastercard, American Express", color: "#1A56DB" },
-    { id: "transferencia", label: "Transferencia bancaria", icon: "🏦", sub: "BCP · BBVA · Interbank", color: "#F4A261" },
   ];
 
-  function formatCard(v) { return v.replace(/\D/g, "").slice(0, 16).replace(/(.{4})/g, "$1 ").trim(); }
-  function formatExpiry(v) { return v.replace(/\D/g, "").slice(0, 4).replace(/(.{2})/, "$1/"); }
-  function validateCard() {
-    const e = {};
-    if (cardData.number.replace(/\s/g, "").length < 16) e.number = "Número inválido";
-    if (!cardData.name.trim()) e.name = "Ingresa el nombre";
-    if (cardData.expiry.length < 5) e.expiry = "Fecha inválida";
-    if (cardData.cvv.length < 3) e.cvv = "CVV inválido";
-    setErrors(e);
-    return Object.keys(e).length === 0;
-  }
-
   async function processPayment() {
-    if (method === "culqi" && !validateCard()) return;
     setStep("processing");
     try {
       if (isMembership && doctor?.id) {
@@ -573,60 +556,6 @@ function PaymentModal({ doctor, bookingData, onSuccess, onClose, isMembership })
           </>
         )}
 
-        {step === "form" && method === "culqi" && (
-          <>
-            <button style={s.backBtn} onClick={() => setStep("choose")}>← Cambiar método</button>
-            <div style={{ marginBottom: 14 }}>
-              <label style={s.label}>Número de tarjeta</label>
-              <input style={s.inp(errors.number)} placeholder="0000 0000 0000 0000" value={cardData.number} onChange={e => setCardData({ ...cardData, number: formatCard(e.target.value) })} />
-              {errors.number && <span style={s.errTxt}>{errors.number}</span>}
-            </div>
-            <div style={{ marginBottom: 14 }}>
-              <label style={s.label}>Nombre en la tarjeta</label>
-              <input style={s.inp(errors.name)} placeholder="NOMBRE APELLIDO" value={cardData.name} onChange={e => setCardData({ ...cardData, name: e.target.value.toUpperCase() })} />
-              {errors.name && <span style={s.errTxt}>{errors.name}</span>}
-            </div>
-            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12, marginBottom: 14 }}>
-              <div>
-                <label style={s.label}>Vencimiento</label>
-                <input style={s.inp(errors.expiry)} placeholder="MM/AA" value={cardData.expiry} onChange={e => setCardData({ ...cardData, expiry: formatExpiry(e.target.value) })} />
-                {errors.expiry && <span style={s.errTxt}>{errors.expiry}</span>}
-              </div>
-              <div>
-                <label style={s.label}>CVV</label>
-                <input style={s.inp(errors.cvv)} placeholder="123" maxLength={4} type="password" value={cardData.cvv} onChange={e => setCardData({ ...cardData, cvv: e.target.value.replace(/\D/g, "") })} />
-                {errors.cvv && <span style={s.errTxt}>{errors.cvv}</span>}
-              </div>
-            </div>
-            <div style={{ background: "rgba(59,130,196,0.06)", borderRadius: 10, padding: "10px 14px", fontSize: 12, color: "#bae6fd", marginBottom: 4 }}>
-              🔒 Pago procesado por <strong style={{ color: "#7dd3fc" }}>Culqi</strong> — certificación PCI DSS.
-            </div>
-            <button style={s.payBtn} onClick={processPayment}>Pagar S/. {amount} →</button>
-          </>
-        )}
-
-        {step === "form" && method === "transferencia" && (
-          <>
-            <button style={s.backBtn} onClick={() => setStep("choose")}>← Cambiar método</button>
-            {[{ bank:"BCP", num:"194-2345678-0-12", cci:"002-194-00234567801234-56" },{ bank:"BBVA", num:"0011-0198-0123456789", cci:"011-198-000123456789-00" }].map(b=>(
-              <div key={b.bank} style={{ background: "rgba(255,255,255,0.04)", border: "1px solid rgba(59,130,196,0.12)", borderRadius: 12, padding: 16, marginBottom: 12 }}>
-                <div style={{ fontWeight: 700, color: "#7dd3fc", fontSize: 15, marginBottom: 10 }}>🏦 {b.bank}</div>
-                <div style={s.bankRow}><span style={{ color: "#bae6fd", fontSize: 13 }}>Cuenta</span><span style={{ color: "#e8f0f8", fontSize: 13 }}>{b.num}</span></div>
-                <div style={{ ...s.bankRow, borderBottom:"none", alignItems:"flex-start" }}>
-                  <span style={{ color: "#bae6fd", fontSize: 13 }}>CCI</span>
-                  <div style={{ textAlign:"right" }}>
-                    <span style={{ color: "#e8f0f8", fontSize: 12 }}>{b.cci}</span><br />
-                    <button style={s.copyBtn} onClick={() => navigator.clipboard?.writeText(b.cci)}>Copiar</button>
-                  </div>
-                </div>
-              </div>
-            ))}
-            <div style={{ background: "rgba(244,162,97,0.1)", border: "1px solid rgba(244,162,97,0.3)", borderRadius: 10, padding: 14, fontSize: 13, color: "#F4A261", marginBottom: 16 }}>
-              ⚠️ Transfiere exactamente <strong>S/. {amount}</strong> con concepto: <strong>{concept}</strong>. Envíanos el comprobante al WhatsApp <strong>913 330 712</strong>.
-            </div>
-            <button style={s.payBtn} onClick={processPayment}>Ya realicé la transferencia →</button>
-          </>
-        )}
       </div>
     </div>
   );
