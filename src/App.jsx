@@ -2633,13 +2633,13 @@ export default function App() {
               </div>
               <div className="steps-grid" style={{ display:"grid", gridTemplateColumns:"repeat(3,1fr)", gap:24, position:"relative" }}>
                 {[
-                  { n:"01", icon:"🤖", title:"Consulta la IA", desc:"Cuéntanos tus síntomas y nuestra IA te recomienda al médico ideal para ti.", color:"#7dd3fc" },
-                  { n:"02", icon:"📅", title:"Elige tu cita", desc:"Selecciona el médico, fecha, horario y modalidad (presencial o virtual).", color:"#a78bfa" },
-                  { n:"03", icon:"📲", title:"Confirmación WhatsApp", desc:"Recibe confirmación instantánea con dirección, precio y política de cancelación.", color:"#25D366" },
+                  { n:"01", title:"Consulta la IA", desc:"Cuéntanos tus síntomas y nuestra IA te recomienda al médico ideal para ti.", color:"#7dd3fc", svg:<svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg> },
+                  { n:"02", title:"Elige tu cita", desc:"Selecciona el médico, fecha, horario y modalidad (presencial o virtual).", color:"#a78bfa", svg:<svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg> },
+                  { n:"03", title:"Confirmación WhatsApp", desc:"Recibe confirmación instantánea con dirección, precio y política de cancelación.", color:"#25D366", svg:<svg width="26" height="26" viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347zM12 0C5.373 0 0 5.373 0 12c0 2.116.554 4.103 1.523 5.824L0 24l6.342-1.498A11.955 11.955 0 0 0 12 24c6.627 0 12-5.373 12-12S18.627 0 12 0zm0 22c-1.894 0-3.669-.497-5.211-1.371L3 21.5l.894-3.654A10 10 0 0 1 2 12C2 6.477 6.477 2 12 2s10 4.477 10 10-4.477 10-10 10z"/></svg> },
                 ].map((step,i)=>(
                   <div key={i} className="hero-card" style={{ background:"#ffffff", border:`1px solid ${step.color}22`, borderRadius:20, padding:28, position:"relative", transition:"all 0.3s", cursor:"default", boxShadow:"0 8px 28px rgba(15,23,42,0.07)" }}>
                     <div style={{ position:"absolute", top:20, right:20, fontSize:48, fontWeight:900, color:`${step.color}15`, lineHeight:1 }}>{step.n}</div>
-                    <div style={{ width:56, height:56, borderRadius:16, background:`${step.color}18`, border:`1px solid ${step.color}33`, display:"flex", alignItems:"center", justifyContent:"center", fontSize:26, marginBottom:16, boxShadow:`0 6px 16px ${step.color}20` }}>{step.icon}</div>
+                    <div style={{ width:56, height:56, borderRadius:16, background:`${step.color}18`, border:`1px solid ${step.color}33`, display:"flex", alignItems:"center", justifyContent:"center", marginBottom:16, boxShadow:`0 6px 16px ${step.color}20`, color:step.color }}>{step.svg}</div>
                     <h3 style={{ margin:"0 0 10px", fontSize:19, fontWeight:700, color:"#082f49" }}>{step.title}</h3>
                     <p style={{ margin:0, color:"#64748b", fontSize:14, lineHeight:1.6 }}>{step.desc}</p>
                   </div>
@@ -3417,16 +3417,16 @@ export default function App() {
                 {/* Redes sociales */}
                 <div style={{ display:"flex", gap:10 }}>
                   {[
-                    { icon:"📘", label:"Facebook", url:"https://facebook.com" },
-                    { icon:"📸", label:"Instagram", url:"https://instagram.com" },
-                    { icon:"💬", label:"WhatsApp", url:"https://wa.me/51913330712" },
-                    { icon:"🐦", label:"TikTok", url:"https://tiktok.com" },
+                    { label:"Facebook", color:"#1877F2", svg:<svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z"/></svg>, url:"https://facebook.com" },
+                    { label:"Instagram", color:"#E1306C", svg:<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="2" y="2" width="20" height="20" rx="5" ry="5"/><path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"/><line x1="17.5" y1="6.5" x2="17.51" y2="6.5"/></svg>, url:"https://instagram.com" },
+                    { label:"WhatsApp", color:"#25D366", svg:<svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347zM12 0C5.373 0 0 5.373 0 12c0 2.116.554 4.103 1.523 5.824L0 24l6.342-1.498A11.955 11.955 0 0 0 12 24c6.627 0 12-5.373 12-12S18.627 0 12 0zm0 22c-1.894 0-3.669-.497-5.211-1.371L3 21.5l.894-3.654A10 10 0 0 1 2 12C2 6.477 6.477 2 12 2s10 4.477 10 10-4.477 10-10 10z"/></svg>, url:"https://wa.me/51913330712" },
+                    { label:"TikTok", color:"#000000", svg:<svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M19.59 6.69a4.83 4.83 0 0 1-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 0 1-2.88 2.5 2.89 2.89 0 0 1-2.89-2.89 2.89 2.89 0 0 1 2.89-2.89c.28 0 .54.04.79.1V9.01a6.27 6.27 0 0 0-.79-.05 6.34 6.34 0 0 0-6.34 6.34 6.34 6.34 0 0 0 6.34 6.34 6.34 6.34 0 0 0 6.33-6.34V9.02a8.16 8.16 0 0 0 4.77 1.52V7.1a4.85 4.85 0 0 1-1-.41z"/></svg>, url:"https://tiktok.com" },
                   ].map((s,i)=>(
                     <a key={i} href={s.url} target="_blank" rel="noreferrer" title={s.label}
-                      style={{ width:36, height:36, borderRadius:10, background:"rgba(59,130,196,0.12)", border:"1px solid rgba(59,130,196,0.2)", display:"flex", alignItems:"center", justifyContent:"center", fontSize:16, textDecoration:"none", transition:"all 0.2s" }}
-                      onMouseEnter={e=>{e.target.style.background="rgba(59,130,196,0.25)";e.target.style.transform="translateY(-2px)"}}
-                      onMouseLeave={e=>{e.target.style.background="rgba(59,130,196,0.12)";e.target.style.transform=""}}>
-                      {s.icon}
+                      style={{ width:36, height:36, borderRadius:10, background:`${s.color}18`, border:`1px solid ${s.color}44`, display:"flex", alignItems:"center", justifyContent:"center", textDecoration:"none", transition:"all 0.2s", color:s.color }}
+                      onMouseEnter={e=>{e.currentTarget.style.background=`${s.color}30`;e.currentTarget.style.transform="translateY(-2px)"}}
+                      onMouseLeave={e=>{e.currentTarget.style.background=`${s.color}18`;e.currentTarget.style.transform=""}}>
+                      {s.svg}
                     </a>
                   ))}
                 </div>
