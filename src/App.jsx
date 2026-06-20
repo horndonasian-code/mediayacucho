@@ -2388,14 +2388,34 @@ export default function App() {
         </div>
 
         {/* Desktop nav */}
-        <nav className="desktop-nav" style={{ display: "flex", gap: 8 }}>
-          <button style={T.navBtn(view==="home", view==="home"||view==="doctors"||view==="chat"||view==="booking")} onClick={() => setView("home")}>Inicio</button>
-          <button style={T.navBtn(view==="doctors", view==="home"||view==="doctors"||view==="chat"||view==="booking")} onClick={() => setView("doctors")}>Médicos</button>
-          <button style={T.navBtn(view==="chat", view==="home"||view==="doctors"||view==="chat"||view==="booking")} onClick={() => setView("chat")}>🤖 IA</button>
+        <nav className="desktop-nav" style={{ display: "flex", gap: 8, alignItems:"center" }}>
+          <button style={T.navBtn(view==="home", view==="home"||view==="doctors"||view==="chat"||view==="booking")} onClick={() => setView("home")}>
+            <span style={{ display:"flex", alignItems:"center", gap:5 }}>
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+              Inicio
+            </span>
+          </button>
+          <button style={T.navBtn(view==="doctors", view==="home"||view==="doctors"||view==="chat"||view==="booking")} onClick={() => setView("doctors")}>
+            <span style={{ display:"flex", alignItems:"center", gap:5 }}>
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+              Médicos
+            </span>
+          </button>
+          <button style={T.navBtn(view==="chat", view==="home"||view==="doctors"||view==="chat"||view==="booking")} onClick={() => setView("chat")}>
+            <span style={{ display:"flex", alignItems:"center", gap:5 }}>
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/><line x1="9" y1="10" x2="9" y2="10"/><line x1="12" y1="10" x2="12" y2="10"/><line x1="15" y1="10" x2="15" y2="10"/></svg>
+              Asistente IA
+            </span>
+          </button>
           {session ? (
             <div style={{ display: "flex", gap: 8 }}>
               {session.email === ADMIN_EMAIL && (
-                <button style={{ ...T.navBtn(false), background: "rgba(255,100,100,0.15)", border: "1px solid rgba(255,100,100,0.4)", color: "#ff6b6b" }} onClick={() => setShowAdmin(true)}>🛡️</button>
+                <button style={{ ...T.navBtn(false), background: "rgba(255,100,100,0.15)", border: "1px solid rgba(255,100,100,0.4)", color: "#ff6b6b" }} onClick={() => setShowAdmin(true)}>
+                  <span style={{ display:"flex", alignItems:"center", gap:5 }}>
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+                    Admin
+                  </span>
+                </button>
               )}
               <button style={{ ...T.navBtn(true), background: "rgba(59,130,196,0.15)" }} onClick={async () => {
                 const myDoc = doctors.find(d => d.email === session?.email);
@@ -2405,30 +2425,57 @@ export default function App() {
                   if (all && all.length > 0) setDashboardDoctor(all[0]);
                   else setView("doctor-register");
                 } catch { setView("doctor-register"); }
-              }}>📊 Panel</button>
-              <button style={{ ...T.navBtn(false), color: "#ff6b6b" }} onClick={handleLogout}>Salir</button>
+              }}>
+                <span style={{ display:"flex", alignItems:"center", gap:5 }}>
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
+                  Mi Panel
+                </span>
+              </button>
+              <button style={{ ...T.navBtn(false), color: "#ff6b6b" }} onClick={handleLogout}>
+                <span style={{ display:"flex", alignItems:"center", gap:5 }}>
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+                  Salir
+                </span>
+              </button>
             </div>
           ) : (
-            <button style={{ ...T.navBtn(false), background: "rgba(59,130,196,0.15)", border: "1px solid rgba(59,130,196,0.4)", color: "#7dd3fc" }} onClick={() => setShowLogin(true)}>🔐 Médico</button>
+            <button style={{ ...T.navBtn(false), background: "rgba(59,130,196,0.15)", border: "1px solid rgba(59,130,196,0.4)", color: "#7dd3fc" }} onClick={() => setShowLogin(true)}>
+              <span style={{ display:"flex", alignItems:"center", gap:5 }}>
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"/><polyline points="10 17 15 12 10 7"/><line x1="15" y1="12" x2="3" y2="12"/></svg>
+                Médico
+              </span>
+            </button>
           )}
         </nav>
 
         {/* Mobile nav — icônes seulement */}
         <nav className="mobile-nav" style={{ display: "none", gap: 6, alignItems: "center" }}>
-          <button style={{ padding:"8px 10px", borderRadius:8, border:"none", background: view==="doctors" ? "rgba(59,130,196,0.2)" : "transparent", color: view==="doctors" ? "#7dd3fc" : "#e0f2fe", cursor:"pointer", fontSize:18, fontFamily:"inherit" }} onClick={() => setView("doctors")}>🏥</button>
-          <button style={{ padding:"8px 10px", borderRadius:8, border:"none", background: view==="chat" ? "rgba(59,130,196,0.2)" : "transparent", color: view==="chat" ? "#7dd3fc" : "#e0f2fe", cursor:"pointer", fontSize:18, fontFamily:"inherit" }} onClick={() => setView("chat")}>🤖</button>
+          <button style={{ padding:"8px 10px", borderRadius:8, border:"none", background: view==="doctors" ? "rgba(59,130,196,0.2)" : "transparent", color: view==="doctors" ? "#7dd3fc" : "#e0f2fe", cursor:"pointer", fontFamily:"inherit" }} onClick={() => setView("doctors")}>
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+          </button>
+          <button style={{ padding:"8px 10px", borderRadius:8, border:"none", background: view==="chat" ? "rgba(59,130,196,0.2)" : "transparent", color: view==="chat" ? "#7dd3fc" : "#e0f2fe", cursor:"pointer", fontFamily:"inherit" }} onClick={() => setView("chat")}>
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+          </button>
           {session ? (
             <>
-              {session.email === ADMIN_EMAIL && <button style={{ padding:"8px 10px", borderRadius:8, border:"none", background:"rgba(255,100,100,0.15)", color:"#ff6b6b", cursor:"pointer", fontSize:18, fontFamily:"inherit" }} onClick={() => setShowAdmin(true)}>🛡️</button>}
-              <button style={{ padding:"8px 10px", borderRadius:8, border:"none", background:"rgba(59,130,196,0.15)", color:"#7dd3fc", cursor:"pointer", fontSize:18, fontFamily:"inherit" }} onClick={async () => {
+              {session.email === ADMIN_EMAIL && <button style={{ padding:"8px 10px", borderRadius:8, border:"none", background:"rgba(255,100,100,0.15)", color:"#ff6b6b", cursor:"pointer", fontFamily:"inherit" }} onClick={() => setShowAdmin(true)}>
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+              </button>}
+              <button style={{ padding:"8px 10px", borderRadius:8, border:"none", background:"rgba(59,130,196,0.15)", color:"#7dd3fc", cursor:"pointer", fontFamily:"inherit" }} onClick={async () => {
                 const myDoc = doctors.find(d => d.email === session?.email);
                 if (myDoc) { setDashboardDoctor(myDoc); return; }
                 try { const all = await sb(`doctors?email=eq.${encodeURIComponent(session?.email)}`); if (all?.length > 0) setDashboardDoctor(all[0]); else setView("doctor-register"); } catch { setView("doctor-register"); }
-              }}>📊</button>
-              <button style={{ padding:"8px 10px", borderRadius:8, border:"none", background:"transparent", color:"#ff6b6b", cursor:"pointer", fontSize:14, fontFamily:"inherit" }} onClick={handleLogout}>✕</button>
+              }}>
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
+              </button>
+              <button style={{ padding:"8px 10px", borderRadius:8, border:"none", background:"transparent", color:"#ff6b6b", cursor:"pointer", fontFamily:"inherit" }} onClick={handleLogout}>
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+              </button>
             </>
           ) : (
-            <button style={{ padding:"8px 14px", borderRadius:8, border:"1px solid rgba(59,130,196,0.4)", background:"rgba(59,130,196,0.15)", color:"#7dd3fc", cursor:"pointer", fontSize:13, fontFamily:"inherit", fontWeight:700 }} onClick={() => setShowLogin(true)}>🔐</button>
+            <button style={{ padding:"8px 14px", borderRadius:8, border:"1px solid rgba(59,130,196,0.4)", background:"rgba(59,130,196,0.15)", color:"#7dd3fc", cursor:"pointer", fontFamily:"inherit" }} onClick={() => setShowLogin(true)}>
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"/><polyline points="10 17 15 12 10 7"/><line x1="15" y1="12" x2="3" y2="12"/></svg>
+            </button>
           )}
         </nav>
       </header>
