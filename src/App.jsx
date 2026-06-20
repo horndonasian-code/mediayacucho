@@ -59,8 +59,8 @@ const db = {
 const AVANCE = {
   monto: 20,
   texto: "S/. 20",
-  politica: "Reembolsable si cancelas con 48h de anticipación",
-  horasMinimas: 48,
+  politica: "Reembolsable si cancelas con 24h de anticipación",
+  horasMinimas: 24,
 };
 const auth = {
   async signUp(email, password) {
@@ -1661,7 +1661,7 @@ function AdminPanel({ onExit }) {
                     tomorrowAppts.forEach((a, i) => {
                       const doctorName = activeDoctors.find(d => d.id === a.doctor_id)?.name || "el médico";
                       const doctorAddress = activeDoctors.find(d => d.id === a.doctor_id)?.address || "";
-                      const msg = `⏰ *RECORDATORIO DE CITA - MediAyacucho*\n\nHola ${a.patient_name}, te recordamos tu cita MAÑANA:\n\n👨‍⚕️ ${doctorName}\n🕐 ${a.time}\n📍 ${doctorAddress || "Consultorio del médico"}\n\n💡 Recuerda llegar 10 minutos antes.\n\nPara cancelar escribe al 913 330 712 con +48h de anticipación.\n\n📍 MediAyacucho 🌿`;
+                      const msg = `⏰ *RECORDATORIO DE CITA - MediAyacucho*\n\nHola ${a.patient_name}, te recordamos tu cita MAÑANA:\n\n👨‍⚕️ ${doctorName}\n🕐 ${a.time}\n📍 ${doctorAddress || "Consultorio del médico"}\n\n💡 Recuerda llegar 10 minutos antes.\n\nPara cancelar escribe al 913 330 712 con +24h de anticipación.\n\n📍 MediAyacucho 🌿`;
                       setTimeout(() => {
                         window.open(`https://wa.me/${a.patient_phone.replace(/\D/g,"")}?text=${encodeURIComponent(msg)}`, "_blank");
                       }, i * 1500);
@@ -1687,7 +1687,7 @@ function AdminPanel({ onExit }) {
                 </div>
                 {tomorrowAppts.map((a, i) => {
                   const doc = activeDoctors.find(d => d.id === a.doctor_id);
-                  const msg = `⏰ *RECORDATORIO DE CITA - MediAyacucho*\n\nHola ${a.patient_name}, te recordamos tu cita MAÑANA:\n\n👨‍⚕️ ${doc?.name || "el médico"}\n🕐 ${a.time}\n📍 ${doc?.address || "Consultorio del médico"}\n\n💡 Recuerda llegar 10 minutos antes.\n\nPara cancelar escribe al 913 330 712 con +48h de anticipación.\n\n📍 MediAyacucho 🌿`;
+                  const msg = `⏰ *RECORDATORIO DE CITA - MediAyacucho*\n\nHola ${a.patient_name}, te recordamos tu cita MAÑANA:\n\n👨‍⚕️ ${doc?.name || "el médico"}\n🕐 ${a.time}\n📍 ${doc?.address || "Consultorio del médico"}\n\n💡 Recuerda llegar 10 minutos antes.\n\nPara cancelar escribe al 913 330 712 con +24h de anticipación.\n\n📍 MediAyacucho 🌿`;
                   return (
                     <div key={a.id} style={s.card}>
                       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: 12 }}>
@@ -2964,8 +2964,8 @@ export default function App() {
                 <h3 style={{ margin:"0 0 12px", color:"#c2410c", fontSize:16 }}>Política de cancelación</h3>
                 <div style={{ display:"flex", flexDirection:"column", gap:10 }}>
                   {[
-                    { icon:"✅", label:"Cancelas con +48h de anticipación", result:"Reembolso completo de S/. 20", color:"#15803d" },
-                    { icon:"❌", label:"Cancelas con menos de 48h", result:"Sin reembolso (S/. 20 retenidos)", color:"#dc2626" },
+                    { icon:"✅", label:"Cancelas con +24h de anticipación", result:"Reembolso completo de S/. 20", color:"#15803d" },
+                    { icon:"❌", label:"Cancelas con menos de 24h", result:"Sin reembolso (S/. 20 retenidos)", color:"#dc2626" },
                     { icon:"✅", label:"El médico cancela o no se presenta", result:"Reembolso automático de S/. 20", color:"#15803d" },
                   ].map((item, i) => (
                     <div key={i} style={{ display:"flex", gap:12, alignItems:"flex-start", padding:"10px 14px", background:"#ffffff", borderRadius:10 }}>
