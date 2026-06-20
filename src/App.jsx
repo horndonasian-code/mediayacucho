@@ -2830,7 +2830,6 @@ export default function App() {
                       </div>
                     );
                   })()}
-                  <div style={{ marginTop:6, color:"#64748b", fontSize:12 }}>{(doc.schedule||[]).join(" · ")}</div>
                   {doc.address && (
                     <div style={{ marginTop:8, display:"flex", alignItems:"flex-start", gap:6 }}>
                       <span style={{ fontSize:12 }}>📍</span>
