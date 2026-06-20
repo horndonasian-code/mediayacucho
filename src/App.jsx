@@ -879,13 +879,13 @@ Hola ${appt.patient_name}, gracias por confiar en ${doctor.name}.
   };
 
   const navItems = [
-    { id: "overview", icon: "📊", label: "Resumen" },
-    { id: "appointments", icon: "📅", label: "Citas" },
-    { id: "calendario", icon: "🗓️", label: "Mis horarios" },
-    { id: "waitlist", icon: "⏰", label: "Lista de espera" },
-    { id: "analytics", icon: "📈", label: "Estadísticas" },
-    { id: "profile", icon: "👤", label: "Mi Perfil" },
-    { id: "ai", icon: "🤖", label: "Consejo IA" },
+    { id: "overview", icon: "chart", label: "Resumen" },
+    { id: "appointments", icon: "calendar", label: "Citas" },
+    { id: "calendario", icon: "clock", label: "Mis horarios" },
+    { id: "waitlist", icon: "waitlist", label: "Lista de espera" },
+    { id: "analytics", icon: "stats", label: "Estadísticas" },
+    { id: "profile", icon: "user", label: "Mi Perfil" },
+    { id: "ai", icon: "ai", label: "Consejo IA" },
   ];
 
   return (
@@ -909,7 +909,18 @@ Hola ${appt.patient_name}, gracias por confiar en ${doctor.name}.
       </div>
 
       <div style={s.sidebar}>
-        {navItems.map(n => <button key={n.id} style={s.sideBtn(tab === n.id)} onClick={() => setTab(n.id)}><span>{n.icon}</span> {n.label}</button>)}
+        {navItems.map(n => {
+          const icons = {
+            chart: <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>,
+            calendar: <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>,
+            clock: <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>,
+            waitlist: <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg>,
+            stats: <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>,
+            user: <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>,
+            ai: <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>,
+          };
+          return <button key={n.id} style={s.sideBtn(tab === n.id)} onClick={() => setTab(n.id)}><span>{icons[n.icon] || n.icon}</span> {n.label}</button>;
+        })}
         <div style={{ padding: "24px 24px 0", borderTop: "1px solid #e0f2fe", marginTop: 24 }}>
           <div style={{ fontSize: 11, color: "#475569", marginBottom: 4 }}>MEMBRESÍA ACTIVA</div>
           <div style={{ fontSize: 13, color: "#0369a1", fontWeight: 700 }}>Plan Profesional</div>
@@ -933,7 +944,7 @@ Hola ${appt.patient_name}, gracias por confiar en ${doctor.name}.
 
         {tab === "overview" && (
           <>
-            <h2 style={{ margin: "0 0 24px", fontSize: 26, fontWeight: 700 }}>Buenos días 👋</h2>
+            <h2 style={{ margin: "0 0 24px", fontSize: 26, fontWeight: 700 }}>Buenos días</h2>
             <div style={s.kpiGrid}>
               <div style={s.kpiCard("#0369a1")}><span style={s.kpiLabel}>Citas hoy</span><span style={s.kpiNum("#0369a1")}>{todayAppts.length}</span></div>
               <div style={s.kpiCard("#F4A261")}><span style={s.kpiLabel}>Pendientes</span><span style={s.kpiNum("#F4A261")}>{appointments.filter(a=>a.status==="pendiente").length}</span></div>
@@ -942,7 +953,7 @@ Hola ${appt.patient_name}, gracias por confiar en ${doctor.name}.
               <div style={s.kpiCard("#F4A261")}><span style={s.kpiLabel}>Calificación</span><span style={s.kpiNum("#F4A261")}>⭐ {doctor.rating}</span></div>
             </div>
             <div style={s.card}>
-              <p style={s.cardTitle}>📅 Agenda de hoy</p>
+              <p style={s.cardTitle}>Agenda de hoy</p>
               {loadingAppts ? <p style={{ color: "#475569" }}>Cargando...</p> : todayAppts.length === 0
                 ? <p style={{ color: "#475569", fontSize: 14 }}>No hay citas para hoy.</p>
                 : todayAppts.map(a => (
@@ -970,7 +981,7 @@ Hola ${appt.patient_name}, gracias por confiar en ${doctor.name}.
         {tab === "appointments" && (
           <>
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 24, flexWrap: "wrap", gap: 12 }}>
-              <h2 style={{ margin: 0, fontSize: 26, fontWeight: 700 }}>📅 Todas las citas</h2>
+              <h2 style={{ margin: 0, fontSize: 26, fontWeight: 700 }}>Todas las citas</h2>
               <div style={{ background: "rgba(255,100,100,0.08)", border: "1px solid rgba(255,100,100,0.25)", borderRadius: 12, padding: "10px 16px", fontSize: 13, color: "#ff6b6b", display: "flex", alignItems: "center", gap: 8 }}>
                 <span>🚨</span>
                 <span>¿Cambio de dirección de última hora?</span>
@@ -1080,7 +1091,7 @@ Hola ${appt.patient_name}, gracias por confiar en ${doctor.name}.
 
           return (
             <>
-              <h2 style={{ margin:"0 0 8px", fontSize:26, fontWeight:700 }}>🗓️ Mis horarios de atención</h2>
+              <h2 style={{ margin:"0 0 8px", fontSize:26, fontWeight:700 }}>Mis horarios de atención</h2>
               <p style={{ color:"#475569", margin:"0 0 8px", fontSize:14 }}>Marca los días y horas en que atiendes pacientes este mes. El calendario de reservas se actualizará para los pacientes.</p>
               <p style={{ color:"#0369a1", fontWeight:700, fontSize:14, margin:"0 0 16px", textTransform:"capitalize" }}>📅 {monthName}</p>
 
@@ -1149,7 +1160,7 @@ Hola ${appt.patient_name}, gracias por confiar en ${doctor.name}.
 
         {tab === "waitlist" && (
           <>
-            <h2 style={{ margin: "0 0 8px", fontSize: 26, fontWeight: 700 }}>⏰ Lista de espera</h2>
+            <h2 style={{ margin: "0 0 8px", fontSize: 26, fontWeight: 700 }}>Lista de espera</h2>
             <p style={{ color:"#475569", margin:"0 0 24px", fontSize:14 }}>Pacientes esperando un horario que ya está reservado. Si cancelas una cita, el primero de la lista es notificado automáticamente por WhatsApp.</p>
             {loadingWaitlist ? (
               <div style={{ textAlign:"center", padding:40, color:"#0369a1" }}>Cargando...</div>
@@ -1178,7 +1189,7 @@ Hola ${appt.patient_name}, gracias por confiar en ${doctor.name}.
 
         {tab === "analytics" && (
           <>
-            <h2 style={{ margin: "0 0 24px", fontSize: 26, fontWeight: 700 }}>📈 Estadísticas</h2>
+            <h2 style={{ margin: "0 0 24px", fontSize: 26, fontWeight: 700 }}>Estadísticas</h2>
             <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 20, marginBottom: 20 }}>
               {[["📊 Citas por mes", MONTHLY_DATA, "citas", "#0369a1", maxCitas], ["💰 Ingresos (S/.)", MONTHLY_DATA, "ingresos", "#F4A261", 2100]].map(([title, data, key, color, max]) => (
                 <div key={title} style={s.card}>
@@ -1212,7 +1223,7 @@ Hola ${appt.patient_name}, gracias por confiar en ${doctor.name}.
 
         {tab === "profile" && (
           <>
-            <h2 style={{ margin: "0 0 24px", fontSize: 26, fontWeight: 700 }}>👤 Mi Perfil</h2>
+            <h2 style={{ margin: "0 0 24px", fontSize: 26, fontWeight: 700 }}>Mi Perfil</h2>
             <div style={s.card}>
               <div style={{ display: "flex", alignItems: "center", gap: 16, marginBottom: 24 }}>
                 <div style={{ position: "relative" }}>
@@ -1264,7 +1275,7 @@ Hola ${appt.patient_name}, gracias por confiar en ${doctor.name}.
 
         {tab === "ai" && (
           <>
-            <h2 style={{ margin: "0 0 8px", fontSize: 26, fontWeight: 700 }}>🤖 Consejo IA</h2>
+            <h2 style={{ margin: "0 0 8px", fontSize: 26, fontWeight: 700 }}>Consejo IA</h2>
             <p style={{ color: "#475569", margin: "0 0 24px" }}>La IA analiza tus datos reales y te da recomendaciones personalizadas</p>
             <div style={s.card}>
               <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(130px,1fr))", gap: 12, marginBottom: 20 }}>
@@ -1276,7 +1287,7 @@ Hola ${appt.patient_name}, gracias por confiar en ${doctor.name}.
                 ))}
               </div>
               <button style={{ padding:"12px 28px", background:"linear-gradient(135deg,#0ea5e9,#0369a1)", color:"#fff", border:"none", borderRadius:12, cursor:"pointer", fontSize:15, fontWeight:700, fontFamily:"inherit", opacity:aiLoading?0.7:1 }} onClick={getAiTip} disabled={aiLoading}>
-                {aiLoading ? "Analizando... ⏳" : "🤖 Obtener consejo personalizado"}
+                {aiLoading ? "Analizando... ⏳" : "Obtener consejo personalizado"}
               </button>
               {aiTip && <div style={{ background:"#f0f9ff", border:"1px solid #bae6fd", borderRadius:12, padding:16, marginTop:16, fontSize:14, color:"#082f49", lineHeight:1.7, whiteSpace:"pre-wrap" }}>
                 <div style={{ fontSize:12, color:"#0369a1", fontWeight:700, marginBottom:8 }}>💡 CONSEJO IA</div>{aiTip}
@@ -1410,10 +1421,10 @@ function AdminPanel({ onExit }) {
 
   const navTabs = [
     { id: "pending", label: `⏳ En espera (${pendingDoctors.length})` },
-    { id: "active", label: `✅ Activos (${activeDoctors.length})` },
-    { id: "appointments", label: `📅 Citas (${appointments.length})` },
-    { id: "payments", label: `💰 Pagos (${payments.length})` },
-    { id: "settlements", label: `💸 Reversar a médicos` },
+    { id: "active", label: `Activos (${activeDoctors.length})` },
+    { id: "appointments", label: `Citas (${appointments.length})` },
+    { id: "payments", label: `Pagos (${payments.length})` },
+    { id: "settlements", label: `Reversar a médicos` },
     { id: "recordatorios", label: `⏰ Recordatorios (${tomorrowAppts.length})` },
   ];
 
@@ -1478,8 +1489,8 @@ function AdminPanel({ onExit }) {
                     <div style={{ display: "flex", gap: 8, flexWrap: "wrap", alignItems: "center" }}>
                       <a href="https://www.cmp.org.pe" target="_blank" rel="noreferrer" style={{ ...s.btn("#a78bfa"), textDecoration: "none", display: "inline-block" }}>🔍 Verificar CMP</a>
                       <button style={s.btn("#25D366")} onClick={() => window.open(`https://wa.me/${doc.phone}?text=${encodeURIComponent(`Hola ${doc.name}, somos MediAyacucho. Hemos verificado tus credenciales y tu cuenta ha sido activada. ¡Bienvenido! 🎉`)}`, "_blank")}>💬 WhatsApp</button>
-                      <button style={s.btn("#52B788")} onClick={() => activateDoctor(doc.id, doc.name)}>✅ Activar</button>
-                      <button style={s.btn("#ff6b6b")} onClick={() => deleteDoctor(doc.id, doc.name)}>❌ Rechazar</button>
+                      <button style={s.btn("#52B788")} onClick={() => activateDoctor(doc.id, doc.name)}>Activar</button>
+                      <button style={s.btn("#ff6b6b")} onClick={() => deleteDoctor(doc.id, doc.name)}>Rechazar</button>
                     </div>
                   </div>
                 </div>
@@ -1491,7 +1502,7 @@ function AdminPanel({ onExit }) {
         {/* MÉDICOS ACTIVOS */}
         {!loading && tab === "active" && (
           <>
-            <h3 style={{ margin: "0 0 16px", color: "#52B788" }}>✅ Médicos activos en la plataforma</h3>
+            <h3 style={{ margin: "0 0 16px", color: "#52B788" }}>Médicos activos en la plataforma</h3>
             {activeDoctors.map(doc => {
               const ms = getMembershipStatus(doc.membership_paid_at);
               const msColors = { vencido: "#dc2626", urgente: "#c2410c", proximo: "#ca8a04", ok: "#15803d", sin_pago: "#64748b" };
@@ -1519,11 +1530,11 @@ function AdminPanel({ onExit }) {
                     <div style={{ display: "flex", gap: 8, alignItems: "center", flexWrap: "wrap" }}>
                       <span style={s.badge(doc.available ? "#52B788" : "#ff6b6b")}>{doc.available ? "Disponible" : "No disponible"}</span>
                       {(ms.status === "urgente" || ms.status === "vencido" || ms.status === "proximo") && (
-                        <button style={s.btn("#F4A261")} onClick={() => sendMembershipReminder(doc)}>🔔 Recordar pago</button>
+                        <button style={s.btn("#F4A261")} onClick={() => sendMembershipReminder(doc)}>Recordar pago</button>
                       )}
-                      <button style={s.btn("#0ea5e9")} onClick={() => registerMembershipPayment(doc.id, doc.name)}>💰 Registrar pago</button>
+                      <button style={s.btn("#0ea5e9")} onClick={() => registerMembershipPayment(doc.id, doc.name)}>Registrar pago</button>
                       <button style={s.btn("#25D366")} onClick={() => window.open(`https://wa.me/${doc.phone}`, "_blank")}>💬 WA</button>
-                      <button style={s.btn("#ff6b6b")} onClick={() => deactivateDoctor(doc.id, doc.name)}>🔴 Suspender</button>
+                      <button style={s.btn("#ff6b6b")} onClick={() => deactivateDoctor(doc.id, doc.name)}>Suspender</button>
                     </div>
                   </div>
                 </div>
@@ -1535,7 +1546,7 @@ function AdminPanel({ onExit }) {
         {/* CITAS */}
         {!loading && tab === "appointments" && (
           <>
-            <h3 style={{ margin: "0 0 16px", color: "#0369a1" }}>📅 Últimas citas registradas</h3>
+            <h3 style={{ margin: "0 0 16px", color: "#0369a1" }}>Últimas citas registradas</h3>
             {appointments.length === 0
               ? <div style={{ ...s.card, textAlign: "center", color: "#475569" }}>No hay citas registradas</div>
               : appointments.map(a => (
@@ -1560,7 +1571,7 @@ function AdminPanel({ onExit }) {
         {/* PAGOS */}
         {!loading && tab === "payments" && (
           <>
-            <h3 style={{ margin: "0 0 16px", color: "#F4A261" }}>💰 Pagos de membresías</h3>
+            <h3 style={{ margin: "0 0 16px", color: "#F4A261" }}>Pagos de membresías</h3>
             {payments.length === 0
               ? <div style={{ ...s.card, textAlign: "center", color: "#475569" }}>No hay pagos registrados</div>
               : payments.map(p => (
@@ -1597,7 +1608,7 @@ function AdminPanel({ onExit }) {
 
           return (
             <>
-              <h3 style={{ margin: "0 0 8px", color: "#0369a1" }}>💸 Adelantos por reversar a médicos</h3>
+              <h3 style={{ margin: "0 0 8px", color: "#0369a1" }}>Adelantos por reversar a médicos</h3>
               <p style={{ margin: "0 0 16px", fontSize: 13, color: "#475569" }}>Cuando una cita se confirma o completa (sin cancelación), el adelanto de S/. {AVANCE.monto} que pagó el paciente debe ser transferido al médico por Yape/Plin. Marca cada uno como reversado una vez hecho el envío.</p>
               {doctorIds.length === 0 ? (
                 <div style={{ ...s.card, textAlign: "center", color: "#475569" }}>✅ No hay adelantos pendientes de reversar</div>
@@ -1618,7 +1629,7 @@ function AdminPanel({ onExit }) {
                       <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
                         <span style={{ fontSize: 20, fontWeight: 800, color: "#c2410c" }}>S/. {total}</span>
                         <button style={s.btn("#0ea5e9")} onClick={() => window.open(`https://wa.me/${(doc?.phone||"").replace(/\D/g,"")}`, "_blank")}>💬 WA</button>
-                        <button style={s.btn("#15803d")} onClick={() => markAllSettledForDoctor(docId, appts.map(a=>a.id), doc?.name || "el médico")}>✅ Marcar todo reversado</button>
+                        <button style={s.btn("#15803d")} onClick={() => markAllSettledForDoctor(docId, appts.map(a=>a.id), doc?.name || "el médico")}>Marcar todo reversado</button>
                       </div>
                     </div>
                     <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
@@ -1771,9 +1782,9 @@ function DoctorProfile({ doctor, onBook, onBack, allAppointments }) {
           {doctor.available && (
             <>
               <button style={{ padding: "12px 24px", background: "linear-gradient(135deg,#0ea5e9,#0369a1)", color: "#fff", border: "none", borderRadius: 12, cursor: "pointer", fontSize: 15, fontWeight: 700, fontFamily: "inherit" }}
-                onClick={() => onBook(doctor, "presencial")}>🏥 Reservar presencial</button>
+                onClick={() => onBook(doctor, "presencial")}>Reservar presencial</button>
               <button style={{ padding: "12px 24px", background: "linear-gradient(135deg,#25D366,#128C7E)", color: "#fff", border: "none", borderRadius: 12, cursor: "pointer", fontSize: 15, fontWeight: 700, fontFamily: "inherit" }}
-                onClick={() => onBook(doctor, "virtual")}>📱 Reservar virtual</button>
+                onClick={() => onBook(doctor, "virtual")}>Reservar virtual (WhatsApp)</button>
             </>
           )}
           <button style={s.shareBtn} onClick={() => {
@@ -1788,13 +1799,13 @@ function DoctorProfile({ doctor, onBook, onBack, allAppointments }) {
       <div style={{ display: "flex", gap: 8, marginBottom: 20, flexWrap: "wrap" }}>
         <button style={s.tab(tab === "info")} onClick={() => setTab("info")}>ℹ️ Información</button>
         <button style={s.tab(tab === "horarios")} onClick={() => setTab("horarios")}>📅 Horarios</button>
-        <button style={s.tab(tab === "precios")} onClick={() => setTab("precios")}>💰 Precios</button>
+        <button style={s.tab(tab === "precios")} onClick={() => setTab("precios")}>Precios</button>
         <button style={s.tab(tab === "resenas")} onClick={() => setTab("resenas")}>⭐ Reseñas</button>
       </div>
 
       {tab === "info" && (
         <div style={s.card}>
-          <h3 style={{ margin: "0 0 16px", color: "#0369a1", fontSize: 17 }}>👨‍⚕️ Sobre el médico</h3>
+          <h3 style={{ margin: "0 0 16px", color: "#0369a1", fontSize: 17 }}>Sobre el médico</h3>
           <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 14 }}>
             {[
               { label: "Especialidad", value: doctor.specialty, icon: "🏥" },
@@ -1820,7 +1831,7 @@ function DoctorProfile({ doctor, onBook, onBack, allAppointments }) {
 
       {tab === "horarios" && (
         <div style={s.card}>
-          <h3 style={{ margin: "0 0 16px", color: "#0369a1", fontSize: 17 }}>📅 Horarios de atención</h3>
+          <h3 style={{ margin: "0 0 16px", color: "#0369a1", fontSize: 17 }}>Horarios de atención</h3>
           {(doctor.schedule || []).length === 0
             ? <p style={{ color: "#475569" }}>Horarios por confirmar</p>
             : (doctor.schedule || []).map((h, i) => (
@@ -1838,7 +1849,7 @@ function DoctorProfile({ doctor, onBook, onBack, allAppointments }) {
 
       {tab === "precios" && (
         <div style={s.card}>
-          <h3 style={{ margin: "0 0 16px", color: "#0369a1", fontSize: 17 }}>💰 Precios</h3>
+          <h3 style={{ margin: "0 0 16px", color: "#0369a1", fontSize: 17 }}>Precios</h3>
           {[
             { tipo: "🏥 Consulta presencial", precio: doctor.price, desc: "En consultorio" },
             { tipo: "📱 Consulta virtual", precio: doctor.price, desc: "Por WhatsApp Video" },
@@ -2713,8 +2724,8 @@ export default function App() {
               </p>
             </div>
             <div style={{ display:"flex", gap:6, background:"#f0f9ff", border:"1px solid #bae6fd", borderRadius:12, padding:4 }}>
-              <button onClick={() => setDoctorsViewMode("list")} style={{ padding:"8px 16px", borderRadius:9, border:"none", background: doctorsViewMode==="list" ? "#ffffff" : "transparent", color: doctorsViewMode==="list" ? "#0369a1" : "#64748b", fontWeight: doctorsViewMode==="list" ? 700 : 400, cursor:"pointer", fontFamily:"inherit", fontSize:13, boxShadow: doctorsViewMode==="list" ? "0 2px 8px rgba(15,23,42,0.08)" : "none" }}>📋 Lista</button>
-              <button onClick={() => setDoctorsViewMode("map")} style={{ padding:"8px 16px", borderRadius:9, border:"none", background: doctorsViewMode==="map" ? "#ffffff" : "transparent", color: doctorsViewMode==="map" ? "#0369a1" : "#64748b", fontWeight: doctorsViewMode==="map" ? 700 : 400, cursor:"pointer", fontFamily:"inherit", fontSize:13, boxShadow: doctorsViewMode==="map" ? "0 2px 8px rgba(15,23,42,0.08)" : "none" }}>🗺️ Mapa</button>
+              <button onClick={() => setDoctorsViewMode("list")} style={{ padding:"8px 16px", borderRadius:9, border:"none", background: doctorsViewMode==="list" ? "#ffffff" : "transparent", color: doctorsViewMode==="list" ? "#0369a1" : "#64748b", fontWeight: doctorsViewMode==="list" ? 700 : 400, cursor:"pointer", fontFamily:"inherit", fontSize:13, boxShadow: doctorsViewMode==="list" ? "0 2px 8px rgba(15,23,42,0.08)" : "none" }}>Lista</button>
+              <button onClick={() => setDoctorsViewMode("map")} style={{ padding:"8px 16px", borderRadius:9, border:"none", background: doctorsViewMode==="map" ? "#ffffff" : "transparent", color: doctorsViewMode==="map" ? "#0369a1" : "#64748b", fontWeight: doctorsViewMode==="map" ? 700 : 400, cursor:"pointer", fontFamily:"inherit", fontSize:13, boxShadow: doctorsViewMode==="map" ? "0 2px 8px rgba(15,23,42,0.08)" : "none" }}>Mapa</button>
             </div>
           </div>
           <div style={{ marginBottom:24 }} />
@@ -2774,7 +2785,7 @@ export default function App() {
                     </div>
                     <p style={{ margin:"0 0 10px", fontSize:13, color:"#475569" }}>📍 {doc.address}</p>
                     <div style={{ display:"flex", gap:8 }}>
-                      <button style={{ flex:1, padding:"7px 0", background:"#f0f9ff", border:"1px solid #bae6fd", color:"#0369a1", borderRadius:8, cursor:"pointer", fontSize:12, fontFamily:"inherit", fontWeight:600 }} onClick={() => { setSelectedProfile(doc); setView("profile"); }}>👤 Ver perfil</button>
+                      <button style={{ flex:1, padding:"7px 0", background:"#f0f9ff", border:"1px solid #bae6fd", color:"#0369a1", borderRadius:8, cursor:"pointer", fontSize:12, fontFamily:"inherit", fontWeight:600 }} onClick={() => { setSelectedProfile(doc); setView("profile"); }}>Ver perfil</button>
                       <a href={doc.maps_url || `https://maps.google.com/maps?q=${encodeURIComponent(doc.address + ", Ayacucho, Perú")}`} target="_blank" rel="noreferrer" style={{ flex:1, padding:"7px 0", background:"#e0f2fe", border:"1px solid #bae6fd", color:"#0369a1", borderRadius:8, cursor:"pointer", fontSize:12, fontFamily:"inherit", fontWeight:600, textAlign:"center", textDecoration:"none" }}>🗺️ Ir a Maps</a>
                     </div>
                   </div>
@@ -2827,7 +2838,7 @@ export default function App() {
                     </div>
                     {doc.available
                       ? <div style={{ display: "flex", gap: 6, flexDirection: "column" }}>
-                          <button style={{ padding:"8px 16px", background:"linear-gradient(135deg,#0ea5e9,#7dd3fc)", color:"#fff", border:"none", borderRadius:10, cursor:"pointer", fontSize:13, fontWeight:600, fontFamily:"inherit" }} onClick={() => { setSelectedDoctor(doc); setBookingData(p => ({...p, modalidad:"presencial"})); setSelectedCalDay(null); setView("booking"); }}>🏥 Presencial</button>
+                          <button style={{ padding:"8px 16px", background:"linear-gradient(135deg,#0ea5e9,#7dd3fc)", color:"#fff", border:"none", borderRadius:10, cursor:"pointer", fontSize:13, fontWeight:600, fontFamily:"inherit" }} onClick={() => { setSelectedDoctor(doc); setBookingData(p => ({...p, modalidad:"presencial"})); setSelectedCalDay(null); setView("booking"); }}>Presencial</button>
                           <button style={{ padding:"8px 16px", background:"linear-gradient(135deg,#25D366,#128C7E)", color:"#fff", border:"none", borderRadius:10, cursor:"pointer", fontSize:13, fontWeight:600, fontFamily:"inherit" }} onClick={() => { setSelectedDoctor(doc); setBookingData(p => ({...p, modalidad:"virtual"})); setSelectedCalDay(null); setView("booking"); }}>📱 Virtual</button>
                         </div>
                       : <span style={{ padding:"4px 10px", borderRadius:20, background:"rgba(255,100,100,0.1)", color:"#ff6b6b", fontSize:12 }}>No disponible</span>
@@ -2938,14 +2949,14 @@ export default function App() {
 
                 <p style={{ color:"#334155", fontSize:14, marginBottom:24 }}>¿Deseas enviar la confirmación por WhatsApp?</p>
                 <div style={{ display:"flex", gap:12, justifyContent:"center", flexWrap:"wrap" }}>
-                  <button style={{ ...T.ctaPrimary, background:"linear-gradient(135deg,#25D366,#128C7E)", fontSize:15 }} onClick={() => setShowNotifPanel(true)}>📲 Enviar WhatsApp</button>
+                  <button style={{ ...T.ctaPrimary, background:"linear-gradient(135deg,#25D366,#128C7E)", fontSize:15 }} onClick={() => setShowNotifPanel(true)}>Enviar WhatsApp</button>
                   <button style={{ padding:"14px 32px", background:"transparent", color:"#0369a1", border:"1.5px solid #7dd3fc", borderRadius:12, fontSize:16, cursor:"pointer", fontFamily:"inherit" }} onClick={resetBooking}>Omitir</button>
                 </div>
               </div>
 
               {/* POLÍTICA DE CANCELACIÓN */}
               <div style={{ background:"#fff7ed", border:"1px solid #fed7aa", borderRadius:14, padding:20 }}>
-                <h3 style={{ margin:"0 0 12px", color:"#c2410c", fontSize:16 }}>📋 Política de cancelación</h3>
+                <h3 style={{ margin:"0 0 12px", color:"#c2410c", fontSize:16 }}>Política de cancelación</h3>
                 <div style={{ display:"flex", flexDirection:"column", gap:10 }}>
                   {[
                     { icon:"✅", label:"Cancelas con +48h de anticipación", result:"Reembolso completo de S/. 20", color:"#15803d" },
@@ -3221,7 +3232,7 @@ export default function App() {
             </div>
             <div style={{ display:"flex", gap:12, padding:16, borderTop:"1px solid #e0f2fe" }}>
               <input style={{ flex:1, background:"#f0f9ff", border:"1px solid #bae6fd", borderRadius:12, padding:"12px 16px", color:"#082f49", fontSize:15, fontFamily:"inherit", outline:"none" }} placeholder="Escribe tu consulta aquí..." value={input} onChange={e=>setInput(e.target.value)} onKeyDown={e=>e.key==="Enter"&&sendMessage()} />
-              <button style={{ padding:"12px 20px", background:"linear-gradient(135deg,#0ea5e9,#7dd3fc)", color:"#fff", border:"none", borderRadius:12, cursor:"pointer", fontSize:20, fontFamily:"inherit" }} onClick={sendMessage} disabled={loading}>➤</button>
+              <button style={{ padding:"12px 20px", background:"linear-gradient(135deg,#0ea5e9,#7dd3fc)", color:"#fff", border:"none", borderRadius:12, cursor:"pointer", fontSize:20, fontFamily:"inherit" }} onClick={sendMessage} disabled={loading}>Enviar</button>
             </div>
           </div>
           <button style={{ padding:"14px 32px", background:"transparent", color:"#0369a1", border:"1.5px solid #7dd3fc", borderRadius:12, fontSize:16, cursor:"pointer", fontFamily:"inherit", marginTop:20, width:"100%" }} onClick={() => setView("doctors")}>Ver médicos disponibles</button>
@@ -3277,7 +3288,7 @@ export default function App() {
                     <input style={{ ...T.input, marginBottom:0, flex:1 }} placeholder="Ej: 12345" value={regData.cmp} onChange={e=>setRegData({...regData,cmp:e.target.value.replace(/\D/g,"")})} maxLength={6} />
                     <button style={{ padding:"10px 16px", background:"linear-gradient(135deg,#0ea5e9,#7dd3fc)", color:"#fff", border:"none", borderRadius:10, cursor:"pointer", fontFamily:"inherit", fontSize:13, fontWeight:700, whiteSpace:"nowrap", opacity:(!regData.cmp||!regData.name||!regData.specialty)?0.5:1 }}
                       onClick={verifyCMP} disabled={!regData.cmp||!regData.name||!regData.specialty||cmpVerification?.status==="loading"}>
-                      {cmpVerification?.status==="loading" ? "⏳" : "🔍 Verificar"}
+                      {cmpVerification?.status==="loading" ? "⏳" : "Verificar"}
                     </button>
                   </div>
                 </div>
