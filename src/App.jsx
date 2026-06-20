@@ -623,6 +623,46 @@ function DoctorDashboard({ doctor, onExit }) {
   const [uploadingPhoto, setUploadingPhoto] = useState(false);
   const [photoUrl, setPhotoUrl] = useState(doctor.photo_url || null);
   const [waitlist, setWaitlist] = useState([]);
+  const [savingSchedule, setSavingSchedule] = useState(false);
+  const [scheduleMsg, setScheduleMsg] = useState("");
+
+  const DAYS = ["Lun","Mar","Mié","Jue","Vie","Sáb","Dom"];
+  const HOURS = ["7:00","8:00","9:00","10:00","11:00","12:00","13:00","14:00","15:00","16:00","17:00","18:00","19:00","20:00","21:00","22:00","23:00"];
+
+  // Parse existing schedule into a Set of "Día HH:MM"
+  const parseSchedule = (schedule) => {
+    const set = new Set();
+    for (const slot of (schedule || [])) {
+      const m = slot.match(/^(\p{L}{3})\s+(\d{1,2}:\d{2})/u);
+      if (m) set.add(`${m[1]} ${m[2]}`);
+    }
+    return set;
+  };
+  const [scheduleGrid, setScheduleGrid] = useState(() => parseSchedule(doctor.schedule));
+
+  function toggleSlot(day, hour) {
+    const key = `${day} ${hour}`;
+    const next = new Set(scheduleGrid);
+    if (next.has(key)) next.delete(key);
+    else next.add(key);
+    setScheduleGrid(next);
+  }
+
+  async function saveSchedule() {
+    setSavingSchedule(true);
+    // Convert set back to sorted array: "Lun 9:00" format
+    const dayOrder = { "Lun":0,"Mar":1,"Mié":2,"Jue":3,"Vie":4,"Sáb":5,"Dom":6 };
+    const sorted = [...scheduleGrid].sort((a,b) => {
+      const [da,ha] = a.split(" "); const [db,hb] = b.split(" ");
+      if (dayOrder[da] !== dayOrder[db]) return dayOrder[da] - dayOrder[db];
+      return parseInt(ha) - parseInt(hb);
+    });
+    await db.updateDoctor(doctor.id, { schedule: sorted });
+    setScheduleMsg("✅ Horarios guardados");
+    setSavingSchedule(false);
+    setTimeout(() => setScheduleMsg(""), 3000);
+  }
+
   const [loadingWaitlist, setLoadingWaitlist] = useState(true);
 
   useEffect(() => {
@@ -810,6 +850,7 @@ Hola ${appt.patient_name}, gracias por confiar en ${doctor.name}.
   const navItems = [
     { id: "overview", icon: "📊", label: "Resumen" },
     { id: "appointments", icon: "📅", label: "Citas" },
+    { id: "calendario", icon: "🗓️", label: "Mis horarios" },
     { id: "waitlist", icon: "⏰", label: "Lista de espera" },
     { id: "analytics", icon: "📈", label: "Estadísticas" },
     { id: "profile", icon: "👤", label: "Mi Perfil" },
@@ -986,6 +1027,68 @@ Hola ${appt.patient_name}, gracias por confiar en ${doctor.name}.
                   </div>
                 ))
               }
+            </div>
+          </>
+        )}
+
+        {tab === "calendario" && (
+          <>
+            <h2 style={{ margin:"0 0 8px", fontSize:26, fontWeight:700 }}>🗓️ Mis horarios de atención</h2>
+            <p style={{ color:"#475569", margin:"0 0 24px", fontSize:14 }}>Marca los días y horas en que atiendes pacientes. El calendario de reservas se actualizará automáticamente para los pacientes.</p>
+
+            <div style={{ background:"#ffffff", border:"1px solid #e0f2fe", borderRadius:16, padding:20, boxShadow:"0 4px 16px rgba(15,23,42,0.05)", overflowX:"auto" }}>
+              {/* Grid header - days */}
+              <div style={{ display:"grid", gridTemplateColumns:`80px repeat(${DAYS.length}, 1fr)`, gap:4, marginBottom:6 }}>
+                <div />
+                {DAYS.map(d => (
+                  <div key={d} style={{ textAlign:"center", fontSize:13, fontWeight:800, color:"#0369a1", padding:"6px 0" }}>{d}</div>
+                ))}
+              </div>
+
+              {/* Grid rows - hours */}
+              {HOURS.map(hour => (
+                <div key={hour} style={{ display:"grid", gridTemplateColumns:`80px repeat(${DAYS.length}, 1fr)`, gap:4, marginBottom:4 }}>
+                  <div style={{ fontSize:12, color:"#64748b", display:"flex", alignItems:"center", fontWeight:600 }}>{hour}</div>
+                  {DAYS.map(day => {
+                    const key = `${day} ${hour}`;
+                    const active = scheduleGrid.has(key);
+                    return (
+                      <button
+                        key={key}
+                        onClick={() => toggleSlot(day, hour)}
+                        style={{
+                          height:36, borderRadius:8, border:`2px solid ${active ? "#0ea5e9" : "#e2e8f0"}`,
+                          background: active ? "linear-gradient(135deg,#0ea5e9,#7dd3fc)" : "#f8fafc",
+                          cursor:"pointer", transition:"all 0.15s",
+                          display:"flex", alignItems:"center", justifyContent:"center",
+                          boxShadow: active ? "0 2px 8px rgba(14,165,233,0.25)" : "none",
+                        }}>
+                        {active && <span style={{ color:"#fff", fontSize:14, fontWeight:700 }}>✓</span>}
+                      </button>
+                    );
+                  })}
+                </div>
+              ))}
+            </div>
+
+            {/* Summary + save */}
+            <div style={{ marginTop:20, background:"#f0f9ff", border:"1px solid #bae6fd", borderRadius:12, padding:16 }}>
+              <p style={{ margin:"0 0 10px", fontSize:14, fontWeight:700, color:"#0369a1" }}>
+                {scheduleGrid.size === 0 ? "No has seleccionado ningún horario aún." : `${scheduleGrid.size} créneau(x) seleccionado(s):`}
+              </p>
+              {scheduleGrid.size > 0 && (
+                <div style={{ display:"flex", gap:6, flexWrap:"wrap", marginBottom:14 }}>
+                  {[...scheduleGrid].sort().map(slot => (
+                    <span key={slot} style={{ padding:"4px 10px", background:"#e0f2fe", border:"1px solid #7dd3fc", borderRadius:20, fontSize:12, color:"#0369a1", fontWeight:600 }}>{slot}</span>
+                  ))}
+                </div>
+              )}
+              <div style={{ display:"flex", gap:10, alignItems:"center" }}>
+                <button style={s.saveBtn} onClick={saveSchedule} disabled={savingSchedule}>
+                  {savingSchedule ? "Guardando..." : "💾 Guardar horarios"}
+                </button>
+                {scheduleMsg && <span style={{ color:"#15803d", fontWeight:700, fontSize:14 }}>{scheduleMsg}</span>}
+              </div>
             </div>
           </>
         )}
