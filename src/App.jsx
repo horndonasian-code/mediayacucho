@@ -2532,7 +2532,7 @@ export default function App() {
                   {/* Badge */}
                   <div style={{ display:"inline-flex", alignItems:"center", gap:8, background:"#f0f9ff", border:"1px solid #64748b", borderRadius:20, padding:"8px 16px", marginBottom:24 }}>
                     <div style={{ width:8, height:8, borderRadius:"50%", background:"#25D366", animation:"pulse 2s infinite" }} />
-                    <span style={{ fontSize:13, color:"#0369a1", letterSpacing:0.5, fontWeight:600 }}>🏥 Plataforma médica certificada — Ayacucho</span>
+                    <span style={{ fontSize:13, color:"#0369a1", letterSpacing:0.5, fontWeight:600 }}>Plataforma médica certificada — Ayacucho</span>
                   </div>
 
                   <h1 style={{ fontSize:"clamp(32px,6vw,68px)", fontWeight:700, lineHeight:1.1, margin:"0 0 20px", letterSpacing:"-0.5px", color:"#082f49" }}>
@@ -2550,13 +2550,19 @@ export default function App() {
                       onMouseEnter={e=>e.target.style.transform="translateY(-2px)"}
                       onMouseLeave={e=>e.target.style.transform=""}
                       onClick={() => setView("doctors")}>
-                      🏥 Buscar Médico
+                      <span style={{ display:"flex", alignItems:"center", gap:8 }}>
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+                        Buscar Médico
+                      </span>
                     </button>
                     <button style={{ padding:"15px 32px", background:"#fff", color:"#0369a1", border:"2px solid #7dd3fc", borderRadius:14, fontSize:16, cursor:"pointer", fontFamily:"inherit", transition:"all 0.2s", boxShadow:"0 4px 16px rgba(15,23,42,0.06)" }}
                       onMouseEnter={e=>{e.target.style.background="#f0f9ff";e.target.style.transform="translateY(-2px)"}}
                       onMouseLeave={e=>{e.target.style.background="transparent";e.target.style.transform=""}}
                       onClick={() => setView("chat")}>
-                      🤖 Hablar con IA
+                      <span style={{ display:"flex", alignItems:"center", gap:8 }}>
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+                        Hablar con IA
+                      </span>
                     </button>
                   </div>
 
@@ -2590,7 +2596,7 @@ export default function App() {
                   </div>
 
                   <div style={{ background:"#ffffff", border:"1px solid #e0f2fe", borderRadius:24, padding:32, boxShadow:"0 20px 60px rgba(14,165,233,0.12)" }}>
-                    <h3 style={{ margin:"0 0 24px", fontSize:18, color:"#082f49", fontWeight:700 }}>📊 MediAyacucho en números</h3>
+                    <h3 style={{ margin:"0 0 24px", fontSize:18, color:"#082f49", fontWeight:700 }}>MediAyacucho en números</h3>
                     <div style={{ display:"grid", gridTemplateColumns:"repeat(2, 1fr)", gap:12, marginBottom:20 }}>
                       {[[doctors.length||6,"Médicos","verificados","#7dd3fc"],["500+","Citas","agendadas","#25D366"],["4.8★","Rating","promedio","#F4A261"],["24/7","Soporte","disponible","#a78bfa"]].map(([n,l,s,c],i)=>(
                         <div key={i} style={{ background:`${c}10`, border:`1px solid ${c}25`, borderRadius:14, padding:"16px", textAlign:"center" }}>
@@ -2703,10 +2709,10 @@ export default function App() {
             <p style={{ color:"rgba(255,255,255,0.9)", fontSize:16, margin:"0 0 32px" }}>Únete a los cientos de pacientes que ya confían en MediAyacucho</p>
             <div style={{ display:"flex", gap:12, justifyContent:"center", flexWrap:"wrap" }}>
               <button style={{ padding:"16px 40px", background:"#fff", color:"#0369a1", border:"none", borderRadius:14, fontSize:17, cursor:"pointer", fontWeight:700, fontFamily:"inherit", boxShadow:"0 12px 36px rgba(2,8,23,0.2)" }} onClick={()=>setView("doctors")}>
-                🏥 Buscar mi médico ahora
+                <span style={{ display:"flex", alignItems:"center", gap:8, justifyContent:"center" }}><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>Buscar mi médico ahora</span>
               </button>
               <button style={{ padding:"16px 40px", background:"linear-gradient(135deg,#25D366,#128C7E)", color:"#fff", border:"none", borderRadius:14, fontSize:17, cursor:"pointer", fontWeight:700, fontFamily:"inherit" }} onClick={()=>setView("chat")}>
-                🤖 Consultar con IA gratis
+                <span style={{ display:"flex", alignItems:"center", gap:8, justifyContent:"center" }}><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>Consultar con IA gratis</span>
               </button>
             </div>
           </div>
