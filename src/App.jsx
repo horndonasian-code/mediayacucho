@@ -239,16 +239,6 @@ function formatDateISO2(d) {
 function buildAvailabilityCalendar(schedule, bookedSlots) {
   bookedSlots = bookedSlots || new Set();
 
-  const weeklySlots = [];
-  for (const slot of (schedule || [])) {
-    const match = slot.match(/^(\p{L}{3})\s+(\d{1,2}):(\d{2})/u);
-    if (!match) continue;
-    const [, dayAbbr, hh, mm] = match;
-    const dow = DAY_MAP[dayAbbr];
-    if (dow === undefined) continue;
-    weeklySlots.push({ dow, time: `${hh}:${mm}` });
-  }
-
   const now = new Date();
   const year = now.getFullYear();
   const month = now.getMonth();
@@ -256,17 +246,46 @@ function buildAvailabilityCalendar(schedule, bookedSlots) {
   const todayMinutes = now.getHours() * 60 + now.getMinutes();
   const todayISO = formatDateISO2(now);
 
+  // Detect format: new dated format "2026-06-23 9:00" or old weekly "Lun 9:00"
+  const isDateFormat = (schedule || []).some(s => s.match(/^\d{4}-\d{2}-\d{2}/));
+
+  // Build availability set from schedule
+  const availableSlots = new Set(schedule || []);
+
+  // Old weekly format: build weeklySlots
+  const weeklySlots = [];
+  if (!isDateFormat) {
+    for (const slot of (schedule || [])) {
+      const match = slot.match(/^(\p{L}{3})\s+(\d{1,2}):(\d{2})/u);
+      if (!match) continue;
+      const dow = DAY_MAP[match[1]];
+      if (dow === undefined) continue;
+      weeklySlots.push({ dow, time: `${match[2]}:${match[3]}` });
+    }
+  }
+
   const days = [];
   for (let d = 1; d <= daysInMonth; d++) {
     const date = new Date(year, month, d);
     const dateISO = formatDateISO2(date);
     const dow = date.getDay();
     const isPastDay = dateISO < todayISO;
-    const slotsForDay = weeklySlots.filter(s => s.dow === dow);
+
+    let slotsForDay = [];
+    if (isDateFormat) {
+      // New format: look for slots matching this specific date
+      for (const slot of (schedule || [])) {
+        const m = slot.match(/^(\d{4}-\d{2}-\d{2})\s+(\d{1,2}:\d{2})/);
+        if (m && m[1] === dateISO) slotsForDay.push({ time: m[2] });
+      }
+    } else {
+      // Old weekly format
+      slotsForDay = weeklySlots.filter(s => s.dow === dow);
+    }
 
     const times = isPastDay ? [] : slotsForDay.map(s => {
       const [hh, mm] = s.time.split(":").map(Number);
-      const slotMinutes = hh * 60 + mm;
+      const slotMinutes = hh * 60 + (mm || 0);
       const isPast = dateISO === todayISO && slotMinutes <= todayMinutes;
       const isBooked = bookedSlots.has(`${dateISO} ${s.time}`);
       return { time: s.time, available: !isPast && !isBooked };
@@ -629,19 +648,19 @@ function DoctorDashboard({ doctor, onExit }) {
   const DAYS = ["Lun","Mar","Mié","Jue","Vie","Sáb","Dom"];
   const HOURS = ["7:00","8:00","9:00","10:00","11:00","12:00","13:00","14:00","15:00","16:00","17:00","18:00","19:00","20:00","21:00","22:00","23:00"];
 
-  // Parse existing schedule into a Set of "Día HH:MM"
+  // Parse existing schedule into a Set of "YYYY-MM-DD HH:MM"
   const parseSchedule = (schedule) => {
     const set = new Set();
     for (const slot of (schedule || [])) {
-      const m = slot.match(/^(\p{L}{3})\s+(\d{1,2}:\d{2})/u);
-      if (m) set.add(`${m[1]} ${m[2]}`);
+      // Support both old format "Lun 9:00" and new "2026-06-23 9:00"
+      if (slot.match(/^\d{4}-\d{2}-\d{2}/)) set.add(slot);
     }
     return set;
   };
   const [scheduleGrid, setScheduleGrid] = useState(() => parseSchedule(doctor.schedule));
 
-  function toggleSlot(day, hour) {
-    const key = `${day} ${hour}`;
+  function toggleSlot(dateISO, hour) {
+    const key = `${dateISO} ${hour}`;
     const next = new Set(scheduleGrid);
     if (next.has(key)) next.delete(key);
     else next.add(key);
@@ -650,12 +669,7 @@ function DoctorDashboard({ doctor, onExit }) {
 
   async function saveSchedule() {
     setSavingSchedule(true);
-    const dayOrder = { "Lun":0,"Mar":1,"Mié":2,"Jue":3,"Vie":4,"Sáb":5,"Dom":6 };
-    const sorted = [...scheduleGrid].sort((a,b) => {
-      const [da,ha] = a.split(" "); const [db,hb] = b.split(" ");
-      if (dayOrder[da] !== dayOrder[db]) return dayOrder[da] - dayOrder[db];
-      return parseInt(ha) - parseInt(hb);
-    });
+    const sorted = [...scheduleGrid].sort();
     try {
       const res = await fetch(`${SUPABASE_URL}/rest/v1/doctors?id=eq.${doctor.id}`, {
         method: "PATCH",
@@ -1048,67 +1062,90 @@ Hola ${appt.patient_name}, gracias por confiar en ${doctor.name}.
           </>
         )}
 
-        {tab === "calendario" && (
-          <>
-            <h2 style={{ margin:"0 0 8px", fontSize:26, fontWeight:700 }}>🗓️ Mis horarios de atención</h2>
-            <p style={{ color:"#475569", margin:"0 0 24px", fontSize:14 }}>Marca los días y horas en que atiendes pacientes. El calendario de reservas se actualizará automáticamente para los pacientes.</p>
+        {tab === "calendario" && (() => {
+          const now = new Date();
+          const year = now.getFullYear();
+          const month = now.getMonth();
+          const daysInMonth = new Date(year, month + 1, 0).getDate();
+          const todayISO = formatDateISO2(now);
+          const monthName = now.toLocaleDateString("es-PE", { month:"long", year:"numeric" });
+          const dayLettersFull = ["Dom","Lun","Mar","Mié","Jue","Vie","Sáb"];
 
-            <div style={{ background:"#ffffff", border:"1px solid #e0f2fe", borderRadius:16, padding:20, boxShadow:"0 4px 16px rgba(15,23,42,0.05)", overflowX:"auto" }}>
-              {/* Grid header - days */}
-              <div style={{ display:"grid", gridTemplateColumns:`80px repeat(${DAYS.length}, 1fr)`, gap:4, marginBottom:6 }}>
-                <div />
-                {DAYS.map(d => (
-                  <div key={d} style={{ textAlign:"center", fontSize:13, fontWeight:800, color:"#0369a1", padding:"6px 0" }}>{d}</div>
+          // Build all days of current month
+          const monthDays = [];
+          for (let d = 1; d <= daysInMonth; d++) {
+            const date = new Date(year, month, d);
+            monthDays.push({ dateISO: formatDateISO2(date), dayNum: d, dayName: dayLettersFull[date.getDay()], isPast: formatDateISO2(date) < todayISO });
+          }
+
+          return (
+            <>
+              <h2 style={{ margin:"0 0 8px", fontSize:26, fontWeight:700 }}>🗓️ Mis horarios de atención</h2>
+              <p style={{ color:"#475569", margin:"0 0 8px", fontSize:14 }}>Marca los días y horas en que atiendes pacientes este mes. El calendario de reservas se actualizará para los pacientes.</p>
+              <p style={{ color:"#0369a1", fontWeight:700, fontSize:14, margin:"0 0 16px", textTransform:"capitalize" }}>📅 {monthName}</p>
+
+              <div style={{ background:"#ffffff", border:"1px solid #e0f2fe", borderRadius:16, padding:16, boxShadow:"0 4px 16px rgba(15,23,42,0.05)", overflowX:"auto" }}>
+                {/* Grid header - dates */}
+                <div style={{ display:"grid", gridTemplateColumns:`56px repeat(${monthDays.length}, minmax(36px,1fr))`, gap:3, marginBottom:6 }}>
+                  <div />
+                  {monthDays.map(d => (
+                    <div key={d.dateISO} style={{ textAlign:"center", padding:"4px 0" }}>
+                      <div style={{ fontSize:10, fontWeight:700, color: d.isPast ? "#cbd5e1" : "#0369a1" }}>{d.dayName}</div>
+                      <div style={{ fontSize:12, fontWeight:800, color: d.isPast ? "#cbd5e1" : "#082f49" }}>{d.dayNum}</div>
+                    </div>
+                  ))}
+                </div>
+
+                {/* Grid rows - hours */}
+                {HOURS.map(hour => (
+                  <div key={hour} style={{ display:"grid", gridTemplateColumns:`56px repeat(${monthDays.length}, minmax(36px,1fr))`, gap:3, marginBottom:3 }}>
+                    <div style={{ fontSize:11, color:"#64748b", display:"flex", alignItems:"center", fontWeight:600 }}>{hour}</div>
+                    {monthDays.map(day => {
+                      const key = `${day.dateISO} ${hour}`;
+                      const active = scheduleGrid.has(key);
+                      return (
+                        <button
+                          key={key}
+                          disabled={day.isPast}
+                          onClick={() => toggleSlot(day.dateISO, hour)}
+                          style={{
+                            height:28, borderRadius:6,
+                            border:`2px solid ${active ? "#0ea5e9" : day.isPast ? "#f1f5f9" : "#e2e8f0"}`,
+                            background: active ? "linear-gradient(135deg,#0ea5e9,#7dd3fc)" : day.isPast ? "#fafafa" : "#f8fafc",
+                            cursor: day.isPast ? "default" : "pointer", transition:"all 0.15s",
+                            display:"flex", alignItems:"center", justifyContent:"center",
+                            boxShadow: active ? "0 2px 6px rgba(14,165,233,0.25)" : "none",
+                          }}>
+                          {active && <span style={{ color:"#fff", fontSize:11, fontWeight:700 }}>✓</span>}
+                        </button>
+                      );
+                    })}
+                  </div>
                 ))}
               </div>
 
-              {/* Grid rows - hours */}
-              {HOURS.map(hour => (
-                <div key={hour} style={{ display:"grid", gridTemplateColumns:`80px repeat(${DAYS.length}, 1fr)`, gap:4, marginBottom:4 }}>
-                  <div style={{ fontSize:12, color:"#64748b", display:"flex", alignItems:"center", fontWeight:600 }}>{hour}</div>
-                  {DAYS.map(day => {
-                    const key = `${day} ${hour}`;
-                    const active = scheduleGrid.has(key);
-                    return (
-                      <button
-                        key={key}
-                        onClick={() => toggleSlot(day, hour)}
-                        style={{
-                          height:36, borderRadius:8, border:`2px solid ${active ? "#0ea5e9" : "#e2e8f0"}`,
-                          background: active ? "linear-gradient(135deg,#0ea5e9,#7dd3fc)" : "#f8fafc",
-                          cursor:"pointer", transition:"all 0.15s",
-                          display:"flex", alignItems:"center", justifyContent:"center",
-                          boxShadow: active ? "0 2px 8px rgba(14,165,233,0.25)" : "none",
-                        }}>
-                        {active && <span style={{ color:"#fff", fontSize:14, fontWeight:700 }}>✓</span>}
-                      </button>
-                    );
-                  })}
+              {/* Summary + save */}
+              <div style={{ marginTop:16, background:"#f0f9ff", border:"1px solid #bae6fd", borderRadius:12, padding:16 }}>
+                <p style={{ margin:"0 0 10px", fontSize:14, fontWeight:700, color:"#0369a1" }}>
+                  {scheduleGrid.size === 0 ? "No has seleccionado ningún horario aún." : `${scheduleGrid.size} horario(s) seleccionado(s) este mes`}
+                </p>
+                {scheduleGrid.size > 0 && (
+                  <div style={{ display:"flex", gap:6, flexWrap:"wrap", marginBottom:14, maxHeight:80, overflowY:"auto" }}>
+                    {[...scheduleGrid].sort().map(slot => (
+                      <span key={slot} style={{ padding:"3px 8px", background:"#e0f2fe", border:"1px solid #7dd3fc", borderRadius:20, fontSize:11, color:"#0369a1", fontWeight:600, whiteSpace:"nowrap" }}>{slot}</span>
+                    ))}
+                  </div>
+                )}
+                <div style={{ display:"flex", gap:10, alignItems:"center" }}>
+                  <button style={s.saveBtn} onClick={saveSchedule} disabled={savingSchedule}>
+                    {savingSchedule ? "Guardando..." : "💾 Guardar horarios"}
+                  </button>
+                  {scheduleMsg && <span style={{ color:"#15803d", fontWeight:700, fontSize:14 }}>{scheduleMsg}</span>}
                 </div>
-              ))}
-            </div>
-
-            {/* Summary + save */}
-            <div style={{ marginTop:20, background:"#f0f9ff", border:"1px solid #bae6fd", borderRadius:12, padding:16 }}>
-              <p style={{ margin:"0 0 10px", fontSize:14, fontWeight:700, color:"#0369a1" }}>
-                {scheduleGrid.size === 0 ? "No has seleccionado ningún horario aún." : `${scheduleGrid.size} créneau(x) seleccionado(s):`}
-              </p>
-              {scheduleGrid.size > 0 && (
-                <div style={{ display:"flex", gap:6, flexWrap:"wrap", marginBottom:14 }}>
-                  {[...scheduleGrid].sort().map(slot => (
-                    <span key={slot} style={{ padding:"4px 10px", background:"#e0f2fe", border:"1px solid #7dd3fc", borderRadius:20, fontSize:12, color:"#0369a1", fontWeight:600 }}>{slot}</span>
-                  ))}
-                </div>
-              )}
-              <div style={{ display:"flex", gap:10, alignItems:"center" }}>
-                <button style={s.saveBtn} onClick={saveSchedule} disabled={savingSchedule}>
-                  {savingSchedule ? "Guardando..." : "💾 Guardar horarios"}
-                </button>
-                {scheduleMsg && <span style={{ color:"#15803d", fontWeight:700, fontSize:14 }}>{scheduleMsg}</span>}
               </div>
-            </div>
-          </>
-        )}
+            </>
+          );
+        })()}
 
         {tab === "waitlist" && (
           <>
