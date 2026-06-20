@@ -650,17 +650,34 @@ function DoctorDashboard({ doctor, onExit }) {
 
   async function saveSchedule() {
     setSavingSchedule(true);
-    // Convert set back to sorted array: "Lun 9:00" format
     const dayOrder = { "Lun":0,"Mar":1,"Mié":2,"Jue":3,"Vie":4,"Sáb":5,"Dom":6 };
     const sorted = [...scheduleGrid].sort((a,b) => {
       const [da,ha] = a.split(" "); const [db,hb] = b.split(" ");
       if (dayOrder[da] !== dayOrder[db]) return dayOrder[da] - dayOrder[db];
       return parseInt(ha) - parseInt(hb);
     });
-    await db.updateDoctor(doctor.id, { schedule: sorted });
-    setScheduleMsg("✅ Horarios guardados");
+    try {
+      const res = await fetch(`${SUPABASE_URL}/rest/v1/doctors?id=eq.${doctor.id}`, {
+        method: "PATCH",
+        headers: {
+          "Content-Type": "application/json",
+          "apikey": SUPABASE_KEY,
+          "Authorization": `Bearer ${SUPABASE_KEY}`,
+          "Prefer": "return=representation",
+        },
+        body: JSON.stringify({ schedule: sorted }),
+      });
+      if (res.ok) {
+        setScheduleMsg("✅ Horarios guardados correctamente");
+      } else {
+        const err = await res.text();
+        setScheduleMsg("❌ Error: " + err);
+      }
+    } catch(e) {
+      setScheduleMsg("❌ Error: " + e.message);
+    }
     setSavingSchedule(false);
-    setTimeout(() => setScheduleMsg(""), 3000);
+    setTimeout(() => setScheduleMsg(""), 4000);
   }
 
   const [loadingWaitlist, setLoadingWaitlist] = useState(true);
