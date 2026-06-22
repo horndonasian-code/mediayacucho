@@ -1264,11 +1264,12 @@ Hola ${appt.patient_name}, gracias por confiar en ${doctor.name}.
                 <button style={s.saveBtn} onClick={() => setEditProfile(true)}>✏️ Editar perfil</button>
               )}
             </div>
-            <div style={s.card}>
-              <p style={s.cardTitle}>📋 Horarios disponibles</p>
-              <div style={{ display: "flex", gap: 10, flexWrap: "wrap" }}>
-                {(doctor.schedule || []).map(h => <span key={h} style={{ padding: "8px 16px", borderRadius: 20, background: "#e0f2fe", border: "1px solid #bae6fd", color: "#0369a1", fontSize: 14 }}>{h}</span>)}
-              </div>
+            <div style={{ ...s.card, background:"#f0f9ff", border:"1px solid #bae6fd" }}>
+              <p style={{ ...s.cardTitle, margin:"0 0 8px" }}>🗓️ Gestión de horarios</p>
+              <p style={{ fontSize:13, color:"#475569", margin:"0 0 14px" }}>Para ver y modificar tus días y horas de atención, ve al onglet "Mis horarios" en el menú lateral.</p>
+              <button style={{ padding:"8px 20px", background:"#0ea5e9", color:"#fff", border:"none", borderRadius:10, cursor:"pointer", fontFamily:"inherit", fontSize:13, fontWeight:700 }} onClick={() => setTab("calendario")}>
+                Ir a Mis horarios →
+              </button>
             </div>
           </>
         )}
