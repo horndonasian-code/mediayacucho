@@ -2465,32 +2465,38 @@ export default function App() {
         </nav>
 
         {/* Mobile nav — icônes seulement */}
-        <nav className="mobile-nav" style={{ display: "none", gap: 6, alignItems: "center" }}>
-          <button style={{ padding:"8px 10px", borderRadius:8, border:"none", background: view==="doctors" ? "rgba(59,130,196,0.2)" : "transparent", color: view==="doctors" ? "#7dd3fc" : "#e0f2fe", cursor:"pointer", fontFamily:"inherit" }} onClick={() => setView("doctors")}>
+        <nav className="mobile-nav" style={{ display: "none", gap: 4, alignItems: "center" }}>
+          <button style={{ padding:"6px 10px", borderRadius:10, border:"none", background: view==="doctors" ? "#e0f2fe" : "transparent", color: view==="doctors" ? "#0369a1" : "#475569", cursor:"pointer", fontFamily:"inherit", display:"flex", flexDirection:"column", alignItems:"center", gap:2 }} onClick={() => setView("doctors")}>
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+            <span style={{ fontSize:9, fontWeight:600 }}>Médicos</span>
           </button>
-          <button style={{ padding:"8px 10px", borderRadius:8, border:"none", background: view==="chat" ? "rgba(59,130,196,0.2)" : "transparent", color: view==="chat" ? "#7dd3fc" : "#e0f2fe", cursor:"pointer", fontFamily:"inherit" }} onClick={() => setView("chat")}>
+          <button style={{ padding:"6px 10px", borderRadius:10, border:"none", background: view==="chat" ? "#e0f2fe" : "transparent", color: view==="chat" ? "#0369a1" : "#475569", cursor:"pointer", fontFamily:"inherit", display:"flex", flexDirection:"column", alignItems:"center", gap:2 }} onClick={() => setView("chat")}>
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+            <span style={{ fontSize:9, fontWeight:600 }}>IA</span>
           </button>
           {session ? (
             <>
-              {session.email === ADMIN_EMAIL && <button style={{ padding:"8px 10px", borderRadius:8, border:"none", background:"rgba(255,100,100,0.15)", color:"#ff6b6b", cursor:"pointer", fontFamily:"inherit" }} onClick={() => setShowAdmin(true)}>
+              {session.email === ADMIN_EMAIL && <button style={{ padding:"6px 10px", borderRadius:10, border:"none", background:"#fef2f2", color:"#dc2626", cursor:"pointer", fontFamily:"inherit", display:"flex", flexDirection:"column", alignItems:"center", gap:2 }} onClick={() => setShowAdmin(true)}>
                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+                <span style={{ fontSize:9, fontWeight:600 }}>Admin</span>
               </button>}
-              <button style={{ padding:"8px 10px", borderRadius:8, border:"none", background:"rgba(59,130,196,0.15)", color:"#7dd3fc", cursor:"pointer", fontFamily:"inherit" }} onClick={async () => {
+              <button style={{ padding:"6px 10px", borderRadius:10, border:"none", background:"#e0f2fe", color:"#0369a1", cursor:"pointer", fontFamily:"inherit", display:"flex", flexDirection:"column", alignItems:"center", gap:2 }} onClick={async () => {
                 const myDoc = doctors.find(d => d.email === session?.email);
                 if (myDoc) { setDashboardDoctor(myDoc); return; }
                 try { const all = await sb(`doctors?email=eq.${encodeURIComponent(session?.email)}`); if (all?.length > 0) setDashboardDoctor(all[0]); else setView("doctor-register"); } catch { setView("doctor-register"); }
               }}>
                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
+                <span style={{ fontSize:9, fontWeight:600 }}>Panel</span>
               </button>
-              <button style={{ padding:"8px 10px", borderRadius:8, border:"none", background:"transparent", color:"#ff6b6b", cursor:"pointer", fontFamily:"inherit" }} onClick={handleLogout}>
+              <button style={{ padding:"6px 10px", borderRadius:10, border:"none", background:"transparent", color:"#dc2626", cursor:"pointer", fontFamily:"inherit", display:"flex", flexDirection:"column", alignItems:"center", gap:2 }} onClick={handleLogout}>
                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+                <span style={{ fontSize:9, fontWeight:600 }}>Salir</span>
               </button>
             </>
           ) : (
-            <button style={{ padding:"8px 14px", borderRadius:8, border:"1px solid rgba(59,130,196,0.4)", background:"rgba(59,130,196,0.15)", color:"#7dd3fc", cursor:"pointer", fontFamily:"inherit" }} onClick={() => setShowLogin(true)}>
+            <button style={{ padding:"6px 12px", borderRadius:10, border:"1px solid #bae6fd", background:"#f0f9ff", color:"#0369a1", cursor:"pointer", fontFamily:"inherit", display:"flex", flexDirection:"column", alignItems:"center", gap:2 }} onClick={() => setShowLogin(true)}>
               <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"/><polyline points="10 17 15 12 10 7"/><line x1="15" y1="12" x2="3" y2="12"/></svg>
+              <span style={{ fontSize:9, fontWeight:600 }}>Médico</span>
             </button>
           )}
         </nav>
