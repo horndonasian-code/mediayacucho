@@ -2737,6 +2737,23 @@ export default function App() {
             </div>
           </div>
           <div style={{ marginBottom:24 }} />
+
+          {/* ENFERMERO A DOMICILIO - Banner destacado */}
+          <div
+            onClick={() => setSpecialtySearch(specialtySearch === "Enfermero a domicilio" ? "" : "Enfermero a domicilio")}
+            style={{ cursor:"pointer", marginBottom:20, padding:"16px 20px", borderRadius:16, background: specialtySearch === "Enfermero a domicilio" ? "linear-gradient(135deg,#10b981,#34d399)" : "linear-gradient(135deg,#ecfdf5,#d1fae5)", border:`2px solid ${specialtySearch === "Enfermero a domicilio" ? "#10b981" : "#6ee7b7"}`, display:"flex", alignItems:"center", justifyContent:"space-between", flexWrap:"wrap", gap:12, transition:"all 0.2s", boxShadow: specialtySearch === "Enfermero a domicilio" ? "0 8px 24px rgba(16,185,129,0.25)" : "0 4px 12px rgba(16,185,129,0.08)" }}>
+            <div style={{ display:"flex", alignItems:"center", gap:14 }}>
+              <div style={{ width:48, height:48, borderRadius:14, background: specialtySearch === "Enfermero a domicilio" ? "rgba(255,255,255,0.25)" : "rgba(16,185,129,0.15)", display:"flex", alignItems:"center", justifyContent:"center", fontSize:24 }}>🏠</div>
+              <div>
+                <div style={{ fontSize:16, fontWeight:800, color: specialtySearch === "Enfermero a domicilio" ? "#ffffff" : "#065f46" }}>Enfermero a domicilio</div>
+                <div style={{ fontSize:13, color: specialtySearch === "Enfermero a domicilio" ? "rgba(255,255,255,0.85)" : "#047857", marginTop:2 }}>Atención profesional en la comodidad de tu hogar</div>
+              </div>
+            </div>
+            <div style={{ padding:"8px 18px", borderRadius:10, background: specialtySearch === "Enfermero a domicilio" ? "rgba(255,255,255,0.25)" : "#10b981", color:"#ffffff", fontSize:13, fontWeight:700, border: specialtySearch === "Enfermero a domicilio" ? "1px solid rgba(255,255,255,0.4)" : "none" }}>
+              {specialtySearch === "Enfermero a domicilio" ? "✕ Quitar filtro" : "Ver disponibles →"}
+            </div>
+          </div>
+
           {/* Search bar */}
           <div style={{ position:"relative", marginBottom:28 }}>
             <span style={{ position:"absolute", left:18, top:"50%", transform:"translateY(-50%)", fontSize:18, color:"#94a3b8" }}>🔍</span>
