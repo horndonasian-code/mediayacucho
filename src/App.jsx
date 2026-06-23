@@ -2770,18 +2770,21 @@ export default function App() {
               <button onClick={() => setSpecialtySearch("")} style={{ position:"absolute", right:14, top:"50%", transform:"translateY(-50%)", background:"none", border:"none", cursor:"pointer", fontSize:16, color:"#94a3b8" }}>✕</button>
             )}
           </div>
-          {/* Quick specialty suggestions */}
-          <div style={{ margin: "0 -24px", padding: "0 24px 4px", overflowX: "scroll", marginBottom: 28, WebkitOverflowScrolling: "touch", cursor: "grab", msOverflowStyle:"none", scrollbarWidth:"none" }}>
-            <div style={{ display: "flex", gap: 8, paddingBottom: 4, width: "max-content" }}>
-            {SPECIALTIES.filter(s => s !== "Todos").map(s => {
-              const cfg = SPECIALTY_CONFIG[s];
-              const isActive = specialtySearch === s;
-              return (
-                <button key={s} style={{ padding:"6px 14px", borderRadius:20, border:`1px solid ${isActive ? (cfg?.color || "#0369a1") : "#e2e8f0"}`, background: isActive ? (cfg?.bg || "#e0f2fe") : "#f8fafc", color: isActive ? (cfg?.color || "#0369a1") : "#64748b", cursor:"pointer", fontSize:12, fontFamily:"inherit", fontWeight: isActive ? 700 : 400, transition:"all 0.2s", whiteSpace:"nowrap", flexShrink:0 }} onClick={() => setSpecialtySearch(isActive ? "" : s)}>
-                  {cfg?.icon || ""} {s}
-                </button>
-              );
-            })}
+          {/* Specialty grid */}
+          <div style={{ marginBottom:28 }}>
+            <p style={{ fontSize:13, color:"#64748b", fontWeight:600, textTransform:"uppercase", letterSpacing:0.5, margin:"0 0 12px" }}>Especialidades disponibles</p>
+            <div style={{ display:"grid", gridTemplateColumns:"repeat(auto-fill, minmax(130px, 1fr))", gap:8 }}>
+              {SPECIALTIES.filter(s => s !== "Todos" && s !== "Enfermero a domicilio").map(s => {
+                const cfg = SPECIALTY_CONFIG[s];
+                const isActive = specialtySearch === s;
+                return (
+                  <button key={s} onClick={() => setSpecialtySearch(isActive ? "" : s)}
+                    style={{ display:"flex", alignItems:"center", gap:8, padding:"10px 12px", borderRadius:12, border:`1.5px solid ${isActive ? cfg?.color || "#0369a1" : "#e2e8f0"}`, background: isActive ? (cfg?.bg || "#e0f2fe") : "#ffffff", color: isActive ? (cfg?.color || "#0369a1") : "#475569", cursor:"pointer", fontSize:12, fontFamily:"inherit", fontWeight: isActive ? 700 : 500, transition:"all 0.2s", textAlign:"left", boxShadow: isActive ? `0 4px 12px ${cfg?.color || "#0369a1"}22` : "0 1px 4px rgba(15,23,42,0.06)" }}>
+                    <span style={{ fontSize:16, flexShrink:0 }}>{cfg?.icon || "🏥"}</span>
+                    <span style={{ lineHeight:1.2 }}>{s}</span>
+                  </button>
+                );
+              })}
             </div>
           </div>
           {loadingDoctors ? (
