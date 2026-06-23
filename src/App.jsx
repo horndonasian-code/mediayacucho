@@ -1785,7 +1785,14 @@ function DoctorProfile({ doctor, onBook, onBack, allAppointments }) {
           {doctor.available && (
             <>
               <button style={{ padding: "12px 24px", background: "linear-gradient(135deg,#0ea5e9,#0369a1)", color: "#fff", border: "none", borderRadius: 12, cursor: "pointer", fontSize: 15, fontWeight: 700, fontFamily: "inherit" }}
-                onClick={() => onBook(doctor, doctor.specialty === "Enfermero a domicilio" ? "domicilio" : "presencial")}>{doctor.specialty === "Enfermero a domicilio" ? "Solicitar a domicilio" : "Reservar presencial"}</button>
+                onClick={() => {
+                  if (doctor.specialty === "Enfermero a domicilio") {
+                    const msg = `Hola ${doctor.name}, vi tu perfil en MediAyacucho y me gustaría solicitar atención de enfermería a domicilio.\n\n¿Podrías indicarme tu disponibilidad, horarios y tarifas?\n\nGracias 🙏`;
+                    window.open(`https://wa.me/${(doctor.phone||"").replace(/\D/g,"")}?text=${encodeURIComponent(msg)}`, "_blank");
+                  } else {
+                    onBook(doctor, doctor.specialty === "Enfermero a domicilio" ? "domicilio" : "presencial");
+                  }
+                }}>{doctor.specialty === "Enfermero a domicilio" ? "Solicitar a domicilio" : "Reservar presencial"}</button>
               {doctor.specialty !== "Enfermero a domicilio" && (
                 <button style={{ padding: "12px 24px", background: "linear-gradient(135deg,#25D366,#128C7E)", color: "#fff", border: "none", borderRadius: 12, cursor: "pointer", fontSize: 15, fontWeight: 700, fontFamily: "inherit" }}
                   onClick={() => onBook(doctor, "virtual")}>Reservar virtual (WhatsApp)</button>
@@ -2904,7 +2911,14 @@ export default function App() {
                       {doc.available ? (
                         <div style={{ display:"flex", gap:8 }}>
                           <button style={{ flex:1, padding:"10px 0", background: doc.specialty==="Enfermero a domicilio" ? "linear-gradient(135deg,#10b981,#34d399)" : "linear-gradient(135deg,#0ea5e9,#38bdf8)", color:"#fff", border:"none", borderRadius:12, cursor:"pointer", fontSize:13, fontWeight:700, fontFamily:"inherit" }}
-                            onClick={() => { setSelectedDoctor(doc); setBookingData(p => ({...p, modalidad: doc.specialty==="Enfermero a domicilio" ? "domicilio" : "presencial"})); setSelectedCalDay(null); setView("booking"); }}>
+                            onClick={() => {
+                              if (doc.specialty === "Enfermero a domicilio") {
+                                const msg = `Hola ${doc.name}, vi tu perfil en MediAyacucho y me gustaría solicitar atención de enfermería a domicilio.\n\n¿Podrías indicarme tu disponibilidad, horarios y tarifas?\n\nGracias 🙏`;
+                                window.open(`https://wa.me/${(doc.phone||"").replace(/\D/g,"")}?text=${encodeURIComponent(msg)}`, "_blank");
+                              } else {
+                                setSelectedDoctor(doc); setBookingData(p => ({...p, modalidad:"presencial"})); setSelectedCalDay(null); setView("booking");
+                              }
+                            }}>
                             {doc.specialty==="Enfermero a domicilio" ? "🏠 A domicilio" : "Presencial"}
                           </button>
                           {doc.specialty !== "Enfermero a domicilio" && (
@@ -3125,15 +3139,6 @@ export default function App() {
                   <input style={T.inputLight} placeholder={ph} type={type} value={bookingData[key]} onChange={e=>{setBookingData({...bookingData,[key]:e.target.value}); setWaitlistDone(false);}} />
                 </div>
               ))}
-
-              {/* Campo dirección solo para enfermero a domicilio */}
-              {bookingData.modalidad === "domicilio" && (
-                <div style={{ marginBottom:16 }}>
-                  <label style={T.labelLight}>TU DIRECCIÓN (para la visita a domicilio)</label>
-                  <input style={T.inputLight} placeholder="Jr. Lima 210, Of. 3, Ayacucho — Referencia: frente al BCP" value={bookingData.patient_address||""} onChange={e=>setBookingData({...bookingData, patient_address:e.target.value})} />
-                  <p style={{ fontSize:11, color:"#0369a1", margin:"6px 0 0" }}>📍 El enfermero se desplazará a esta dirección</p>
-                </div>
-              )}
 
               {/* CALENDARIO VISUAL - GRILLA MENSUAL */}
               <div style={{ marginBottom:16 }}>
