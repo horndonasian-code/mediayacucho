@@ -2803,72 +2803,108 @@ export default function App() {
               )}
             </div>
           ) : (
-            <div className="doctor-grid" style={T.grid}>
-              {filtered.map(doc => (
-                <div key={doc.id} style={{ ...T.card, background:"#ffffff", border:"1px solid #e0f2fe", boxShadow:"0 8px 28px rgba(15,23,42,0.06)", position:"relative", overflow:"hidden" }}
-                  onMouseEnter={e=>{e.currentTarget.style.transform="translateY(-6px)";e.currentTarget.style.borderColor="#7dd3fc";e.currentTarget.style.boxShadow="0 16px 48px rgba(14,165,233,0.15)";}}
-                  onMouseLeave={e=>{e.currentTarget.style.transform="";e.currentTarget.style.borderColor="#e0f2fe";e.currentTarget.style.boxShadow="";}}>
-                  {doc.photo_url
-                    ? <img src={doc.photo_url} alt={doc.name} style={{ width:56, height:56, borderRadius:14, objectFit:"cover", marginBottom:16, border:`2px solid ${SPECIALTY_CONFIG[doc.specialty]?.color || "#7dd3fc"}66` }} />
-                    : <div style={{ ...T.avatar(SPECIALTY_CONFIG[doc.specialty]?.color || doc.color), background:`linear-gradient(135deg, ${doc.color}, ${SPECIALTY_CONFIG[doc.specialty]?.color || doc.color})` }}>{doc.img || initials(doc.name)}</div>
-                  }
-                  <h3 style={{ fontSize:18, fontWeight:700, margin:"0 0 8px", color:"#082f49" }}>{doc.name}</h3>
-                  <div style={{ marginBottom:10 }}>
-                    <span style={{ display:"inline-flex", alignItems:"center", gap:5, padding:"4px 12px", borderRadius:20, background: SPECIALTY_CONFIG[doc.specialty]?.bg || "rgba(59,130,196,0.15)", border:`1px solid ${SPECIALTY_CONFIG[doc.specialty]?.color || "#7dd3fc"}44`, color: SPECIALTY_CONFIG[doc.specialty]?.color || "#7dd3fc", fontSize:12, fontWeight:700 }}>
-                      {SPECIALTY_CONFIG[doc.specialty]?.icon || "🏥"} {doc.specialty}
-                    </span>
-                  </div>
-                  <div style={{ color:"#F4A261", fontSize:13 }}>{"★".repeat(Math.floor(doc.rating||5))} {doc.rating}</div>
-                  {(() => {
-                    const booked = getBookedSlotsForDoctor(allAppointments, doc.id);
-                    const next = getNextAvailability(doc.schedule, booked);
-                    if (!next) return null;
-                    const isSoon = next.daysAhead <= 1;
-                    return (
-                      <div style={{ display:"inline-flex", alignItems:"center", gap:5, marginTop:8, padding:"4px 10px", borderRadius:8, background: isSoon ? "rgba(37,211,102,0.12)" : "rgba(59,130,196,0.1)", border:`1px solid ${isSoon ? "rgba(37,211,102,0.3)" : "rgba(59,130,196,0.2)"}` }}>
-                        <span style={{ width:6, height:6, borderRadius:"50%", background: isSoon ? "#25D366" : "#7dd3fc" }} />
-                        <span style={{ fontSize:11, fontWeight:700, color: isSoon ? "#25D366" : "#7dd3fc" }}>Próxima cita: {next.label}</span>
+            <div className="doctor-grid" style={{ display:"grid", gridTemplateColumns:"repeat(auto-fill, minmax(300px, 1fr))", gap:24 }}>
+              {filtered.map(doc => {
+                const booked = getBookedSlotsForDoctor(allAppointments, doc.id);
+                const next = getNextAvailability(doc.schedule, booked);
+                const isSoon = next && next.daysAhead <= 1;
+                const specialtyColor = SPECIALTY_CONFIG[doc.specialty]?.color || "#0ea5e9";
+                const specialtyBg = SPECIALTY_CONFIG[doc.specialty]?.bg || "#e0f2fe";
+                return (
+                  <div key={doc.id} style={{ background:"#ffffff", borderRadius:20, overflow:"hidden", boxShadow:"0 4px 24px rgba(15,23,42,0.08)", border:"1px solid #e0f2fe", transition:"all 0.3s", display:"flex", flexDirection:"column" }}
+                    onMouseEnter={e=>{e.currentTarget.style.transform="translateY(-4px)";e.currentTarget.style.boxShadow="0 16px 48px rgba(14,165,233,0.15)";e.currentTarget.style.borderColor="#7dd3fc";}}
+                    onMouseLeave={e=>{e.currentTarget.style.transform="";e.currentTarget.style.boxShadow="0 4px 24px rgba(15,23,42,0.08)";e.currentTarget.style.borderColor="#e0f2fe";}}>
+
+                    {/* PHOTO HEADER */}
+                    <div style={{ position:"relative", height:180, background:`linear-gradient(135deg, ${specialtyColor}22, ${specialtyColor}44)`, overflow:"hidden" }}>
+                      {doc.photo_url
+                        ? <img src={doc.photo_url} alt={doc.name} style={{ width:"100%", height:"100%", objectFit:"cover", objectPosition:"top" }} />
+                        : <div style={{ width:"100%", height:"100%", display:"flex", alignItems:"center", justifyContent:"center" }}>
+                            <div style={{ width:90, height:90, borderRadius:"50%", background:`linear-gradient(135deg, ${doc.color||specialtyColor}, ${specialtyColor})`, display:"flex", alignItems:"center", justifyContent:"center", fontSize:32, fontWeight:800, color:"#fff", boxShadow:"0 8px 24px rgba(0,0,0,0.15)" }}>{doc.img || initials(doc.name)}</div>
+                          </div>
+                      }
+                      {/* Specialty badge on photo */}
+                      <div style={{ position:"absolute", top:12, left:12, padding:"4px 12px", borderRadius:20, background:"rgba(255,255,255,0.95)", backdropFilter:"blur(8px)", fontSize:11, fontWeight:700, color:specialtyColor, border:`1px solid ${specialtyColor}44` }}>
+                        {SPECIALTY_CONFIG[doc.specialty]?.icon || "🏥"} {doc.specialty}
                       </div>
-                    );
-                  })()}
-                  {doc.address && (
-                    <div style={{ marginTop:8, display:"flex", alignItems:"flex-start", gap:6 }}>
-                      <span style={{ fontSize:12 }}>📍</span>
-                      <a href={doc.maps_url||"#"} target="_blank" rel="noreferrer" style={{ fontSize:12, color:"#7dd3fc", textDecoration:"none", lineHeight:1.4 }}>{doc.address}</a>
-                    </div>
-                  )}
-                  <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", marginTop:16 }}>
-                    <div>
-                      <span style={{ fontSize:22, fontWeight:800, color: "#7dd3fc", letterSpacing:"-0.5px" }}>{doc.price}</span>
-                      <span style={{ fontSize:11, color:"#60a5d8" }}>/consulta</span>
-                    </div>
-                    {doc.available
-                      ? <div style={{ display: "flex", gap: 6, flexDirection: "column" }}>
-                          <button style={{ padding:"8px 16px", background:"linear-gradient(135deg,#0ea5e9,#7dd3fc)", color:"#fff", border:"none", borderRadius:10, cursor:"pointer", fontSize:13, fontWeight:600, fontFamily:"inherit" }} onClick={() => { setSelectedDoctor(doc); setBookingData(p => ({...p, modalidad:"presencial"})); setSelectedCalDay(null); setView("booking"); }}>Presencial</button>
-                          <button style={{ padding:"8px 16px", background:"linear-gradient(135deg,#25D366,#128C7E)", color:"#fff", border:"none", borderRadius:10, cursor:"pointer", fontSize:13, fontWeight:600, fontFamily:"inherit" }} onClick={() => { setSelectedDoctor(doc); setBookingData(p => ({...p, modalidad:"virtual"})); setSelectedCalDay(null); setView("booking"); }}>📱 Virtual</button>
+                      {/* Availability badge */}
+                      {next && (
+                        <div style={{ position:"absolute", top:12, right:12, padding:"4px 10px", borderRadius:20, background: isSoon ? "rgba(37,211,102,0.95)" : "rgba(255,255,255,0.95)", backdropFilter:"blur(8px)", fontSize:11, fontWeight:700, color: isSoon ? "#fff" : "#0369a1" }}>
+                          <span style={{ width:6, height:6, borderRadius:"50%", background: isSoon ? "#fff" : "#25D366", display:"inline-block", marginRight:4 }} />
+                          {next.label}
                         </div>
-                      : <span style={{ padding:"4px 10px", borderRadius:20, background:"rgba(255,100,100,0.1)", color:"#ff6b6b", fontSize:12 }}>No disponible</span>
-                    }
+                      )}
+                      {!doc.available && (
+                        <div style={{ position:"absolute", inset:0, background:"rgba(255,255,255,0.6)", backdropFilter:"blur(2px)", display:"flex", alignItems:"center", justifyContent:"center" }}>
+                          <span style={{ padding:"6px 16px", background:"#fff", borderRadius:20, color:"#dc2626", fontSize:12, fontWeight:700, border:"1px solid #fecaca" }}>No disponible</span>
+                        </div>
+                      )}
+                    </div>
+
+                    {/* CARD BODY */}
+                    <div style={{ padding:"20px 20px 16px", flex:1, display:"flex", flexDirection:"column", gap:10 }}>
+                      {/* Name + rating */}
+                      <div>
+                        <h3 style={{ fontSize:17, fontWeight:800, margin:"0 0 4px", color:"#082f49", lineHeight:1.2 }}>{doc.name}</h3>
+                        <div style={{ display:"flex", alignItems:"center", gap:6 }}>
+                          <span style={{ color:"#F4A261", fontSize:13 }}>{"★".repeat(Math.floor(doc.rating||5))}</span>
+                          <span style={{ fontSize:13, fontWeight:700, color:"#082f49" }}>{doc.rating}</span>
+                          <span style={{ fontSize:12, color:"#94a3b8" }}>· CMP Verificado</span>
+                        </div>
+                      </div>
+
+                      {/* Address */}
+                      {doc.address && (
+                        <div style={{ display:"flex", alignItems:"flex-start", gap:6 }}>
+                          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#94a3b8" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ marginTop:2, flexShrink:0 }}><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+                          <a href={doc.maps_url||"#"} target="_blank" rel="noreferrer" style={{ fontSize:12, color:"#64748b", textDecoration:"none", lineHeight:1.4 }}>{doc.address}</a>
+                        </div>
+                      )}
+
+                      {/* Price */}
+                      <div style={{ display:"flex", alignItems:"baseline", gap:4 }}>
+                        <span style={{ fontSize:24, fontWeight:800, color:"#0369a1", letterSpacing:"-0.5px" }}>{doc.price}</span>
+                        <span style={{ fontSize:12, color:"#94a3b8" }}>/consulta</span>
+                      </div>
+
+                      {/* Divider */}
+                      <div style={{ height:1, background:"#f1f5f9", margin:"2px 0" }} />
+
+                      {/* Action buttons */}
+                      {doc.available ? (
+                        <div style={{ display:"flex", gap:8 }}>
+                          <button style={{ flex:1, padding:"10px 0", background:"linear-gradient(135deg,#0ea5e9,#38bdf8)", color:"#fff", border:"none", borderRadius:12, cursor:"pointer", fontSize:13, fontWeight:700, fontFamily:"inherit" }}
+                            onClick={() => { setSelectedDoctor(doc); setBookingData(p => ({...p, modalidad:"presencial"})); setSelectedCalDay(null); setView("booking"); }}>
+                            Presencial
+                          </button>
+                          <button style={{ flex:1, padding:"10px 0", background:"linear-gradient(135deg,#25D366,#128C7E)", color:"#fff", border:"none", borderRadius:12, cursor:"pointer", fontSize:13, fontWeight:700, fontFamily:"inherit" }}
+                            onClick={() => { setSelectedDoctor(doc); setBookingData(p => ({...p, modalidad:"virtual"})); setSelectedCalDay(null); setView("booking"); }}>
+                            Virtual
+                          </button>
+                        </div>
+                      ) : null}
+
+                      {/* Ver perfil + Dashboard */}
+                      <div style={{ display:"flex", gap:6 }}>
+                        {session && session.email === doc.email && (
+                          <button style={{ flex:1, padding:"8px 0", background:"#f8fafc", border:"1px solid #e2e8f0", color:"#475569", borderRadius:10, cursor:"pointer", fontSize:12, fontFamily:"inherit", fontWeight:600 }} onClick={() => setDashboardDoctor(doc)}>
+                            <span style={{ display:"flex", alignItems:"center", justifyContent:"center", gap:5 }}>
+                              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
+                              Dashboard
+                            </span>
+                          </button>
+                        )}
+                        <button style={{ flex:1, padding:"8px 0", background:"#f8fafc", border:"1px solid #e2e8f0", color:"#475569", borderRadius:10, cursor:"pointer", fontSize:12, fontFamily:"inherit", fontWeight:600 }} onClick={() => { setSelectedProfile(doc); setView("profile"); }}>
+                          <span style={{ display:"flex", alignItems:"center", justifyContent:"center", gap:5 }}>
+                            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+                            Ver perfil
+                          </span>
+                        </button>
+                      </div>
+                    </div>
                   </div>
-                  {/* Acceso al dashboard solo si es el médico logueado */}
-                  <div style={{ display:"flex", gap:6, marginTop:10 }}>
-                    {session && session.email === doc.email && (
-                      <button style={{ flex:1, padding:"7px 0", background:"#f0f9ff", border:"1px solid #bae6fd", color:"#0369a1", borderRadius:8, cursor:"pointer", fontSize:11, fontFamily:"inherit", fontWeight:600 }} onClick={() => setDashboardDoctor(doc)}>
-                        <span style={{ display:"flex", alignItems:"center", justifyContent:"center", gap:5 }}>
-                          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
-                          Dashboard
-                        </span>
-                      </button>
-                    )}
-                    <button style={{ flex:1, padding:"7px 0", background:"#f0f9ff", border:"1px solid #bae6fd", color:"#0369a1", borderRadius:8, cursor:"pointer", fontSize:11, fontFamily:"inherit", fontWeight:600 }} onClick={() => { setSelectedProfile(doc); setView("profile"); }}>
-                      <span style={{ display:"flex", alignItems:"center", justifyContent:"center", gap:5 }}>
-                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
-                        Ver perfil
-                      </span>
-                    </button>
-                  </div>
-                </div>
-              ))}
+                );
+              })}
             </div>
           )}
         </div>
