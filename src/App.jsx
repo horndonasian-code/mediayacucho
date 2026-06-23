@@ -98,7 +98,7 @@ const auth = {
 };
 
 // ─── Constants ─────────────────────────────────────────────────────────────
-const SPECIALTIES = ["Todos", "Medicina General", "Pediatría", "Cardiología", "Ginecología", "Traumatología", "Dermatología", "Odontología", "Oftalmología", "Psicología", "Nutrición", "Neurología", "Urología", "Endocrinología", "Oncología", "Medicina Interna", "Cirugía General", "Gastroenterología", "Nefrología", "Neumología", "Enfermero a domicilio"];
+const SPECIALTIES = ["Todos", "Medicina General", "Pediatría", "Cardiología", "Ginecología", "Traumatología", "Dermatología", "Odontología", "Oftalmología", "Psicología", "Nutrición", "Neurología", "Urología", "Endocrinología", "Oncología", "Medicina Interna", "Cirugía General", "Gastroenterología", "Nefrología", "Neumología", "Otorrinolaringología", "Enfermero a domicilio"];
 
 const SPECIALTY_CONFIG = {
   "Medicina General": { color: "#7dd3fc", bg: "rgba(59,130,196,0.15)",  icon: "🩺" },
@@ -119,8 +119,9 @@ const SPECIALTY_CONFIG = {
   "Cirugía General":  { color: "#e879f9", bg: "rgba(232,121,249,0.15)",  icon: "🔬" },
   "Gastroenterología":{ color: "#fbbf24", bg: "rgba(251,191,36,0.15)",   icon: "🫃" },
   "Nefrología":       { color: "#2dd4bf", bg: "rgba(45,212,191,0.15)",   icon: "🫘" },
-  "Neumología":       { color: "#bae6fd", bg: "rgba(147,197,253,0.15)",  icon: "🫁" },
-  "Enfermero a domicilio": { color: "#10b981", bg: "rgba(16,185,129,0.12)", icon: "🏠" },
+  "Neumología":            { color: "#bae6fd", bg: "rgba(147,197,253,0.15)", icon: "🫁" },
+  "Otorrinolaringología":  { color: "#8b5cf6", bg: "rgba(139,92,246,0.12)",  icon: "👂" },
+  "Enfermero a domicilio": { color: "#10b981", bg: "rgba(16,185,129,0.12)",  icon: "🏠" },
 };
 const MONTHLY_DATA = [
   { mes: "Ene", citas: 18, ingresos: 1080 }, { mes: "Feb", citas: 24, ingresos: 1440 },
