@@ -1781,23 +1781,15 @@ function DoctorProfile({ doctor, onBook, onBack, allAppointments }) {
           </div>
         )}
         <div style={{ display: "flex", gap: 10, flexWrap: "wrap" }}>
-          {doctor.specialty === "Enfermero a domicilio" ? (
-            doctor.available && (
-              <a href={`https://wa.me/${(doctor.phone||"").replace(/\D/g,"")}?text=${encodeURIComponent(`Hola ${doctor.name}, vi tu perfil en MediAyacucho y me gustaría solicitar atención de enfermería a domicilio. ¿Cuál es tu disponibilidad?`)}`} target="_blank" rel="noreferrer"
-                style={{ display:"flex", alignItems:"center", gap:8, padding:"12px 24px", background:"linear-gradient(135deg,#25D366,#128C7E)", color:"#fff", borderRadius:12, fontSize:15, fontWeight:700, textDecoration:"none" }}>
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347zM12 0C5.373 0 0 5.373 0 12c0 2.116.554 4.103 1.523 5.824L0 24l6.342-1.498A11.955 11.955 0 0 0 12 24c6.627 0 12-5.373 12-12S18.627 0 12 0zm0 22c-1.894 0-3.669-.497-5.211-1.371L3 21.5l.894-3.654A10 10 0 0 1 2 12C2 6.477 6.477 2 12 2s10 4.477 10 10-4.477 10-10 10z"/></svg>
-                Contactar por WhatsApp
-              </a>
-            )
-          ) : (
-            doctor.available && (
-              <>
-                <button style={{ padding: "12px 24px", background: "linear-gradient(135deg,#0ea5e9,#0369a1)", color: "#fff", border: "none", borderRadius: 12, cursor: "pointer", fontSize: 15, fontWeight: 700, fontFamily: "inherit" }}
-                  onClick={() => onBook(doctor, "presencial")}>Reservar presencial</button>
+          {doctor.available && (
+            <>
+              <button style={{ padding: "12px 24px", background: "linear-gradient(135deg,#0ea5e9,#0369a1)", color: "#fff", border: "none", borderRadius: 12, cursor: "pointer", fontSize: 15, fontWeight: 700, fontFamily: "inherit" }}
+                onClick={() => onBook(doctor, doctor.specialty === "Enfermero a domicilio" ? "domicilio" : "presencial")}>{doctor.specialty === "Enfermero a domicilio" ? "Solicitar a domicilio" : "Reservar presencial"}</button>
+              {doctor.specialty !== "Enfermero a domicilio" && (
                 <button style={{ padding: "12px 24px", background: "linear-gradient(135deg,#25D366,#128C7E)", color: "#fff", border: "none", borderRadius: 12, cursor: "pointer", fontSize: 15, fontWeight: 700, fontFamily: "inherit" }}
                   onClick={() => onBook(doctor, "virtual")}>Reservar virtual (WhatsApp)</button>
-              </>
-            )
+              )}
+            </>
           )}
           <button style={s.shareBtn} onClick={() => {
             navigator.clipboard?.writeText(profileUrl);
@@ -2899,17 +2891,7 @@ export default function App() {
                       <div style={{ height:1, background:"#f1f5f9", margin:"2px 0" }} />
 
                       {/* Action buttons */}
-                      {doc.specialty === "Enfermero a domicilio" ? (
-                        doc.available ? (
-                          <a href={`https://wa.me/${(doc.phone||"").replace(/\D/g,"")}?text=${encodeURIComponent(`Hola ${doc.name}, vi tu perfil en MediAyacucho y me gustaría solicitar atención de enfermería a domicilio. ¿Cuál es tu disponibilidad?`)}`} target="_blank" rel="noreferrer"
-                            style={{ display:"flex", alignItems:"center", justifyContent:"center", gap:8, padding:"10px 0", background:"linear-gradient(135deg,#25D366,#128C7E)", color:"#fff", borderRadius:12, fontSize:13, fontWeight:700, textDecoration:"none" }}>
-                            <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347zM12 0C5.373 0 0 5.373 0 12c0 2.116.554 4.103 1.523 5.824L0 24l6.342-1.498A11.955 11.955 0 0 0 12 24c6.627 0 12-5.373 12-12S18.627 0 12 0zm0 22c-1.894 0-3.669-.497-5.211-1.371L3 21.5l.894-3.654A10 10 0 0 1 2 12C2 6.477 6.477 2 12 2s10 4.477 10 10-4.477 10-10 10z"/></svg>
-                            Contactar por WhatsApp
-                          </a>
-                        ) : (
-                          <div style={{ padding:"10px 0", textAlign:"center", color:"#dc2626", fontSize:13, fontWeight:600 }}>No disponible actualmente</div>
-                        )
-                      ) : doc.available ? (
+                      {doc.available ? (
                         <div style={{ display:"flex", gap:8 }}>
                           <button style={{ flex:1, padding:"10px 0", background:"linear-gradient(135deg,#0ea5e9,#38bdf8)", color:"#fff", border:"none", borderRadius:12, cursor:"pointer", fontSize:13, fontWeight:700, fontFamily:"inherit" }}
                             onClick={() => { setSelectedDoctor(doc); setBookingData(p => ({...p, modalidad:"presencial"})); setSelectedCalDay(null); setView("booking"); }}>
@@ -3086,14 +3068,22 @@ export default function App() {
 
                 {/* MODALIDAD SELECTOR */}
                 <div style={{ marginTop:16, display:"flex", gap:10 }}>
-                  <button style={{ flex:1, padding:"10px 0", borderRadius:10, border:`2px solid ${bookingData.modalidad==="presencial" ? "#0ea5e9" : "#e2e8f0"}`, background:bookingData.modalidad==="presencial" ? "#e0f2fe" : "transparent", color:bookingData.modalidad==="presencial" ? "#0369a1" : "#64748b", cursor:"pointer", fontFamily:"inherit", fontSize:14, fontWeight:700 }}
-                    onClick={() => setBookingData({...bookingData, modalidad:"presencial"})}>
-                    🏥 Presencial
-                  </button>
-                  <button style={{ flex:1, padding:"10px 0", borderRadius:10, border:`2px solid ${bookingData.modalidad==="virtual" ? "#25D366" : "#e2e8f0"}`, background:bookingData.modalidad==="virtual" ? "#f0fdf4" : "transparent", color:bookingData.modalidad==="virtual" ? "#15803d" : "#64748b", cursor:"pointer", fontFamily:"inherit", fontSize:14, fontWeight:700 }}
-                    onClick={() => setBookingData({...bookingData, modalidad:"virtual"})}>
-                    📱 Virtual (WhatsApp)
-                  </button>
+                  {selectedDoctor.specialty === "Enfermero a domicilio" ? (
+                    <div style={{ flex:1, padding:"10px 0", borderRadius:10, border:"2px solid #10b981", background:"#ecfdf5", color:"#065f46", fontSize:14, fontWeight:700, textAlign:"center" }}>
+                      🏠 Atención a domicilio
+                    </div>
+                  ) : (
+                    <>
+                      <button style={{ flex:1, padding:"10px 0", borderRadius:10, border:`2px solid ${bookingData.modalidad==="presencial" ? "#0ea5e9" : "#e2e8f0"}`, background:bookingData.modalidad==="presencial" ? "#e0f2fe" : "transparent", color:bookingData.modalidad==="presencial" ? "#0369a1" : "#64748b", cursor:"pointer", fontFamily:"inherit", fontSize:14, fontWeight:700 }}
+                        onClick={() => setBookingData({...bookingData, modalidad:"presencial"})}>
+                        Presencial
+                      </button>
+                      <button style={{ flex:1, padding:"10px 0", borderRadius:10, border:`2px solid ${bookingData.modalidad==="virtual" ? "#25D366" : "#e2e8f0"}`, background:bookingData.modalidad==="virtual" ? "#f0fdf4" : "transparent", color:bookingData.modalidad==="virtual" ? "#15803d" : "#64748b", cursor:"pointer", fontFamily:"inherit", fontSize:14, fontWeight:700 }}
+                        onClick={() => setBookingData({...bookingData, modalidad:"virtual"})}>
+                        Virtual (WhatsApp)
+                      </button>
+                    </>
+                  )}
                 </div>
 
                 {/* INFO SEGÚN MODALIDAD */}
@@ -3123,6 +3113,15 @@ export default function App() {
                   <input style={T.inputLight} placeholder={ph} type={type} value={bookingData[key]} onChange={e=>{setBookingData({...bookingData,[key]:e.target.value}); setWaitlistDone(false);}} />
                 </div>
               ))}
+
+              {/* Campo dirección solo para enfermero a domicilio */}
+              {bookingData.modalidad === "domicilio" && (
+                <div style={{ marginBottom:16 }}>
+                  <label style={T.labelLight}>TU DIRECCIÓN (para la visita a domicilio)</label>
+                  <input style={T.inputLight} placeholder="Jr. Lima 210, Of. 3, Ayacucho — Referencia: frente al BCP" value={bookingData.patient_address||""} onChange={e=>setBookingData({...bookingData, patient_address:e.target.value})} />
+                  <p style={{ fontSize:11, color:"#0369a1", margin:"6px 0 0" }}>📍 El enfermero se desplazará a esta dirección</p>
+                </div>
+              )}
 
               {/* CALENDARIO VISUAL - GRILLA MENSUAL */}
               <div style={{ marginBottom:16 }}>
