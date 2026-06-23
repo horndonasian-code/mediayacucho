@@ -2893,14 +2893,16 @@ export default function App() {
                       {/* Action buttons */}
                       {doc.available ? (
                         <div style={{ display:"flex", gap:8 }}>
-                          <button style={{ flex:1, padding:"10px 0", background:"linear-gradient(135deg,#0ea5e9,#38bdf8)", color:"#fff", border:"none", borderRadius:12, cursor:"pointer", fontSize:13, fontWeight:700, fontFamily:"inherit" }}
-                            onClick={() => { setSelectedDoctor(doc); setBookingData(p => ({...p, modalidad:"presencial"})); setSelectedCalDay(null); setView("booking"); }}>
-                            Presencial
+                          <button style={{ flex:1, padding:"10px 0", background: doc.specialty==="Enfermero a domicilio" ? "linear-gradient(135deg,#10b981,#34d399)" : "linear-gradient(135deg,#0ea5e9,#38bdf8)", color:"#fff", border:"none", borderRadius:12, cursor:"pointer", fontSize:13, fontWeight:700, fontFamily:"inherit" }}
+                            onClick={() => { setSelectedDoctor(doc); setBookingData(p => ({...p, modalidad: doc.specialty==="Enfermero a domicilio" ? "domicilio" : "presencial"})); setSelectedCalDay(null); setView("booking"); }}>
+                            {doc.specialty==="Enfermero a domicilio" ? "🏠 A domicilio" : "Presencial"}
                           </button>
-                          <button style={{ flex:1, padding:"10px 0", background:"linear-gradient(135deg,#25D366,#128C7E)", color:"#fff", border:"none", borderRadius:12, cursor:"pointer", fontSize:13, fontWeight:700, fontFamily:"inherit" }}
-                            onClick={() => { setSelectedDoctor(doc); setBookingData(p => ({...p, modalidad:"virtual"})); setSelectedCalDay(null); setView("booking"); }}>
-                            Virtual
-                          </button>
+                          {doc.specialty !== "Enfermero a domicilio" && (
+                            <button style={{ flex:1, padding:"10px 0", background:"linear-gradient(135deg,#25D366,#128C7E)", color:"#fff", border:"none", borderRadius:12, cursor:"pointer", fontSize:13, fontWeight:700, fontFamily:"inherit" }}
+                              onClick={() => { setSelectedDoctor(doc); setBookingData(p => ({...p, modalidad:"virtual"})); setSelectedCalDay(null); setView("booking"); }}>
+                              Virtual
+                            </button>
+                          )}
                         </div>
                       ) : null}
 
