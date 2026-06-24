@@ -1350,6 +1350,8 @@ function AdminPanel({ onExit }) {
   const [payments, setPayments] = useState([]);
   const [loading, setLoading] = useState(true);
   const [actionMsg, setActionMsg] = useState("");
+  const [alertDoctors, setAlertDoctors] = useState([]);
+  const [alertDismissed, setAlertDismissed] = useState(false);
 
   useEffect(() => { loadAll(); }, []);
 
@@ -1366,6 +1368,29 @@ function AdminPanel({ onExit }) {
       setActiveDoctors(active || []);
       setAppointments(appts || []);
       setPayments(pays || []);
+
+      // Detectar médicos con trial vencido o próximo a vencer (≤3 días)
+      const alerts = (active || []).filter(d => {
+        const trial = getTrialStatus(d.trial_ends_at);
+        if (trial && (!trial.active || trial.daysLeft <= 3)) return true;
+        const ms = getMembershipStatus(d.membership_paid_at);
+        if (["vencido","urgente"].includes(ms.status) && !(trial && trial.active)) return true;
+        return false;
+      });
+      setAlertDoctors(alerts);
+
+      // Si hay alertas → enviar WhatsApp automático al admin (solo 1 vez por session)
+      if (alerts.length > 0 && !sessionStorage.getItem("adminAlertSent")) {
+        sessionStorage.setItem("adminAlertSent", "1");
+        const names = alerts.map(d => {
+          const trial = getTrialStatus(d.trial_ends_at);
+          if (trial && !trial.active) return `• ${d.name} — mes gratuito vencido`;
+          if (trial && trial.daysLeft <= 3) return `• ${d.name} — mes gratuito vence en ${trial.daysLeft}d`;
+          return `• ${d.name} — membresía vencida`;
+        }).join("\n");
+        const msg = `⚠️ *MediAyacucho - Alerta de pagos*\n\nHola! Hay ${alerts.length} médico(s) que necesitan atención:\n\n${names}\n\nEntra al Panel Admin para enviarles el recordatorio de pago:\n👉 mediayacucho.pe`;
+        setTimeout(() => window.open(`https://wa.me/51913330712?text=${encodeURIComponent(msg)}`, "_blank"), 2000);
+      }
     } catch (e) { console.error(e); }
     setLoading(false);
   }
@@ -1495,6 +1520,32 @@ function AdminPanel({ onExit }) {
           <button onClick={onExit} style={{ padding: "8px 16px", background: "transparent", border: "1px solid #fecaca", color: "#ff6b6b", borderRadius: 8, cursor: "pointer", fontFamily: "inherit", fontSize: 13 }}>← Salir</button>
         </div>
       </div>
+
+      {/* ALERT BANNER */}
+      {alertDoctors.length > 0 && !alertDismissed && (
+        <div style={{ background:"#fef2f2", border:"1px solid #fecaca", borderRadius:0, padding:"12px 24px", display:"flex", alignItems:"center", justifyContent:"space-between", gap:12, flexWrap:"wrap" }}>
+          <div style={{ display:"flex", alignItems:"center", gap:10 }}>
+            <span style={{ fontSize:20 }}>🔴</span>
+            <div>
+              <span style={{ fontWeight:700, color:"#dc2626", fontSize:14 }}>
+                {alertDoctors.length} médico(s) necesitan atención de pago
+              </span>
+              <div style={{ fontSize:12, color:"#475569", marginTop:2 }}>
+                {alertDoctors.map(d => {
+                  const trial = getTrialStatus(d.trial_ends_at);
+                  if (trial && !trial.active) return `${d.name} (mes gratuito vencido)`;
+                  if (trial && trial.daysLeft <= 3) return `${d.name} (vence en ${trial.daysLeft}d)`;
+                  return `${d.name} (membresía vencida)`;
+                }).join(" · ")}
+              </div>
+            </div>
+          </div>
+          <div style={{ display:"flex", gap:8 }}>
+            <button onClick={() => { setTab("active"); setAlertDismissed(true); }} style={{ padding:"6px 16px", background:"#dc2626", color:"#fff", border:"none", borderRadius:8, cursor:"pointer", fontFamily:"inherit", fontSize:13, fontWeight:700 }}>Ver médicos</button>
+            <button onClick={() => setAlertDismissed(true)} style={{ padding:"6px 12px", background:"transparent", border:"1px solid #fecaca", color:"#dc2626", borderRadius:8, cursor:"pointer", fontFamily:"inherit", fontSize:13 }}>✕</button>
+          </div>
+        </div>
+      )}
 
       <div style={s.main}>
         {/* KPIs */}
