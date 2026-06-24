@@ -648,7 +648,18 @@ function DoctorDashboard({ doctor, onExit }) {
   const [scheduleMsg, setScheduleMsg] = useState("");
 
   const DAYS = ["Lun","Mar","Mié","Jue","Vie","Sáb","Dom"];
-  const HOURS = ["7:00","8:00","9:00","10:00","11:00","12:00","13:00","14:00","15:00","16:00","17:00","18:00","19:00","20:00","21:00","22:00","23:00"];
+  const [scheduleInterval, setScheduleInterval] = useState(60);
+
+  function generateHours(intervalMinutes) {
+    const hours = [];
+    for (let min = 7 * 60; min <= 23 * 60; min += intervalMinutes) {
+      const h = Math.floor(min / 60);
+      const m = min % 60;
+      hours.push(`${h}:${m.toString().padStart(2,"0")}`);
+    }
+    return hours;
+  }
+  const HOURS = generateHours(scheduleInterval);
 
   // Parse existing schedule into a Set of "YYYY-MM-DD HH:MM"
   const parseSchedule = (schedule) => {
@@ -1096,6 +1107,20 @@ Hola ${appt.patient_name}, gracias por confiar en ${doctor.name}.
               <h2 style={{ margin:"0 0 8px", fontSize:26, fontWeight:700 }}>Mis horarios de atención</h2>
               <p style={{ color:"#475569", margin:"0 0 8px", fontSize:14 }}>Marca los días y horas en que atiendes pacientes este mes. El calendario de reservas se actualizará para los pacientes.</p>
               <p style={{ color:"#0369a1", fontWeight:700, fontSize:14, margin:"0 0 16px", textTransform:"capitalize" }}>📅 {monthName}</p>
+
+              {/* Interval selector */}
+              <div style={{ display:"flex", alignItems:"center", gap:10, marginBottom:20, padding:"12px 16px", background:"#f0f9ff", border:"1px solid #bae6fd", borderRadius:12, flexWrap:"wrap" }}>
+                <span style={{ fontSize:13, fontWeight:600, color:"#0369a1" }}>Duración de cada consulta:</span>
+                <div style={{ display:"flex", gap:6 }}>
+                  {[{label:"30 min", val:30},{label:"40 min", val:40},{label:"1 hora", val:60}].map(opt => (
+                    <button key={opt.val} onClick={() => setScheduleInterval(opt.val)}
+                      style={{ padding:"6px 14px", borderRadius:20, border:`1.5px solid ${scheduleInterval===opt.val ? "#0ea5e9" : "#bae6fd"}`, background:scheduleInterval===opt.val ? "#0ea5e9" : "#ffffff", color:scheduleInterval===opt.val ? "#fff" : "#0369a1", cursor:"pointer", fontFamily:"inherit", fontSize:12, fontWeight:700, transition:"all 0.2s" }}>
+                      {opt.label}
+                    </button>
+                  ))}
+                </div>
+                <span style={{ fontSize:12, color:"#64748b" }}>→ {HOURS.length} franjas por día</span>
+              </div>
 
               <div style={{ background:"#ffffff", border:"1px solid #e0f2fe", borderRadius:16, padding:16, boxShadow:"0 4px 16px rgba(15,23,42,0.05)", overflowX:"auto" }}>
                 {/* Grid header - dates */}
