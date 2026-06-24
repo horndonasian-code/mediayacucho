@@ -233,6 +233,15 @@ function getMembershipStatus(membershipPaidAt) {
   return { daysLeft, status, dueDate: dueDate.toISOString().slice(0,10) };
 }
 
+function getTrialStatus(trialEndsAt) {
+  if (!trialEndsAt) return null;
+  const trialEnd = new Date(trialEndsAt);
+  const now = new Date();
+  const daysLeft = Math.ceil((trialEnd.getTime() - now.getTime()) / (1000 * 60 * 60 * 24));
+  if (daysLeft < 0) return { active: false, daysLeft, label: "Mes gratuito vencido", color: "#dc2626" };
+  return { active: true, daysLeft, label: `Mes gratuito — ${daysLeft}d restantes`, color: "#10b981" };
+}
+
 function formatDateISO2(d) {
   return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,"0")}-${String(d.getDate()).padStart(2,"0")}`;
 }
@@ -1362,8 +1371,16 @@ function AdminPanel({ onExit }) {
   }
 
   async function activateDoctor(id, name) {
-    await sb(`doctors?id=eq.${id}`, { method: "PATCH", body: JSON.stringify({ active: true, membership_paid_at: new Date().toISOString() }) });
-    setActionMsg(`✅ ${name} activado`);
+    const trialEnd = new Date();
+    trialEnd.setDate(trialEnd.getDate() + 30);
+    await sb(`doctors?id=eq.${id}`, { method: "PATCH", body: JSON.stringify({ active: true, trial_ends_at: trialEnd.toISOString() }) });
+    // WhatsApp de bienvenida al médico
+    const doc = pendingDoctors.find(d => d.id === id);
+    if (doc?.phone) {
+      const msg = `🎉 *¡Bienvenido a MediAyacucho, ${name}!*\n\n Tu cuenta ha sido activada.\n\n🎁 *Tu primer mes es GRATIS* (hasta el ${trialEnd.toLocaleDateString("es-PE")}).\n\nYa puedes:\n✅ Configurar tu perfil y horarios\n✅ Recibir reservas de pacientes\n✅ Gestionar tus citas desde tu panel\n\n👉 mediayacucho.pe\n\nCualquier consulta, escríbenos aquí 🙏`;
+      setTimeout(() => window.open(`https://wa.me/${doc.phone.replace(/\D/g,"")}?text=${encodeURIComponent(msg)}`, "_blank"), 600);
+    }
+    setActionMsg(`✅ ${name} activado — 1 mes gratuito iniciado`);
     loadAll();
     setTimeout(() => setActionMsg(""), 3000);
   }
@@ -1399,13 +1416,17 @@ function AdminPanel({ onExit }) {
 
   function sendMembershipReminder(doctor) {
     const ms = getMembershipStatus(doctor.membership_paid_at);
+    const trial = getTrialStatus(doctor.trial_ends_at);
     let msg;
-    if (ms.status === "vencido") {
+    if (trial && !trial.active) {
+      // Mes gratuit expiré → demander premier paiement
+      msg = `🎁 *MediAyacucho - Tu mes gratuito ha terminado*\n\nHola Dr(a). ${doctor.name},\n\nEsperamos que hayas disfrutado tu primer mes gratuito en MediAyacucho.\n\nPara continuar recibiendo pacientes y mantener tu perfil activo, activa tu membresía mensual por solo *S/. 99*.\n\n💳 Realiza tu pago por Yape o Plin al *913 330 712* y envíanos el comprobante.\n\n¡Gracias por confiar en MediAyacucho! 🌿\n👉 mediayacucho.pe`;
+    } else if (ms.status === "vencido") {
       msg = `🔴 *MediAyacucho - Membresía vencida*\n\nHola Dr(a). ${doctor.name},\n\nTu membresía mensual (S/. 99) venció hace ${Math.abs(ms.daysLeft)} día(s).\n\nPara seguir recibiendo citas de pacientes, realiza tu pago por Yape o Plin al 913 330 712 y envíanos el comprobante.\n\n¡Gracias por confiar en MediAyacucho! 🌿`;
     } else {
       msg = `💳 *MediAyacucho - Recordatorio de pago*\n\nHola Dr(a). ${doctor.name},\n\nTu membresía mensual (S/. 99) vence en ${ms.daysLeft} día(s) (${ms.dueDate}).\n\nPara evitar interrupciones, realiza tu pago por Yape o Plin al 913 330 712 y envíanos el comprobante.\n\n¡Gracias por confiar en MediAyacucho! 🌿`;
     }
-    window.open(`https://wa.me/?text=${encodeURIComponent(msg)}`, "_blank");
+    window.open(`https://wa.me/${(doctor.phone||"").replace(/\D/g,"")}?text=${encodeURIComponent(msg)}`, "_blank");
   }
 
   async function deleteDoctor(id, name) {
@@ -1484,6 +1505,7 @@ function AdminPanel({ onExit }) {
           <div style={s.kpiCard("#F4A261")}><span style={s.kpiLabel}>Ingresos verificados</span><span style={s.kpiNum("#F4A261")}>S/. {totalIngresos}</span><span style={{ fontSize: 12, color: "#475569" }}>Membresías cobradas</span></div>
           <div style={s.kpiCard("#a78bfa")}><span style={s.kpiLabel}>Pagos pendientes</span><span style={s.kpiNum("#a78bfa")}>{payments.filter(p => p.status === "pendiente").length}</span><span style={{ fontSize: 12, color: "#475569" }}>Por verificar</span></div>
           <div style={s.kpiCard("#dc2626")}><span style={s.kpiLabel}>Membresías por vencer</span><span style={s.kpiNum("#dc2626")}>{activeDoctors.filter(d => ["vencido","urgente","proximo"].includes(getMembershipStatus(d.membership_paid_at).status)).length}</span><span style={{ fontSize: 12, color: "#475569" }}>Necesitan recordatorio</span></div>
+          <div style={s.kpiCard("#10b981")}><span style={s.kpiLabel}>En periodo gratuito</span><span style={s.kpiNum("#10b981")}>{activeDoctors.filter(d => { const t = getTrialStatus(d.trial_ends_at); return t && t.active; }).length}</span><span style={{ fontSize: 12, color: "#475569" }}>Mes gratuito activo</span></div>
           <div style={s.kpiCard("#c2410c")}><span style={s.kpiLabel}>Por reversar a médicos</span><span style={s.kpiNum("#c2410c")}>S/. {appointments.filter(a => (a.status === "confirmada" || a.status === "completada") && a.payment_status === "pagado" && !a.advance_settled).length * AVANCE.monto}</span><span style={{ fontSize: 12, color: "#475569" }}>Adelantos pendientes</span></div>
         </div>
 
@@ -1533,6 +1555,7 @@ function AdminPanel({ onExit }) {
             <h3 style={{ margin: "0 0 16px", color: "#52B788" }}>Médicos activos en la plataforma</h3>
             {activeDoctors.map(doc => {
               const ms = getMembershipStatus(doc.membership_paid_at);
+              const trial = getTrialStatus(doc.trial_ends_at);
               const msColors = { vencido: "#dc2626", urgente: "#c2410c", proximo: "#ca8a04", ok: "#15803d", sin_pago: "#64748b" };
               const msLabels = {
                 vencido: `🔴 Vencido hace ${Math.abs(ms.daysLeft)}d`,
@@ -1547,11 +1570,17 @@ function AdminPanel({ onExit }) {
                     <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
                       <div style={{ width: 40, height: 40, borderRadius: 10, background: "#64748b", display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 700, color: "#fff" }}>{doc.img || initials(doc.name)}</div>
                       <div>
-                        <div style={{ fontWeight: 700, color: "#082f49" }}>{doc.name}</div>
+                        <div style={{ display:"flex", alignItems:"center", gap:8 }}>
+                          <span style={{ fontWeight: 700, color: "#082f49" }}>{doc.name}</span>
+                          {trial && <span style={{ fontSize:10, fontWeight:700, padding:"2px 8px", borderRadius:20, background: trial.active ? "#dcfce7" : "#fef2f2", color: trial.color }}>{trial.label}</span>}
+                        </div>
                         <div style={{ fontSize: 13, color: "#475569" }}>{doc.specialty} · {doc.price} · ⭐ {doc.rating}</div>
                         {doc.address && <div style={{ fontSize: 12, color: "#475569" }}>📍 {doc.address}</div>}
                         <div style={{ marginTop: 4 }}>
-                          <span style={{ fontSize: 11, fontWeight: 700, color: msColors[ms.status] }}>{msLabels[ms.status]} · Plan Profesional S/. 99</span>
+                          {trial && trial.active
+                            ? <span style={{ fontSize: 11, fontWeight: 700, color: "#10b981" }}>🎁 En periodo de prueba gratuito</span>
+                            : <span style={{ fontSize: 11, fontWeight: 700, color: msColors[ms.status] }}>{msLabels[ms.status]} · Plan Profesional S/. 99</span>
+                          }
                         </div>
                       </div>
                     </div>
