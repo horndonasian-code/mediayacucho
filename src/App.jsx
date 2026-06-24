@@ -1439,6 +1439,19 @@ function AdminPanel({ onExit }) {
     setTimeout(() => setActionMsg(""), 3000);
   }
 
+  async function suspendForNonPayment(doctor) {
+    if (!window.confirm(`¿Suspender a ${doctor.name} por falta de pago? Se le enviará un WhatsApp explicando el motivo.`)) return;
+    await sb(`doctors?id=eq.${doctor.id}`, { method: "PATCH", body: JSON.stringify({ active: false }) });
+    const trial = getTrialStatus(doctor.trial_ends_at);
+    const msg = trial && !trial.active
+      ? `⚠️ *MediAyacucho - Cuenta suspendida temporalmente*\n\nHola Dr(a). ${doctor.name},\n\nTu periodo de prueba gratuito ha terminado y tu cuenta ha sido suspendida temporalmente.\n\nPara reactivar tu perfil y seguir recibiendo pacientes, activa tu membresía mensual por *S/. 99*.\n\n💳 Yape o Plin al *913 330 712* y envíanos el comprobante.\n\nTu cuenta se reactivará en minutos. ¡Gracias por confiar en MediAyacucho! 🌿\n👉 mediayacucho.pe`
+      : `⚠️ *MediAyacucho - Cuenta suspendida temporalmente*\n\nHola Dr(a). ${doctor.name},\n\nTu membresía mensual ha vencido y tu cuenta ha sido suspendida temporalmente.\n\nPara reactivar tu perfil, realiza el pago de *S/. 99* por Yape o Plin al *913 330 712* y envíanos el comprobante.\n\nTu cuenta se reactivará en minutos. ¡Gracias! 🌿\n👉 mediayacucho.pe`;
+    setTimeout(() => window.open(`https://wa.me/${(doctor.phone||"").replace(/\D/g,"")}?text=${encodeURIComponent(msg)}`, "_blank"), 500);
+    setActionMsg(`🔴 ${doctor.name} suspendido — WhatsApp enviado`);
+    loadAll();
+    setTimeout(() => setActionMsg(""), 4000);
+  }
+
   function sendMembershipReminder(doctor) {
     const ms = getMembershipStatus(doctor.membership_paid_at);
     const trial = getTrialStatus(doctor.trial_ends_at);
@@ -1637,12 +1650,17 @@ function AdminPanel({ onExit }) {
                     </div>
                     <div style={{ display: "flex", gap: 8, alignItems: "center", flexWrap: "wrap" }}>
                       <span style={s.badge(doc.available ? "#52B788" : "#ff6b6b")}>{doc.available ? "Disponible" : "No disponible"}</span>
-                      {(ms.status === "urgente" || ms.status === "vencido" || ms.status === "proximo") && (
+                      {(ms.status === "urgente" || ms.status === "vencido" || ms.status === "proximo" || (trial && !trial.active)) && (
                         <button style={s.btn("#F4A261")} onClick={() => sendMembershipReminder(doc)}>Recordar pago</button>
+                      )}
+                      {(ms.status === "vencido" || (trial && !trial.active)) && (
+                        <button style={{ ...s.btn("#dc2626"), fontWeight:800 }} onClick={() => suspendForNonPayment(doc)}>🔴 Suspender por no pago</button>
                       )}
                       <button style={s.btn("#0ea5e9")} onClick={() => registerMembershipPayment(doc.id, doc.name)}>Registrar pago</button>
                       <button style={s.btn("#25D366")} onClick={() => window.open(`https://wa.me/${doc.phone}`, "_blank")}>💬 WA</button>
-                      <button style={s.btn("#ff6b6b")} onClick={() => deactivateDoctor(doc.id, doc.name)}>Suspender</button>
+                      {ms.status !== "vencido" && !(trial && !trial.active) && (
+                        <button style={s.btn("#ff6b6b")} onClick={() => deactivateDoctor(doc.id, doc.name)}>Suspender</button>
+                      )}
                     </div>
                   </div>
                 </div>
