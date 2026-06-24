@@ -860,7 +860,7 @@ Hola ${appt.patient_name}, gracias por confiar en ${doctor.name}.
   const s = {
     wrap: { minHeight: "100vh", background: "#ffffff", fontFamily: "'Inter', sans-serif", color: "#082f49" },
     topbar: { background: "rgba(255,255,255,0.95)", borderBottom: "1px solid #e0f2fe", padding: "0 24px", display: "flex", alignItems: "center", justifyContent: "space-between", height: 64, position: "sticky", top: 0, zIndex: 50 },
-    avatar: { width: 40, height: 40, borderRadius: 10, background: doctor.color || "#0ea5e9", display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 700, fontSize: 14, color: "#fff" },
+    avatar: { width: 40, height: 40, borderRadius: 10, background: "#64748b", display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 700, fontSize: 14, color: "#fff" },
     sidebar: { width: 220, minHeight: "calc(100vh - 64px)", background: "#f8fafc", borderRight: "1px solid #e0f2fe", padding: "24px 0", position: "fixed", top: 64 },
     sideBtn: (a) => ({ display: "flex", alignItems: "center", gap: 10, padding: "12px 24px", cursor: "pointer", background: a ? "#e0f2fe" : "transparent", borderLeft: a ? "3px solid #0ea5e9" : "3px solid transparent", color: a ? "#0369a1" : "#64748b", fontSize: 14, border: "none", width: "100%", textAlign: "left", fontFamily: "inherit" }),
     main: { marginLeft: 220, padding: "32px" },
@@ -1480,7 +1480,7 @@ function AdminPanel({ onExit }) {
                   <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", flexWrap: "wrap", gap: 12 }}>
                     <div style={{ flex: 1 }}>
                       <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 8 }}>
-                        <div style={{ width: 40, height: 40, borderRadius: 10, background: doc.color || "#0ea5e9", display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 700, color: "#fff" }}>{doc.img || "?"}</div>
+                        <div style={{ width: 40, height: 40, borderRadius: 10, background: "#64748b", display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 700, color: "#fff" }}>{doc.img || initials(doc.name)}</div>
                         <div>
                           <div style={{ fontWeight: 700, color: "#082f49", fontSize: 16 }}>{doc.name}</div>
                           <div style={{ fontSize: 13, color: "#475569" }}>{doc.specialty} · 📞 {doc.phone}</div>
@@ -1520,7 +1520,7 @@ function AdminPanel({ onExit }) {
                 <div key={doc.id} style={s.card}>
                   <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: 12 }}>
                     <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
-                      <div style={{ width: 40, height: 40, borderRadius: 10, background: doc.color || "#0ea5e9", display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 700, color: "#fff" }}>{doc.img || "?"}</div>
+                      <div style={{ width: 40, height: 40, borderRadius: 10, background: "#64748b", display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 700, color: "#fff" }}>{doc.img || initials(doc.name)}</div>
                       <div>
                         <div style={{ fontWeight: 700, color: "#082f49" }}>{doc.name}</div>
                         <div style={{ fontSize: 13, color: "#475569" }}>{doc.specialty} · {doc.price} · ⭐ {doc.rating}</div>
@@ -2039,7 +2039,7 @@ function ReviewSubmit({ appointmentId, doctorId, onDone }) {
               <div style={{ display:"flex", alignItems:"center", gap:12, marginBottom:20 }}>
                 {doctor.photo_url
                   ? <img src={doctor.photo_url} alt={doctor.name} style={{ width:48, height:48, borderRadius:12, objectFit:"cover" }} />
-                  : <div style={{ width:48, height:48, borderRadius:12, background:doctor.color||"#0ea5e9", display:"flex", alignItems:"center", justifyContent:"center", fontWeight:700, color:"#fff" }}>{doctor.img||initials(doctor.name)}</div>
+                  : <div style={{ width:48, height:48, borderRadius:12, background:"#64748b", display:"flex", alignItems:"center", justifyContent:"center", fontWeight:700, color:"#fff" }}>{doctor.img||initials(doctor.name)}</div>
                 }
                 <div>
                   <div style={{ fontWeight:700, color:"#082f49", fontSize:16 }}>{doctor.name}</div>
@@ -2820,7 +2820,7 @@ export default function App() {
                     <div style={{ display:"flex", alignItems:"center", gap:10, marginBottom:6 }}>
                       {doc.photo_url
                         ? <img src={doc.photo_url} alt={doc.name} style={{ width:36, height:36, borderRadius:10, objectFit:"cover" }} />
-                        : <div style={{ width:36, height:36, borderRadius:10, background:doc.color||"#0ea5e9", display:"flex", alignItems:"center", justifyContent:"center", fontSize:13, fontWeight:700, color:"#fff" }}>{doc.img||initials(doc.name)}</div>
+                        : <div style={{ width:36, height:36, borderRadius:10, background:"#64748b", display:"flex", alignItems:"center", justifyContent:"center", fontSize:13, fontWeight:700, color:"#fff" }}>{doc.img||initials(doc.name)}</div>
                       }
                       <div>
                         <div style={{ fontWeight:700, color:"#082f49", fontSize:14 }}>{doc.name}</div>
@@ -2853,11 +2853,11 @@ export default function App() {
                     onMouseLeave={e=>{e.currentTarget.style.transform="";e.currentTarget.style.boxShadow="0 4px 24px rgba(15,23,42,0.08)";e.currentTarget.style.borderColor="#e0f2fe";}}>
 
                     {/* PHOTO HEADER */}
-                    <div style={{ position:"relative", height:180, background:`linear-gradient(135deg, ${specialtyColor}22, ${specialtyColor}44)`, overflow:"hidden" }}>
+                    <div style={{ position:"relative", height:180, background:"#f1f5f9", overflow:"hidden" }}>
                       {doc.photo_url
                         ? <img src={doc.photo_url} alt={doc.name} style={{ width:"100%", height:"100%", objectFit:"cover", objectPosition:"top" }} />
-                        : <div style={{ width:"100%", height:"100%", display:"flex", alignItems:"center", justifyContent:"center" }}>
-                            <div style={{ width:90, height:90, borderRadius:"50%", background:`linear-gradient(135deg, ${doc.color||specialtyColor}, ${specialtyColor})`, display:"flex", alignItems:"center", justifyContent:"center", fontSize:32, fontWeight:800, color:"#fff", boxShadow:"0 8px 24px rgba(0,0,0,0.15)" }}>{doc.img || initials(doc.name)}</div>
+                        : <div style={{ width:"100%", height:"100%", display:"flex", alignItems:"center", justifyContent:"center", background:"#f1f5f9" }}>
+                            <div style={{ width:90, height:90, borderRadius:"50%", background:"#64748b", display:"flex", alignItems:"center", justifyContent:"center", fontSize:32, fontWeight:800, color:"#fff" }}>{doc.img || initials(doc.name)}</div>
                           </div>
                       }
                       {/* Specialty badge on photo */}
