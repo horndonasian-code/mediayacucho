@@ -810,7 +810,7 @@ Hola ${appt.patient_name}, gracias por confiar en ${doctor.name}.
       if (!appt) return;
 
       // Message WhatsApp au patient
-      const msgPatient = `😔 *CITA CANCELADA - MediAyacucho*\n\nHola ${appt.patient_name}, lamentamos informarte que tu cita con ${doctor.name} del ${appt.date} a las ${appt.time} ha sido cancelada por el médico.\n\n💰 *TU ADELANTO SERÁ REEMBOLSADO*\nS/. ${AVANCE.monto} serán devueltos a tu Yape/Plin en las próximas 24h.\n\nDisculpa los inconvenientes. Puedes reservar con otro médico en mediayacucho.vercel.app\n\n📍 MediAyacucho 🌿`;
+      const msgPatient = `😔 *CITA CANCELADA - MediAyacucho*\n\nHola ${appt.patient_name}, lamentamos informarte que tu cita con ${doctor.name} del ${appt.date} a las ${appt.time} ha sido cancelada por el médico.\n\n💰 *TU ADELANTO SERÁ REEMBOLSADO*\nS/. ${AVANCE.monto} serán devueltos a tu Yape/Plin en las próximas 24h.\n\nDisculpa los inconvenientes. Puedes reservar con otro médico en mediayacucho.pe\n\n📍 MediAyacucho 🌿`;
 
       // Message WhatsApp à l'admin pour rembourser
       const msgAdmin = `⚠️ *REEMBOLSO REQUERIDO - MediAyacucho*\n\nEl Dr./Dra. ${doctor.name} canceló una cita.\n\n👤 Paciente: ${appt.patient_name}\n📞 Yape/Plin del paciente: ${appt.patient_phone}\n💰 Monto a reembolsar: S/. ${AVANCE.monto}\n📅 Cita cancelada: ${appt.date} · ${appt.time}\n\n✅ Por favor yapea/plina S/. ${AVANCE.monto} al ${appt.patient_phone} a la brevedad.`;
