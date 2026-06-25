@@ -1306,7 +1306,7 @@ Hola ${appt.patient_name}, gracias por confiar en ${doctor.name}.
                   </div>
 
                   <div style={{ display: "flex", gap: 10 }}>
-                    <button style={s.saveBtn} onClick={saveProfile} disabled={savingProfile}>{savingProfile ? "Guardando..." : "Guardar en Supabase ✓"}</button>
+                    <button style={s.saveBtn} onClick={saveProfile} disabled={savingProfile}>{savingProfile ? "Guardando..." : "Guardar cambios ✓"}</button>
                     <button style={{ ...s.saveBtn, background:"transparent", border:"1px solid #bae6fd", color:"#475569" }} onClick={() => setEditProfile(false)}>Cancelar</button>
                   </div>
                 </>
