@@ -98,7 +98,7 @@ const auth = {
 };
 
 // ─── Constants ─────────────────────────────────────────────────────────────
-const SPECIALTIES = ["Todos", "Medicina General", "Pediatría", "Cardiología", "Ginecología", "Traumatología", "Dermatología", "Odontología", "Oftalmología", "Psicología", "Nutrición", "Neurología", "Urología", "Endocrinología", "Oncología", "Medicina Interna", "Cirugía General", "Gastroenterología", "Nefrología", "Neumología", "Otorrinolaringología", "Enfermero a domicilio"];
+const SPECIALTIES = ["Todos", "Medicina General", "Pediatría", "Cardiología", "Ginecología", "Traumatología", "Dermatología", "Odontología", "Oftalmología", "Psicología", "Nutrición", "Neurología", "Urología", "Endocrinología", "Oncología", "Medicina Interna", "Cirugía General", "Gastroenterología", "Nefrología", "Neumología", "Otorrinolaringología", "Médico a domicilio", "Enfermero a domicilio"];
 
 const SPECIALTY_CONFIG = {
   "Medicina General": { color: "#7dd3fc", bg: "rgba(59,130,196,0.15)",  icon: "🩺" },
@@ -1923,14 +1923,17 @@ function DoctorProfile({ doctor, onBook, onBack, allAppointments }) {
             <>
               <button style={{ padding: "12px 24px", background: "linear-gradient(135deg,#0ea5e9,#0369a1)", color: "#fff", border: "none", borderRadius: 12, cursor: "pointer", fontSize: 15, fontWeight: 700, fontFamily: "inherit" }}
                 onClick={() => {
-                  if (doctor.specialty === "Enfermero a domicilio") {
-                    const msg = `Hola ${doctor.name}, vi tu perfil en MediAyacucho y me gustaría solicitar atención de enfermería a domicilio.\n\n¿Podrías indicarme tu disponibilidad, horarios y tarifas?\n\nGracias 🙏`;
+                  if (doctor.specialty === "Enfermero a domicilio" || doctor.specialty === "Médico a domicilio") {
+                    const isDoc = doctor.specialty === "Médico a domicilio";
+                    const msg = isDoc
+                      ? `Hola ${doctor.name}, vi tu perfil en MediAyacucho y me gustaría solicitar una consulta médica a domicilio.\n\n¿Podrías indicarme tu disponibilidad, zona de atención y tarifas?\n\nGracias 🙏`
+                      : `Hola ${doctor.name}, vi tu perfil en MediAyacucho y me gustaría solicitar atención de enfermería a domicilio.\n\n¿Podrías indicarme tu disponibilidad, horarios y tarifas?\n\nGracias 🙏`;
                     window.open(`https://wa.me/${(doctor.phone||"").replace(/\D/g,"")}?text=${encodeURIComponent(msg)}`, "_blank");
                   } else {
                     onBook(doctor, doctor.specialty === "Enfermero a domicilio" ? "domicilio" : "presencial");
                   }
-                }}>{doctor.specialty === "Enfermero a domicilio" ? "Solicitar a domicilio" : "Reservar presencial"}</button>
-              {doctor.specialty !== "Enfermero a domicilio" && (
+                }}>{(doctor.specialty === "Enfermero a domicilio" || doctor.specialty === "Médico a domicilio") ? "Solicitar a domicilio" : "Reservar presencial"}</button>
+              {doctor.specialty !== "Enfermero a domicilio" && doctor.specialty !== "Médico a domicilio" && (
                 <button style={{ padding: "12px 24px", background: "linear-gradient(135deg,#25D366,#128C7E)", color: "#fff", border: "none", borderRadius: 12, cursor: "pointer", fontSize: 15, fontWeight: 700, fontFamily: "inherit" }}
                   onClick={() => onBook(doctor, "virtual")}>Reservar virtual (WhatsApp)</button>
               )}
@@ -2895,6 +2898,22 @@ export default function App() {
           </div>
           <div style={{ marginBottom:24 }} />
 
+          {/* MÉDICO A DOMICILIO - Banner destacado */}
+          <div
+            onClick={() => setSpecialtySearch(specialtySearch === "Médico a domicilio" ? "" : "Médico a domicilio")}
+            style={{ cursor:"pointer", marginBottom:12, padding:"16px 20px", borderRadius:16, background: specialtySearch === "Médico a domicilio" ? "linear-gradient(135deg,#0891b2,#38bdf8)" : "linear-gradient(135deg,#ecfeff,#cffafe)", border:`2px solid ${specialtySearch === "Médico a domicilio" ? "#0891b2" : "#67e8f9"}`, display:"flex", alignItems:"center", justifyContent:"space-between", flexWrap:"wrap", gap:12, transition:"all 0.2s", boxShadow: specialtySearch === "Médico a domicilio" ? "0 8px 24px rgba(8,145,178,0.25)" : "0 4px 12px rgba(8,145,178,0.08)" }}>
+            <div style={{ display:"flex", alignItems:"center", gap:14 }}>
+              <div style={{ width:48, height:48, borderRadius:14, background: specialtySearch === "Médico a domicilio" ? "rgba(255,255,255,0.25)" : "rgba(8,145,178,0.15)", display:"flex", alignItems:"center", justifyContent:"center", fontSize:24 }}>🚗</div>
+              <div>
+                <div style={{ fontSize:16, fontWeight:800, color: specialtySearch === "Médico a domicilio" ? "#ffffff" : "#0e4f5c" }}>Médico a domicilio</div>
+                <div style={{ fontSize:13, color: specialtySearch === "Médico a domicilio" ? "rgba(255,255,255,0.85)" : "#0891b2", marginTop:2 }}>El médico va a tu casa — consulta por WhatsApp</div>
+              </div>
+            </div>
+            <div style={{ padding:"8px 18px", borderRadius:10, background: specialtySearch === "Médico a domicilio" ? "rgba(255,255,255,0.25)" : "#0891b2", color:"#ffffff", fontSize:13, fontWeight:700, border: specialtySearch === "Médico a domicilio" ? "1px solid rgba(255,255,255,0.4)" : "none" }}>
+              {specialtySearch === "Médico a domicilio" ? "✕ Quitar filtro" : "Ver disponibles →"}
+            </div>
+          </div>
+
           {/* ENFERMERO A DOMICILIO - Banner destacado */}
           <div
             onClick={() => setSpecialtySearch(specialtySearch === "Enfermero a domicilio" ? "" : "Enfermero a domicilio")}
@@ -3072,16 +3091,19 @@ export default function App() {
                         <div style={{ display:"flex", gap:8 }}>
                           <button style={{ flex:1, padding:"10px 0", background: doc.specialty==="Enfermero a domicilio" ? "linear-gradient(135deg,#10b981,#34d399)" : "linear-gradient(135deg,#0ea5e9,#38bdf8)", color:"#fff", border:"none", borderRadius:12, cursor:"pointer", fontSize:13, fontWeight:700, fontFamily:"inherit" }}
                             onClick={() => {
-                              if (doc.specialty === "Enfermero a domicilio") {
-                                const msg = `Hola ${doc.name}, vi tu perfil en MediAyacucho y me gustaría solicitar atención de enfermería a domicilio.\n\n¿Podrías indicarme tu disponibilidad, horarios y tarifas?\n\nGracias 🙏`;
+                              if (doc.specialty === "Enfermero a domicilio" || doc.specialty === "Médico a domicilio") {
+                                const isDoc = doc.specialty === "Médico a domicilio";
+                                const msg = isDoc
+                                  ? `Hola ${doc.name}, vi tu perfil en MediAyacucho y me gustaría solicitar una consulta médica a domicilio.\n\n¿Podrías indicarme tu disponibilidad, zona de atención y tarifas?\n\nGracias 🙏`
+                                  : `Hola ${doc.name}, vi tu perfil en MediAyacucho y me gustaría solicitar atención de enfermería a domicilio.\n\n¿Podrías indicarme tu disponibilidad, horarios y tarifas?\n\nGracias 🙏`;
                                 window.open(`https://wa.me/${(doc.phone||"").replace(/\D/g,"")}?text=${encodeURIComponent(msg)}`, "_blank");
                               } else {
                                 setSelectedDoctor(doc); setBookingData(p => ({...p, modalidad:"presencial"})); setSelectedCalDay(null); setView("booking");
                               }
                             }}>
-                            {doc.specialty==="Enfermero a domicilio" ? "🏠 A domicilio" : "Presencial"}
+                            {(doc.specialty==="Enfermero a domicilio" || doc.specialty==="Médico a domicilio") ? "🚗 A domicilio" : "Presencial"}
                           </button>
-                          {doc.specialty !== "Enfermero a domicilio" && (
+                          {doc.specialty !== "Enfermero a domicilio" && doc.specialty !== "Médico a domicilio" && (
                             <button style={{ flex:1, padding:"10px 0", background:"linear-gradient(135deg,#25D366,#128C7E)", color:"#fff", border:"none", borderRadius:12, cursor:"pointer", fontSize:13, fontWeight:700, fontFamily:"inherit" }}
                               onClick={() => { setSelectedDoctor(doc); setBookingData(p => ({...p, modalidad:"virtual"})); setSelectedCalDay(null); setView("booking"); }}>
                               Virtual
