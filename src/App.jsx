@@ -648,7 +648,7 @@ function DoctorDashboard({ doctor, onExit }) {
   const [filterStatus, setFilterStatus] = useState("todas");
   const [isAvailable, setIsAvailable] = useState(doctor.available);
   const [editProfile, setEditProfile] = useState(false);
-  const [profileData, setProfileData] = useState({ name: doctor.name, specialty: doctor.specialty, price: doctor.price, address: doctor.address || "", yape_plin_phone: doctor.yape_plin_phone || doctor.phone || "" });
+  const [profileData, setProfileData] = useState({ name: doctor.name, specialty: doctor.specialty, price: doctor.price, address: doctor.address || "", yape_plin_phone: doctor.yape_plin_phone || doctor.phone || "", habla_quechua: doctor.habla_quechua || false });
   const [savingProfile, setSavingProfile] = useState(false);
   const [uploadingPhoto, setUploadingPhoto] = useState(false);
   const [photoUrl, setPhotoUrl] = useState(doctor.photo_url || null);
@@ -1291,6 +1291,20 @@ Hola ${appt.patient_name}, gracias por confiar en ${doctor.name}.
                   <label style={s.lbl}>NÚMERO YAPE/PLIN (para recibir tus pagos)</label>
                   <input style={s.inp} placeholder="+51 9XX XXX XXX" value={profileData.yape_plin_phone} onChange={e=>setProfileData({...profileData,yape_plin_phone:e.target.value})} />
                   <p style={{ margin:"-6px 0 12px", fontSize: 11, color: "#475569" }}>💰 MediAyacucho te transferirá aquí el adelanto de cada cita confirmada</p>
+
+                  {/* Quechua toggle */}
+                  <div style={{ padding:"14px 16px", background:"#f5f3ff", border:"1px solid #ddd6fe", borderRadius:12, marginBottom:14, display:"flex", alignItems:"center", justifyContent:"space-between", gap:12 }}>
+                    <div>
+                      <div style={{ fontSize:14, fontWeight:700, color:"#5b21b6" }}>🏔️ Hablo quechua</div>
+                      <div style={{ fontSize:12, color:"#7c3aed", marginTop:2 }}>Activa esto si puedes atender a pacientes en quechua — aparecerás en el filtro especial</div>
+                    </div>
+                    <button
+                      onClick={() => setProfileData({...profileData, habla_quechua: !profileData.habla_quechua})}
+                      style={{ padding:"8px 16px", borderRadius:20, border:"none", background: profileData.habla_quechua ? "#7c3aed" : "#e5e7eb", color: profileData.habla_quechua ? "#fff" : "#6b7280", fontFamily:"inherit", fontSize:13, fontWeight:700, cursor:"pointer", whiteSpace:"nowrap" }}>
+                      {profileData.habla_quechua ? "✓ Activado" : "Activar"}
+                    </button>
+                  </div>
+
                   <div style={{ display: "flex", gap: 10 }}>
                     <button style={s.saveBtn} onClick={saveProfile} disabled={savingProfile}>{savingProfile ? "Guardando..." : "Guardar en Supabase ✓"}</button>
                     <button style={{ ...s.saveBtn, background:"transparent", border:"1px solid #bae6fd", color:"#475569" }} onClick={() => setEditProfile(false)}>Cancelar</button>
@@ -2216,6 +2230,7 @@ export default function App() {
   const [dbError, setDbError] = useState(null);
   const [selectedDoctor, setSelectedDoctor] = useState(null);
   const [specialtySearch, setSpecialtySearch] = useState("");
+  const [filterQuechua, setFilterQuechua] = useState(false);
   const [doctorsViewMode, setDoctorsViewMode] = useState("list");
   const [messages, setMessages] = useState([{ role: "assistant", content: "¡Hola! Soy tu asistente médico IA de MediPerú. 🩺\n\nPuedo ayudarte a:\n• Encontrar el médico ideal para ti\n• Agendar una cita\n• Resolver dudas sobre síntomas\n\n¿En qué te puedo ayudar hoy?" }]);
   const [input, setInput] = useState("");
@@ -2264,10 +2279,13 @@ export default function App() {
 
   useEffect(() => { chatEndRef.current?.scrollIntoView({ behavior: "smooth" }); }, [messages]);
 
-  const filtered = !specialtySearch.trim() ? doctors : doctors.filter(d =>
-    d.specialty?.toLowerCase().includes(specialtySearch.toLowerCase()) ||
-    d.name?.toLowerCase().includes(specialtySearch.toLowerCase())
-  );
+  const filtered = doctors.filter(d => {
+    const matchSearch = !specialtySearch.trim() ||
+      d.specialty?.toLowerCase().includes(specialtySearch.toLowerCase()) ||
+      d.name?.toLowerCase().includes(specialtySearch.toLowerCase());
+    const matchQuechua = !filterQuechua || d.habla_quechua;
+    return matchSearch && matchQuechua;
+  });
 
   async function sendMessage() {
     if (!input.trim() || loading) return;
@@ -2907,6 +2925,22 @@ export default function App() {
               <button onClick={() => setSpecialtySearch("")} style={{ position:"absolute", right:14, top:"50%", transform:"translateY(-50%)", background:"none", border:"none", cursor:"pointer", fontSize:16, color:"#94a3b8" }}>✕</button>
             )}
           </div>
+          {/* Quechua filter banner */}
+          <button
+            onClick={() => setFilterQuechua(!filterQuechua)}
+            style={{ width:"100%", marginBottom:16, padding:"12px 20px", borderRadius:14, border:`2px solid ${filterQuechua ? "#7c3aed" : "#ddd6fe"}`, background: filterQuechua ? "linear-gradient(135deg,#7c3aed,#a78bfa)" : "#faf5ff", display:"flex", alignItems:"center", justifyContent:"space-between", cursor:"pointer", transition:"all 0.2s" }}>
+            <div style={{ display:"flex", alignItems:"center", gap:12 }}>
+              <span style={{ fontSize:24 }}>🏔️</span>
+              <div style={{ textAlign:"left" }}>
+                <div style={{ fontSize:14, fontWeight:700, color: filterQuechua ? "#fff" : "#5b21b6" }}>Médico que habla quechua</div>
+                <div style={{ fontSize:12, color: filterQuechua ? "rgba(255,255,255,0.85)" : "#7c3aed" }}>Atención en tu idioma — Rimaykullayki</div>
+              </div>
+            </div>
+            <div style={{ padding:"6px 14px", borderRadius:20, background: filterQuechua ? "rgba(255,255,255,0.25)" : "#7c3aed", color:"#fff", fontSize:12, fontWeight:700 }}>
+              {filterQuechua ? "✕ Quitar filtro" : "Ver médicos →"}
+            </div>
+          </button>
+
           {/* Specialty grid */}
           <div style={{ marginBottom:28 }}>
             <p style={{ fontSize:13, color:"#64748b", fontWeight:600, textTransform:"uppercase", letterSpacing:0.5, margin:"0 0 12px" }}>Especialidades disponibles</p>
@@ -3006,10 +3040,13 @@ export default function App() {
                       {/* Name + rating */}
                       <div>
                         <h3 style={{ fontSize:17, fontWeight:800, margin:"0 0 4px", color:"#082f49", lineHeight:1.2 }}>{doc.name}</h3>
-                        <div style={{ display:"flex", alignItems:"center", gap:6 }}>
+                        <div style={{ display:"flex", alignItems:"center", gap:6, flexWrap:"wrap" }}>
                           <span style={{ color:"#F4A261", fontSize:13 }}>{"★".repeat(Math.floor(doc.rating||5))}</span>
                           <span style={{ fontSize:13, fontWeight:700, color:"#082f49" }}>{doc.rating}</span>
                           <span style={{ fontSize:12, color:"#94a3b8" }}>· CMP Verificado</span>
+                          {doc.habla_quechua && (
+                            <span style={{ fontSize:11, fontWeight:700, padding:"2px 8px", borderRadius:20, background:"#f5f3ff", color:"#7c3aed", border:"1px solid #ddd6fe" }}>🏔️ Habla quechua</span>
+                          )}
                         </div>
                       </div>
 
