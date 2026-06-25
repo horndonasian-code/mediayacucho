@@ -781,7 +781,13 @@ function DoctorDashboard({ doctor, onExit }) {
 
   async function updateStatus(id, newStatus, canceledByDoctor = false) {
     setAppointments(prev => prev.map(a => a.id === id ? { ...a, status: newStatus } : a));
-    await db.updateAppointment(id, { status: newStatus });
+
+    // Si completada → guardar fecha de completión para seguimiento J+3
+    if (newStatus === "completada") {
+      await db.updateAppointment(id, { status: newStatus, completed_at: new Date().toISOString(), followup_sent: false });
+    } else {
+      await db.updateAppointment(id, { status: newStatus });
+    }
 
     // Si la cita se completa → enviar WhatsApp de solicitud de reseña
     if (newStatus === "completada") {
