@@ -654,8 +654,6 @@ function DoctorDashboard({ doctor, onExit }) {
   const [photoUrl, setPhotoUrl] = useState(doctor.photo_url || null);
   const [waitlist, setWaitlist] = useState([]);
   const [savingSchedule, setSavingSchedule] = useState(false);
-  const [certType, setCertType] = useState("descanso");
-  const [certData, setCertData] = useState({ patient_name:"", patient_dni:"", patient_age:"", diagnosis:"", days:"", start_date: new Date().toISOString().slice(0,10), medications:"", indications:"" });
   const [scheduleMsg, setScheduleMsg] = useState("");
 
   const DAYS = ["Lun","Mar","Mié","Jue","Vie","Sáb","Dom"];
@@ -916,7 +914,6 @@ Hola ${appt.patient_name}, gracias por confiar en ${doctor.name}.
     { id: "analytics", icon: "stats", label: "Estadísticas" },
     { id: "profile", icon: "user", label: "Mi Perfil" },
     { id: "ai", icon: "ai", label: "Consejo IA" },
-    { id: "certificados", icon: "doc", label: "Certificados" },
   ];
 
   return (
@@ -949,7 +946,6 @@ Hola ${appt.patient_name}, gracias por confiar en ${doctor.name}.
             stats: <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>,
             user: <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>,
             ai: <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>,
-            doc: <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>,
           };
           return <button key={n.id} style={s.sideBtn(tab === n.id)} onClick={() => setTab(n.id)}><span>{icons[n.icon] || n.icon}</span> {n.label}</button>;
         })}
@@ -1096,14 +1092,7 @@ Hola ${appt.patient_name}, gracias por confiar en ${doctor.name}.
                           📹 Llamar WA
                         </button>
                       )}
-                      {a.modalidad === "virtual" && a.status === "completada" && (
-                        <button style={{ ...s.selectBtn, color:"#8b5cf6", borderColor:"#8b5cf6", fontWeight:700 }} onClick={() => {
-                          setCertData(prev => ({ ...prev, patient_name: a.patient_name, patient_phone: a.patient_phone }));
-                          setTab("certificados");
-                        }}>
-                          📄 Certificado
-                        </button>
-                      )}
+
                       <button style={{ ...s.selectBtn, color:"#25D366", borderColor:"#25D366" }} onClick={() => window.open(buildWhatsAppLink(a.patient_phone,`Hola ${a.patient_name}, le contacta ${doctor.name}. ¿En qué le puedo ayudar?`),"_blank")}>💬 WA</button>
                     </div>
                   </div>
@@ -1338,188 +1327,6 @@ Hola ${appt.patient_name}, gracias por confiar en ${doctor.name}.
               <button style={{ padding:"8px 20px", background:"#0ea5e9", color:"#fff", border:"none", borderRadius:10, cursor:"pointer", fontFamily:"inherit", fontSize:13, fontWeight:700 }} onClick={() => setTab("calendario")}>
                 Ir a Mis horarios →
               </button>
-            </div>
-          </>
-        )}
-
-        {tab === "certificados" && (
-          <>
-            <h2 style={{ margin:"0 0 8px", fontSize:26, fontWeight:700 }}>Certificados y Recetas</h2>
-            <p style={{ color:"#475569", margin:"0 0 20px", fontSize:14 }}>Genera documentos médicos en PDF para tus pacientes.</p>
-
-            {/* Tipo de documento */}
-            <div style={{ display:"flex", gap:10, marginBottom:24, flexWrap:"wrap" }}>
-              {[
-                { id:"descanso", label:"🛏️ Descanso médico", color:"#0ea5e9" },
-                { id:"aptitud", label:"✅ Aptitud laboral", color:"#10b981" },
-                { id:"receta", label:"💊 Receta médica", color:"#8b5cf6" },
-              ].map(t => (
-                <button key={t.id} onClick={() => setCertType(t.id)}
-                  style={{ padding:"10px 20px", borderRadius:12, border:`2px solid ${certType===t.id ? t.color : "#e2e8f0"}`, background:certType===t.id ? t.color : "#fff", color:certType===t.id ? "#fff" : "#475569", fontFamily:"inherit", fontSize:14, fontWeight:700, cursor:"pointer", transition:"all 0.2s" }}>
-                  {t.label}
-                </button>
-              ))}
-            </div>
-
-            <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:24 }}>
-              {/* Formulario */}
-              <div style={s.card}>
-                <p style={{ ...s.cardTitle, marginBottom:16 }}>Datos del paciente</p>
-                {[
-                  ["Nombre completo del paciente", "patient_name", "text"],
-                  ["DNI del paciente", "patient_dni", "text"],
-                  ["Edad", "patient_age", "number"],
-                ].map(([label, key, type]) => (
-                  <div key={key} style={{ marginBottom:12 }}>
-                    <label style={s.lbl}>{label.toUpperCase()}</label>
-                    <input style={s.inp} type={type} value={certData[key]} onChange={e => setCertData({...certData, [key]: e.target.value})} />
-                  </div>
-                ))}
-
-                {certType !== "aptitud" && (
-                  <div style={{ marginBottom:12 }}>
-                    <label style={s.lbl}>DIAGNÓSTICO</label>
-                    <input style={s.inp} value={certData.diagnosis} onChange={e => setCertData({...certData, diagnosis: e.target.value})} placeholder="Ej: Infección respiratoria aguda" />
-                  </div>
-                )}
-
-                {certType === "descanso" && (
-                  <>
-                    <div style={{ marginBottom:12 }}>
-                      <label style={s.lbl}>DÍAS DE DESCANSO</label>
-                      <input style={s.inp} type="number" value={certData.days} onChange={e => setCertData({...certData, days: e.target.value})} placeholder="3" />
-                    </div>
-                    <div style={{ marginBottom:12 }}>
-                      <label style={s.lbl}>FECHA DE INICIO</label>
-                      <input style={s.inp} type="date" value={certData.start_date} onChange={e => setCertData({...certData, start_date: e.target.value})} />
-                    </div>
-                  </>
-                )}
-
-                {certType === "receta" && (
-                  <>
-                    <div style={{ marginBottom:12 }}>
-                      <label style={s.lbl}>MEDICAMENTOS</label>
-                      <textarea style={{ ...s.inp, height:80, resize:"vertical" }} value={certData.medications} onChange={e => setCertData({...certData, medications: e.target.value})} placeholder="Ej: Amoxicilina 500mg — 1 cápsula cada 8 horas por 7 días" />
-                    </div>
-                    <div style={{ marginBottom:12 }}>
-                      <label style={s.lbl}>INDICACIONES</label>
-                      <textarea style={{ ...s.inp, height:60, resize:"vertical" }} value={certData.indications} onChange={e => setCertData({...certData, indications: e.target.value})} placeholder="Ej: Tomar con alimentos, reposo relativo" />
-                    </div>
-                  </>
-                )}
-
-                <button style={s.saveBtn} onClick={() => {
-                  // Generate PDF via print
-                  const printWin = window.open("", "_blank");
-                  const today = new Date().toLocaleDateString("es-PE", { year:"numeric", month:"long", day:"numeric" });
-                  const endDate = certType === "descanso" && certData.days
-                    ? new Date(new Date(certData.start_date).getTime() + (parseInt(certData.days)-1) * 86400000).toLocaleDateString("es-PE", { year:"numeric", month:"long", day:"numeric" })
-                    : "";
-
-                  const titles = { descanso: "CERTIFICADO DE DESCANSO MÉDICO", aptitud: "CERTIFICADO DE APTITUD LABORAL", receta: "RECETA MÉDICA" };
-                  const colors = { descanso: "#0ea5e9", aptitud: "#10b981", receta: "#8b5cf6" };
-
-                  printWin.document.write(`<!DOCTYPE html><html><head><meta charset="UTF-8"><title>${titles[certType]}</title><style>
-                    body { font-family: Arial, sans-serif; margin: 0; padding: 40px; color: #1e293b; }
-                    .header { border-bottom: 3px solid ${colors[certType]}; padding-bottom: 20px; margin-bottom: 30px; display: flex; justify-content: space-between; align-items: center; }
-                    .logo { font-size: 24px; font-weight: 900; color: ${colors[certType]}; }
-                    .logo span { font-weight: 300; }
-                    .subtitle { font-size: 11px; color: #64748b; letter-spacing: 2px; }
-                    h1 { text-align: center; font-size: 18px; color: ${colors[certType]}; letter-spacing: 1px; margin: 0 0 30px; }
-                    .body { font-size: 14px; line-height: 2; }
-                    .highlight { font-weight: 700; text-decoration: underline; }
-                    .footer { margin-top: 60px; display: flex; justify-content: space-between; align-items: flex-end; }
-                    .sign { text-align: center; }
-                    .sign-line { border-top: 1px solid #1e293b; width: 200px; margin: 0 auto 8px; }
-                    .sign-name { font-weight: 700; font-size: 13px; }
-                    .sign-sub { font-size: 11px; color: #64748b; }
-                    .stamp { width: 100px; height: 100px; border: 2px solid ${colors[certType]}; border-radius: 50%; display: flex; align-items: center; justify-content: center; text-align: center; font-size: 9px; color: ${colors[certType]}; font-weight: 700; padding: 10px; }
-                    .meta { font-size: 11px; color: #64748b; }
-                    @media print { body { padding: 20px; } }
-                  </style></head><body>
-                    <div class="header">
-                      <div>
-                        <div class="logo">Medi<span>Ayacucho</span></div>
-                        <div class="subtitle">SALUD PARA TODOS · mediayacucho.pe</div>
-                      </div>
-                      <div class="meta">
-                        <div>Ayacucho, ${today}</div>
-                        <div>CMP: ${doctor.cmp || "—"}</div>
-                      </div>
-                    </div>
-                    <h1>${titles[certType]}</h1>
-                    <div class="body">
-                      ${certType === "descanso" ? `
-                        <p>El suscrito médico cirujano, <span class="highlight">${doctor.name}</span>, especialista en <strong>${doctor.specialty}</strong>, colegiado CMP ${doctor.cmp || "—"}, con consultorio en ${doctor.address || "Ayacucho"},</p>
-                        <p><strong>CERTIFICA QUE:</strong></p>
-                        <p>El/La paciente <span class="highlight">${certData.patient_name}</span>, identificado(a) con DNI Nº <strong>${certData.patient_dni}</strong>, de <strong>${certData.patient_age} años</strong> de edad, ha sido evaluado(a) en el día de la fecha, presentando el diagnóstico de: <strong>${certData.diagnosis}</strong>.</p>
-                        <p>Por lo expuesto, se le indica <span class="highlight">DESCANSO MÉDICO por ${certData.days} día(s)</span>, desde el <strong>${new Date(certData.start_date).toLocaleDateString("es-PE", { year:"numeric", month:"long", day:"numeric" })}</strong> hasta el <strong>${endDate}</strong>, inclusive.</p>
-                        <p>Se expide el presente certificado a solicitud del interesado para los fines que estime conveniente.</p>
-                      ` : certType === "aptitud" ? `
-                        <p>El suscrito médico cirujano, <span class="highlight">${doctor.name}</span>, especialista en <strong>${doctor.specialty}</strong>, colegiado CMP ${doctor.cmp || "—"}, con consultorio en ${doctor.address || "Ayacucho"},</p>
-                        <p><strong>CERTIFICA QUE:</strong></p>
-                        <p>El/La paciente <span class="highlight">${certData.patient_name}</span>, identificado(a) con DNI Nº <strong>${certData.patient_dni}</strong>, de <strong>${certData.patient_age} años</strong> de edad, ha sido evaluado(a) clínicamente en el día de la fecha, encontrándose en <span class="highlight">BUEN ESTADO DE SALUD</span> y <strong>APTO(A) PARA TRABAJAR</strong>.</p>
-                        <p>Se expide el presente certificado a solicitud del interesado para los fines laborales que estime conveniente.</p>
-                      ` : `
-                        <p><strong>Paciente:</strong> ${certData.patient_name} &nbsp;&nbsp; <strong>DNI:</strong> ${certData.patient_dni} &nbsp;&nbsp; <strong>Edad:</strong> ${certData.patient_age} años</p>
-                        <p><strong>Diagnóstico:</strong> ${certData.diagnosis}</p>
-                        <br/>
-                        <p><strong>PRESCRIPCIÓN:</strong></p>
-                        <p style="white-space:pre-line; padding-left:20px; border-left: 3px solid ${colors[certType]};">${certData.medications}</p>
-                        ${certData.indications ? `<br/><p><strong>INDICACIONES:</strong></p><p style="padding-left:20px;">${certData.indications}</p>` : ""}
-                        <br/><p><em>Válido por 30 días desde la fecha de emisión.</em></p>
-                      `}
-                    </div>
-                    <div class="footer">
-                      <div class="stamp"><div>MEDIAYACUCHO<br/>CMP VERIFICADO<br/>✓</div></div>
-                      <div class="sign">
-                        <div class="sign-line"></div>
-                        <div class="sign-name">${doctor.name}</div>
-                        <div class="sign-sub">${doctor.specialty}</div>
-                        <div class="sign-sub">CMP ${doctor.cmp || "—"}</div>
-                      </div>
-                    </div>
-                  </body></html>`);
-                  printWin.document.close();
-                  setTimeout(() => printWin.print(), 500);
-                }}>
-                  📄 Generar PDF
-                </button>
-                <p style={{ fontSize:11, color:"#92400e", background:"#fff7ed", border:"1px solid #fed7aa", borderRadius:8, padding:"8px 12px", marginTop:10 }}>
-                  ⚠️ Este documento es informativo. Para validez oficial requiere <strong>firma y sello del médico</strong> sobre el documento impreso.
-                </p>
-              </div>
-
-              {/* Preview */}
-              <div style={{ ...s.card, background:"#f8fafc", border:"2px dashed #e2e8f0" }}>
-                <p style={{ ...s.cardTitle, marginBottom:12 }}>Vista previa</p>
-                <div style={{ fontSize:12, color:"#475569", lineHeight:1.8 }}>
-                  <div style={{ borderBottom:`2px solid ${certType==="descanso"?"#0ea5e9":certType==="aptitud"?"#10b981":"#8b5cf6"}`, paddingBottom:10, marginBottom:12, display:"flex", justifyContent:"space-between" }}>
-                    <div>
-                      <div style={{ fontSize:16, fontWeight:900, color:certType==="descanso"?"#0ea5e9":certType==="aptitud"?"#10b981":"#8b5cf6" }}>MediAyacucho</div>
-                      <div style={{ fontSize:9, color:"#94a3b8", letterSpacing:2 }}>SALUD PARA TODOS</div>
-                    </div>
-                    <div style={{ fontSize:10, color:"#94a3b8" }}>Ayacucho, {new Date().toLocaleDateString("es-PE")}</div>
-                  </div>
-                  <div style={{ textAlign:"center", fontWeight:700, color:certType==="descanso"?"#0ea5e9":certType==="aptitud"?"#10b981":"#8b5cf6", marginBottom:10, fontSize:11 }}>
-                    {certType==="descanso"?"CERTIFICADO DE DESCANSO MÉDICO":certType==="aptitud"?"CERTIFICADO DE APTITUD LABORAL":"RECETA MÉDICA"}
-                  </div>
-                  <p>Paciente: <strong>{certData.patient_name || "—"}</strong></p>
-                  <p>DNI: <strong>{certData.patient_dni || "—"}</strong> · Edad: <strong>{certData.patient_age || "—"} años</strong></p>
-                  {certType !== "aptitud" && <p>Diagnóstico: <strong>{certData.diagnosis || "—"}</strong></p>}
-                  {certType === "descanso" && <p>Descanso: <strong>{certData.days || "—"} día(s)</strong> desde {certData.start_date}</p>}
-                  {certType === "receta" && certData.medications && <p>Rx: {certData.medications}</p>}
-                  <div style={{ marginTop:20, display:"flex", justifyContent:"space-between", alignItems:"flex-end" }}>
-                    <div style={{ width:50, height:50, borderRadius:"50%", border:`1.5px solid ${certType==="descanso"?"#0ea5e9":certType==="aptitud"?"#10b981":"#8b5cf6"}`, display:"flex", alignItems:"center", justifyContent:"center", fontSize:7, textAlign:"center", color:certType==="descanso"?"#0ea5e9":certType==="aptitud"?"#10b981":"#8b5cf6", fontWeight:700 }}>MEDI<br/>AYACUCHO</div>
-                    <div style={{ textAlign:"center" }}>
-                      <div style={{ borderTop:"1px solid #1e293b", width:100, marginBottom:4 }}/>
-                      <div style={{ fontWeight:700, fontSize:11 }}>{doctor.name}</div>
-                      <div style={{ fontSize:10, color:"#64748b" }}>{doctor.specialty}</div>
-                    </div>
-                  </div>
-                </div>
-              </div>
             </div>
           </>
         )}
