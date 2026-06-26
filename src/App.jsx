@@ -1486,6 +1486,9 @@ Hola ${appt.patient_name}, gracias por confiar en ${doctor.name}.
                 }}>
                   📄 Generar PDF
                 </button>
+                <p style={{ fontSize:11, color:"#92400e", background:"#fff7ed", border:"1px solid #fed7aa", borderRadius:8, padding:"8px 12px", marginTop:10 }}>
+                  ⚠️ Este documento es informativo. Para validez oficial requiere <strong>firma y sello del médico</strong> sobre el documento impreso.
+                </p>
               </div>
 
               {/* Preview */}
