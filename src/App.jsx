@@ -861,8 +861,30 @@ Hola ${appt.patient_name}, gracias por confiar en ${doctor.name}.
   }
 
   // Cancelación por parte del médico con confirmación
-  function cancelByDoctor(appt) {
-    if (!window.confirm(`¿Cancelar la cita de ${appt.patient_name} del ${appt.date}?\nSe enviará un WhatsApp de reembolso automáticamente.`)) return;
+  async function cancelByDoctor(appt) {
+    const apptDateTime = new Date(`${appt.date}T${appt.time}`);
+    const hoursLeft = (apptDateTime - new Date()) / (1000 * 60 * 60);
+    const isLate = hoursLeft < 24;
+
+    const confirmMsg = isLate
+      ? `⚠️ ATENCIÓN: Estás cancelando con menos de 24h de anticipación.\n\nEl paciente ${appt.patient_name} SERÁ REEMBOLSADO (S/. ${AVANCE.monto}) y recibirás un AVISO por cancelación tardía.\n\n¿Confirmas la cancelación?`
+      : `¿Cancelar la cita de ${appt.patient_name} del ${appt.date}?\nSe enviará un WhatsApp de reembolso automáticamente.`;
+
+    if (!window.confirm(confirmMsg)) return;
+
+    // Si cancelación tardía → incrementar contador y notificar admin
+    if (isLate) {
+      const newCount = (doctor.late_cancellations || 0) + 1;
+      await fetch(`${SUPABASE_URL}/rest/v1/doctors?id=eq.${doctor.id}`, {
+        method: "PATCH",
+        headers: { "Content-Type":"application/json", "apikey": SUPABASE_KEY, "Authorization": `Bearer ${SUPABASE_KEY}` },
+        body: JSON.stringify({ late_cancellations: newCount })
+      });
+      // WhatsApp al admin con aviso
+      const msgAdmin = `⚠️ *CANCELACIÓN TARDÍA - MediAyacucho*\n\nEl Dr./Dra. ${doctor.name} canceló una cita con menos de 24h de anticipación.\n\n👤 Paciente: ${appt.patient_name}\n📞 Tel: ${appt.patient_phone}\n📅 Fecha: ${appt.date} · ${appt.time}\n💰 Reembolsar: S/. ${AVANCE.monto} al ${appt.patient_phone}\n\n⚠️ Este médico acumula ${newCount} cancelación(es) tardía(s).\n${newCount >= 3 ? "🔴 CONSIDERA SUSPENDER ESTE MÉDICO." : ""}\n\n👉 mediayacucho.pe`;
+      setTimeout(() => window.open(`https://wa.me/51913330712?text=${encodeURIComponent(msgAdmin)}`, "_blank"), 1000);
+    }
+
     updateStatus(appt.id, "cancelada", true);
   }
 
@@ -1665,6 +1687,7 @@ function AdminPanel({ onExit }) {
                         <div style={{ display:"flex", alignItems:"center", gap:8 }}>
                           <span style={{ fontWeight: 700, color: "#082f49" }}>{doc.name}</span>
                           {trial && <span style={{ fontSize:10, fontWeight:700, padding:"2px 8px", borderRadius:20, background: trial.active ? "#dcfce7" : "#fef2f2", color: trial.color }}>{trial.label}</span>}
+                          {doc.late_cancellations > 0 && <span style={{ fontSize:10, fontWeight:700, padding:"2px 8px", borderRadius:20, background:"#fff7ed", color:"#c2410c", border:"1px solid #fed7aa" }}>⚠️ {doc.late_cancellations} cancel. tardía(s)</span>}
                         </div>
                         <div style={{ fontSize: 13, color: "#475569" }}>{doc.specialty} · {doc.price} · ⭐ {doc.rating}</div>
                         {doc.address && <div style={{ fontSize: 12, color: "#475569" }}>📍 {doc.address}</div>}
