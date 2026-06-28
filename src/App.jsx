@@ -707,6 +707,10 @@ function DoctorDashboard({ doctor, onExit }) {
         body: JSON.stringify({ schedule: sorted }),
       });
       if (res.ok) {
+        const updated = await res.json();
+        if (updated && updated[0]) {
+          setScheduleGrid(parseSchedule(updated[0].schedule));
+        }
         setScheduleMsg("✅ Horarios guardados correctamente");
       } else {
         const err = await res.text();
