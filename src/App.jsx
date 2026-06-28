@@ -136,14 +136,17 @@ function buildWhatsAppLink(phone, message) {
   return `https://wa.me/${full}?text=${encodeURIComponent(message)}`;
 }
 function buildSmsLink(phone, message) { return `sms:${phone}?body=${encodeURIComponent(message)}`; }
-function buildConfirmationMessage(data, doctor) {
+function buildConfirmationMessage(data, doctor, appointmentId) {
   const total = parseInt((doctor.price || "S/. 0").replace(/[^0-9]/g, ""));
   const resto = total - AVANCE.monto;
   const isVirtual = data.modalidad === "virtual";
   const lugarInfo = isVirtual
     ? `📱 Modalidad: *VIRTUAL* (WhatsApp Video)\nEl médico te llamará por WhatsApp a la hora de tu cita.`
     : `📍 Dirección: ${doctor.address || "Por confirmar"}`;
-  return `✅ *CONFIRMACIÓN DE CITA - MediAyacucho*\n\nHola ${data.patient_name}, tu cita ha sido reservada:\n\n👨‍⚕️ Médico: ${doctor.name}\n🏥 Especialidad: ${doctor.specialty}\n📅 Fecha: ${data.date}\n🕐 Hora: ${data.time}\n${lugarInfo}\n\n💰 *Pagos:*\n✅ Adelanto pagado: S/. ${AVANCE.monto}\n📋 Resto a pagar en consulta: S/. ${resto}\n\n⚠️ ${AVANCE.politica}.\n\n${isVirtual ? "Ten lista tu cámara y buena conexión." : "Por favor llega 10 minutos antes."}\n\n📍 MediAyacucho - Salud para todos 🌿`;
+  const cancelUrl = appointmentId
+    ? `https://mediayacucho.pe?cancel=${appointmentId}&phone=${encodeURIComponent(data.patient_phone)}`
+    : null;
+  return `✅ *CONFIRMACIÓN DE CITA - MediAyacucho*\n\nHola ${data.patient_name}, tu cita ha sido reservada:\n\n👨‍⚕️ Médico: ${doctor.name}\n🏥 Especialidad: ${doctor.specialty}\n📅 Fecha: ${data.date}\n🕐 Hora: ${data.time}\n${lugarInfo}\n\n💰 *Pagos:*\n✅ Adelanto pagado: S/. ${AVANCE.monto}\n📋 Resto a pagar en consulta: S/. ${resto}\n\n⚠️ ${AVANCE.politica}.\n\n${isVirtual ? "Ten lista tu cámara y buena conexión." : "Por favor llega 10 minutos antes."}${cancelUrl ? `\n\n❌ *¿Necesitas cancelar?*\nSi cancelas con más de 24h de anticipación, te reembolsamos el adelanto:\n👉 ${cancelUrl}` : ""}\n\n📍 MediAyacucho - Salud para todos 🌿`;
 }
 function buildReminderMessage(data, doctor) {
   return `⏰ *RECORDATORIO - MediPerú*\n\nHola ${data.patient_name}, te recordamos tu cita MAÑANA:\n\n👨‍⚕️ ${doctor.name} (${doctor.specialty})\n🕐 ${data.time}\n📍 ${doctor.address || ""}\n\n¡Te esperamos! 💚`;
@@ -2270,13 +2273,20 @@ export default function App() {
   const [waitlistSubmitting, setWaitlistSubmitting] = useState(false);
   const [waitlistDone, setWaitlistDone] = useState(false);
   const chatEndRef = useRef(null);
+  const [cancelParams, setCancelParams] = useState(null);
+  const [cancelStatus, setCancelStatus] = useState(null); // null | "loading" | "success" | "expired" | "error"
 
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
     const reviewAppt = params.get("review");
     const reviewDoctor = params.get("doctor");
+    const cancelAppt = params.get("cancel");
+    const cancelPhone = params.get("phone");
     if (reviewAppt && reviewDoctor) {
       setReviewParams({ appointmentId: reviewAppt, doctorId: reviewDoctor });
+    }
+    if (cancelAppt && cancelPhone) {
+      setCancelParams({ appointmentId: cancelAppt, phone: cancelPhone });
     }
   }, []);
 
@@ -2449,7 +2459,90 @@ export default function App() {
     />
   );
 
-  if (selectedProfile && view === "profile") return (
+  if (cancelParams) return (
+    <div style={{ fontFamily:"'Inter', sans-serif", minHeight:"100vh", background:"#f8fafc", display:"flex", alignItems:"center", justifyContent:"center", padding:24 }}>
+      <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
+      <div style={{ background:"#fff", borderRadius:24, padding:40, maxWidth:480, width:"100%", boxShadow:"0 8px 32px rgba(15,23,42,0.08)", textAlign:"center" }}>
+        <div style={{ fontSize:48, marginBottom:16 }}>❌</div>
+        <h2 style={{ fontSize:24, fontWeight:800, color:"#082f49", margin:"0 0 8px" }}>Cancelar cita</h2>
+        <p style={{ color:"#475569", fontSize:14, margin:"0 0 24px" }}>¿Estás seguro que deseas cancelar tu cita? Recuerda que solo se reembolsa el adelanto si cancelas con más de 24h de anticipación.</p>
+
+        {cancelStatus === null && (
+          <div style={{ display:"flex", gap:12, justifyContent:"center", flexWrap:"wrap" }}>
+            <button style={{ padding:"12px 28px", background:"#dc2626", color:"#fff", border:"none", borderRadius:12, cursor:"pointer", fontFamily:"inherit", fontSize:15, fontWeight:700 }}
+              onClick={async () => {
+                setCancelStatus("loading");
+                try {
+                  // Get appointment to check timing
+                  const res = await fetch(`${SUPABASE_URL}/rest/v1/appointments?id=eq.${cancelParams.appointmentId}&select=*`, {
+                    headers: { "apikey": SUPABASE_KEY, "Authorization": `Bearer ${SUPABASE_KEY}` }
+                  });
+                  const data = await res.json();
+                  const appt = data[0];
+                  if (!appt) { setCancelStatus("error"); return; }
+
+                  // Check if phone matches
+                  const cleanPhone = appt.patient_phone.replace(/\D/g,"");
+                  const paramPhone = decodeURIComponent(cancelParams.phone).replace(/\D/g,"");
+                  if (!cleanPhone.endsWith(paramPhone.slice(-8)) && !paramPhone.endsWith(cleanPhone.slice(-8))) {
+                    setCancelStatus("error"); return;
+                  }
+
+                  // Check 24h rule
+                  const apptDateTime = new Date(`${appt.date}T${appt.time}`);
+                  const hoursLeft = (apptDateTime - new Date()) / (1000 * 60 * 60);
+                  const eligible = hoursLeft >= 24;
+
+                  // Cancel appointment
+                  await fetch(`${SUPABASE_URL}/rest/v1/appointments?id=eq.${cancelParams.appointmentId}`, {
+                    method: "PATCH",
+                    headers: { "Content-Type":"application/json", "apikey": SUPABASE_KEY, "Authorization": `Bearer ${SUPABASE_KEY}` },
+                    body: JSON.stringify({ status: "cancelada" })
+                  });
+
+                  setCancelStatus(eligible ? "success" : "expired");
+                } catch(e) { setCancelStatus("error"); }
+              }}>
+              Sí, cancelar mi cita
+            </button>
+            <button style={{ padding:"12px 28px", background:"#f1f5f9", color:"#475569", border:"none", borderRadius:12, cursor:"pointer", fontFamily:"inherit", fontSize:15, fontWeight:600 }}
+              onClick={() => { window.location.href = "https://mediayacucho.pe"; }}>
+              No, mantener cita
+            </button>
+          </div>
+        )}
+
+        {cancelStatus === "loading" && <p style={{ color:"#0369a1" }}>Procesando...</p>}
+
+        {cancelStatus === "success" && (
+          <div style={{ background:"#f0fdf4", border:"1px solid #bbf7d0", borderRadius:12, padding:20 }}>
+            <div style={{ fontSize:32, marginBottom:8 }}>✅</div>
+            <p style={{ fontWeight:700, color:"#15803d", margin:"0 0 8px" }}>Cita cancelada correctamente</p>
+            <p style={{ fontSize:13, color:"#475569", margin:0 }}>Tu adelanto de S/. {AVANCE.monto} será reembolsado a tu Yape/Plin en las próximas 24h.</p>
+          </div>
+        )}
+
+        {cancelStatus === "expired" && (
+          <div style={{ background:"#fff7ed", border:"1px solid #fed7aa", borderRadius:12, padding:20 }}>
+            <div style={{ fontSize:32, marginBottom:8 }}>⚠️</div>
+            <p style={{ fontWeight:700, color:"#c2410c", margin:"0 0 8px" }}>Cita cancelada sin reembolso</p>
+            <p style={{ fontSize:13, color:"#475569", margin:0 }}>La cita fue cancelada con menos de 24h de anticipación. El adelanto de S/. {AVANCE.monto} no será reembolsado según nuestra política.</p>
+          </div>
+        )}
+
+        {cancelStatus === "error" && (
+          <div style={{ background:"#fef2f2", border:"1px solid #fecaca", borderRadius:12, padding:20 }}>
+            <p style={{ fontWeight:700, color:"#dc2626", margin:"0 0 8px" }}>Error al cancelar</p>
+            <p style={{ fontSize:13, color:"#475569", margin:0 }}>No se pudo verificar tu cita. Por favor contáctanos por WhatsApp.</p>
+          </div>
+        )}
+
+        <a href="https://mediayacucho.pe" style={{ display:"block", marginTop:20, fontSize:13, color:"#0369a1" }}>← Volver a MediAyacucho</a>
+      </div>
+    </div>
+  );
+
+
     <div style={{ fontFamily: "'Inter', sans-serif", minHeight: "100vh", background: "#ffffff", color: "#082f49" }}>
       <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
       <header style={{ position: "sticky", top: 0, zIndex: 100, background: "rgba(255,255,255,0.95)", backdropFilter: "blur(20px)", borderBottom: "1px solid #e0f2fe", padding: "0 24px", display: "flex", alignItems: "center", height: 64 }}>
