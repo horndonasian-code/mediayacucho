@@ -2576,7 +2576,7 @@ export default function App() {
     </div>
   );
 
-
+  if (selectedProfile && view === "profile") return (
     <div style={{ fontFamily: "'Inter', sans-serif", minHeight: "100vh", background: "#ffffff", color: "#082f49" }}>
       <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
       <header style={{ position: "sticky", top: 0, zIndex: 100, background: "rgba(255,255,255,0.95)", backdropFilter: "blur(20px)", borderBottom: "1px solid #e0f2fe", padding: "0 24px", display: "flex", alignItems: "center", height: 64 }}>
