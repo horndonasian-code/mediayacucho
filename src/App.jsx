@@ -3194,7 +3194,15 @@ export default function App() {
                       {doc.available ? (
                         <div style={{ display:"flex", gap:8 }}>
                           <button style={{ flex:1, padding:"10px 0", background: doc.specialty==="Enfermero a domicilio" ? "linear-gradient(135deg,#10b981,#34d399)" : "linear-gradient(135deg,#0ea5e9,#38bdf8)", color:"#fff", border:"none", borderRadius:12, cursor:"pointer", fontSize:13, fontWeight:700, fontFamily:"inherit" }}
-                            onClick={() => {
+                            onClick={async () => {
+                              // Reload fresh doctor data before booking
+                              try {
+                                const fresh = await sb(`doctors?id=eq.${doc.id}`);
+                                if (fresh && fresh[0]) {
+                                  setDoctors(prev => prev.map(d => d.id === doc.id ? fresh[0] : d));
+                                  doc = fresh[0];
+                                }
+                              } catch(e) {}
                               if (doc.specialty === "Enfermero a domicilio" || doc.specialty === "Médico a domicilio") {
                                 const isDoc = doc.specialty === "Médico a domicilio";
                                 const msg = isDoc
@@ -3209,7 +3217,10 @@ export default function App() {
                           </button>
                           {doc.specialty !== "Enfermero a domicilio" && doc.specialty !== "Médico a domicilio" && (
                             <button style={{ flex:1, padding:"10px 0", background:"linear-gradient(135deg,#25D366,#128C7E)", color:"#fff", border:"none", borderRadius:12, cursor:"pointer", fontSize:13, fontWeight:700, fontFamily:"inherit" }}
-                              onClick={() => { setSelectedDoctor(doc); setBookingData(p => ({...p, modalidad:"virtual"})); setSelectedCalDay(null); setView("booking"); }}>
+                              onClick={async () => {
+                                try { const fresh = await sb(`doctors?id=eq.${doc.id}`); if (fresh && fresh[0]) { setDoctors(prev => prev.map(d => d.id === doc.id ? fresh[0] : d)); doc = fresh[0]; } } catch(e) {}
+                                setSelectedDoctor(doc); setBookingData(p => ({...p, modalidad:"virtual"})); setSelectedCalDay(null); setView("booking");
+                              }}>
                               Virtual
                             </button>
                           )}
