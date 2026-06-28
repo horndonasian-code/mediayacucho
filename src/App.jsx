@@ -2504,6 +2504,10 @@ export default function App() {
                     body: JSON.stringify({ status: "cancelada" })
                   });
 
+                  // Notifier l'admin par WhatsApp
+                  const msgAdmin = `❌ *CANCELACIÓN DE PACIENTE - MediAyacucho*\n\nUn paciente canceló su cita:\n\n👤 Paciente: ${appt.patient_name}\n📞 Teléfono: ${appt.patient_phone}\n📅 Fecha: ${appt.date} · ${appt.time}\n💰 Adelanto: S/. ${AVANCE.monto}\n\n${eligible ? `✅ REEMBOLSO REQUERIDO\nYapea/Plina S/. ${AVANCE.monto} al ${appt.patient_phone}` : `⚠️ SIN REEMBOLSO\nCancelación con menos de 24h — el paciente no tiene derecho a reembolso.`}\n\n👉 mediayacucho.pe`;
+                  setTimeout(() => window.open(`https://wa.me/51913330712?text=${encodeURIComponent(msgAdmin)}`, "_blank"), 500);
+
                   setCancelStatus(eligible ? "success" : "expired");
                 } catch(e) { setCancelStatus("error"); }
               }}>
