@@ -2805,9 +2805,10 @@ export default function App() {
               placeholder="+51 9XX XXX XXX"
               value={misCitasPhone}
               onChange={e => setMisCitasPhone(e.target.value)}
-              onKeyDown={e => e.key === "Enter" && searchMisCitas()}
+              onKeyDown={e => e.key === "Enter" && document.querySelector('[data-search-btn]')?.click()}
             />
             <button
+              data-search-btn
               style={{ padding:"12px 20px", background:"#0ea5e9", color:"#fff", border:"none", borderRadius:12, cursor:"pointer", fontFamily:"inherit", fontSize:14, fontWeight:700 }}
               onClick={async () => {
                 if (!misCitasPhone.trim()) return;
